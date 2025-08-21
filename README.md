@@ -1,54 +1,71 @@
-# Jessica-SPZ — Quick Guide
+Jessica-SPZ V2 — Quick Guide
 
-Jessica is your **instant page maker**.  
-Paste a few links, and she turns them into a clean, ready-to-share preview page in seconds.
+Jessica is your instant page & card maker.
+Paste a few links, and she transforms them into a polished ZETSU-style preview — normal pages or collectible TCG-inspired cards.
 
----
+What Jessica Does
 
-## What Jessica Does
-1. **You paste your links** — store pages, articles, videos, or anything worth showing.
-2. Jessica **grabs the best parts**:
-   - Images  
-   - Titles  
-   - Short descriptions  
-3. She **arranges them** into:
-   - **Hero section** — your main highlight at the top  
-   - **Products list** — with images and names  
-   - **Articles list** — with summaries  
-4. You see your **page preview instantly** — no installs, no waiting.
+You paste your links — products, articles, videos, or anything worth showing.
 
----
+Jessica grabs the best parts:
 
-## How to Use
-1. **Open Jessica** in your browser.  
-2. Paste **1–6 links** into the box.  
-3. Click **Run** — Jessica collects the content.  
-4. Click **Preview** — see your page instantly.
+Images
 
-That’s it. No logins, no downloads, no tech setup.
+Titles
 
----
+Descriptions
 
-## Example Uses
-- **Showcase products** — paste store links to create a product page.  
-- **Share a reading list** — paste article links to create a curated list.  
-- **Mix it up** — combine products and articles for a hybrid page.
+She builds your output in two possible modes:
 
----
+Normal Page — clean, minimal, ready to share
 
-## Tips for Best Results
-- Use links with high-quality images and proper titles.  
-- Avoid private or login-only pages (Jessica can’t access them).  
-- For the best layout, use **3–6 links**.
+ZETSU Cards — TCG-inspired layouts with rarity, effects, and tags
 
----
+You get an instant preview — no installs, no waiting.
 
-**Jessica-SPZ** — Paste. Build. Preview.
----
+How to Use
+
+Open Jessica in your browser.
+
+Paste 1–6 links into the input box.
+
+Choose your mode:
+
+Normal (simple SporeZ page)
+
+ZETSU (Jessica TCG cards)
+
+Click Run — Jessica crawls and fuses the content.
+
+Click Preview — see the page or card set instantly.
+
+(Optional) Publish — push it live with one click.
+
+Example Uses
+
+Showcase products — drop store links, auto-create a product page or card deck.
+
+Curate reading — paste articles, get a clean digest or collectible info cards.
+
+Hybrid mix — combine products, socials, and news into a ZETSU-style set.
+
+Session play — use Jessica as part of your creative “feed loops” in SPZ or SignalZ.
+
+Tips for Best Results
+
+High-quality links = stronger previews.
+
+Public pages only (Jessica can’t read login-walls).
+
+Best flow: 3–6 links per session.
+
+Switch between Normal and ZETSU modes depending on your project.
+
+Jessica-SPZ V2 — Paste. Build. Preview. Play.
+
 SPOREZ™
----
 JESSICA AI™
----
+
 Zetsumetsu Eoe™ | ZETSUMETSU CORPORATION | Artworqq Kevin Suber
 
 
