@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Jessica-SPZ Preview</title>
+<style>
+  :root{
+    --bg:#0b1219; --white:#ffffff; --ink:#0a0f14; --muted:#5f7387;
+    --line:#102534; --glow1:#00f0ff; --iris:#7b2ff7; --glow2:#00ff88;
+    --accent:#70ffe0; --ok:#66ff99;
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; color:#fff; font:14px/1.5 system-ui,Segoe UI,Roboto,Inter,Arial;
+    background:
+      linear-gradient(180deg, rgba(0,0,0,.45), transparent 35%),
+      radial-gradient(1200px 800px at 50% -10%, #0e1824 0%, var(--bg) 60%),
+      #0a0f14;
+  }
+
+  .stage{
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:28px 14px;
+    background-image:
+      linear-gradient(45deg, rgba(255,255,255,.04) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.04) 75%, rgba(255,255,255,.04)),
+      linear-gradient(45deg, rgba(255,255,255,.04) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.04) 75%, rgba(255,255,255,.04));
+    background-size: 26px 26px;
+    background-position: 0 0, 13px 13px;
+  }
+
+  @keyframes iridescentMove{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+
+  .iframe-shell{
+    width:min(980px, 96vw);
+    border-radius:22px; padding:12px; position:relative;
+    background: rgba(0,0,0,.35);
+    box-shadow: 0 22px 60px rgba(0,0,0,.5);
+    border:2px solid transparent; background-clip:padding-box;
+  }
+  .iframe-shell::before{
+    content:""; position:absolute; inset:-2px; border-radius:24px; padding:2px;
+    background: linear-gradient(135deg, var(--glow1), var(--iris), var(--glow2));
+    background-size:300% 300%; animation: iridescentMove 8s ease infinite;
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none;
+  }
+
+  .paper{
+    border-radius:16px; overflow:hidden; background: var(--white); color: var(--ink);
+    border:1px solid #e8eef6;
+    box-shadow:
+      inset 0 2px 0 rgba(255,255,255,.9),
+      inset 0 -2px 0 rgba(0,0,0,.04),
+      0 1px 0 rgba(0,0,0,.08),
+      0 12px 28px rgba(0,0,0,.25);
+  }
+
+  .wrap{max-width:900px;margin:auto;padding:22px}
+
+  /* ======= BRAND HEADER ======= */
+  .brand-header{padding:6px 0 0}
+  .brand-line{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:8px 0 12px; border-bottom:1px solid #eef3fa;
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px; font-weight:900; letter-spacing:.3px;
+  }
+  .brand img{height:28px;width:auto;display:block}
+  .wordmark{
+    font-size:18px; text-transform:uppercase;
+    background:linear-gradient(90deg,var(--glow1),var(--iris),var(--glow2));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+
+  /* ======= FACEBOOK-LIKE BAR with sources ======= */
+  .fb-bar{
+    background:#f3f7fc; border:1px solid #e3edf7; border-radius:12px; margin:10px 0 12px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 1px 2px rgba(10,22,40,.04);
+  }
+  .sources-nav{
+    display:flex; align-items:center; gap:8px; padding:8px; overflow:auto; justify-content:center;
+    scrollbar-width:thin;
+  }
+  .sources-nav a{
+    background:#fff; border:1px solid #d9e9f7; border-radius:999px; padding:8px 12px; white-space:nowrap;
+    color:#0a2430; text-decoration:none; font-weight:800; letter-spacing:.2px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 1px 2px rgba(14,30,65,.06);
+    transition: background .15s ease, border-color .15s ease, transform .15s ease;
+  }
+  .sources-nav a:hover{background:#e7f3ff; border-color:#cbe3f6; transform:translateY(-1px)}
+
+  /* ======= TOP SITEMAP (slightly larger) ======= */
+  .top-sitemap{
+    display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin:6px 0 16px;
+  }
+  .top-sitemap a{
+    font-size:16px; font-weight:900; letter-spacing:.2px;
+    color:#0a2430; text-decoration:none;
+    background:#ffffff; border:1px solid #d9e9f7; border-radius:999px; padding:8px 14px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 1px 3px rgba(14,30,65,.06);
+  }
+  .top-sitemap a:hover{background:#eaf4ff}
+
+  /* ======= EXISTING hero/sections ======= */
+  .hero{text-align:center; display:grid; gap:10px}
+  .img-wrap{border-radius:16px; position:relative; border:2px solid transparent; background-clip:padding-box;}
+  .img-wrap::before{
+    content:""; position:absolute; inset:-2px; border-radius:18px; padding:2px;
+    background: linear-gradient(135deg, var(--glow1), var(--iris), var(--glow2));
+    background-size:300% 300%; animation: iridescentMove 10s ease infinite;
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none; opacity:.9;
+  }
+  .hero img{width:100%;max-height:360px;object-fit:cover;border-radius:14px;display:block;border:1px solid rgba(0,0,0,.06)}
+  h1{
+    margin:8px 0 0; font-size:22px; letter-spacing:.25px; text-transform:uppercase;
+    background:linear-gradient(90deg,var(--glow1),var(--iris),var(--glow2));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    filter: drop-shadow(0 1px 8px rgba(0,255,200,.12));
+  }
+  .muted{color:#6b7f94}
+
+  .cta a{
+    display:inline-block; padding:10px 14px; border-radius:999px; text-decoration:none; font-weight:800;
+    color:#001b1f; background:linear-gradient(90deg,var(--glow1),var(--iris),var(--glow2));
+    border:0; box-shadow:0 8px 24px rgba(0,255,200,.18);
+  }
+
+  .section{
+    margin-top:16px; border-radius:14px; padding:12px;
+    background:#f7fbff; border:1px solid #e3edf7;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9), inset 0 -1px 0 rgba(0,0,0,.03);
+  }
+  .section .title{
+    text-align:center; color:#5a6b7a; font-weight:800; letter-spacing:.2px; margin-bottom:10px; text-transform:uppercase;
+  }
+
+  .products{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+  .prod{
+    position:relative; border-radius:12px; padding:10px; background:#0f1620; color:#eaf5ff;
+    display:grid; gap:8px; text-align:center; border:2px solid transparent; background-clip:padding-box;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.45), 0 12px 26px rgba(0,0,0,.22);
+  }
+  .prod::before{
+    content:""; position:absolute; inset:-2px; border-radius:14px; padding:2px;
+    background: linear-gradient(135deg, var(--glow1), var(--iris), var(--glow2));
+    background-size:300% 300%; animation: iridescentMove 7s ease infinite;
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none;
+  }
+  .prod img{width:100%;height:120px;object-fit:cover;border-radius:10px;background:#0d1924;display:block;border:1px solid rgba(255,255,255,.06)}
+  .prod .name{font-weight:800;letter-spacing:.2px}
+  .prod .price{color:var(--ok);font-weight:800}
+  .prod a{color:var(--accent);text-decoration:none;font-weight:800}
+
+  .articles{display:grid; gap:10px}
+  .article{
+    background:#0f1620; color:#eaf5ff; padding:12px; border-radius:12px; border:1px solid #142131;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.45), 0 10px 22px rgba(0,0,0,.2);
+  }
+  .article h3{margin:0 0 6px}
+
+  /* ======= FOOTER SEO + MINI SITEMAP ======= */
+  .site-footer{
+    margin-top:18px; padding-top:12px; border-top:1px solid #e9f0f8; color:#5a6b7a; font-size:12px;
+  }
+  .sitemap{
+    margin-top:8px; display:flex; gap:10px; flex-wrap:wrap;
+  }
+  .sitemap a{
+    color:#0a2430; text-decoration:none; border-bottom:1px dotted #a9c8de;
+  }
+  .sitemap a:hover{border-bottom-color:#6fb0d6}
+  .brandline{
+    margin-top:8px; text-align:center; color:#5a6b7a; font-size:12px; font-weight:700;
+    letter-spacing:.2px;
+  }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <div class="iframe-shell">
+      <div class="paper">
+        <div class="wrap" id="root">Loading…</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  const root = document.getElementById('root');
+
+  function esc(s){ return String(s||"").replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c])); }
+  function b64ToJSON(b64){
+    const bin = atob((b64||"").replace(/[^A-Za-z0-9+/=]/g,""));
+    const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+    const text = new TextDecoder().decode(bytes);
+    return JSON.parse(text);
+  }
+
+  function getSourceLinks(data){
+    const candidates = [];
+    const push = (v)=>{
+      if(!v) return;
+      if(Array.isArray(v)) v.forEach(push);
+      else if(typeof v === "string") candidates.push(v);
+    };
+    push(data.sourceLinks);
+    push(data.sources);
+    push(data.links);
+    if (data.meta && data.meta.sources) push(data.meta.sources);
+    if (data.hero){
+      push(data.hero.ctaLink);
+      if (data.hero.links) push(data.hero.links);
+    }
+    (Array.isArray(data.products)?data.products:[]).forEach(p=> push(p.link));
+    (Array.isArray(data.articles)?data.articles:[]).forEach(a=> push(a.link));
+
+    // Dedup & only http(s)
+    const seen = new Set();
+    return candidates
+      .filter(u=>/^https?:\/\//i.test(u||""))
+      .filter(u=>{ if(seen.has(u)) return false; seen.add(u); return true; });
+  }
+
+  // ---- Multi-source brand detection ----
+  function titleCase(s){
+    return s.replace(/\b([a-z])/g, m=>m.toUpperCase());
+  }
+  function prettyFromHost(host){
+    const h = (host||"").toLowerCase().replace(/^www\./,'');
+    // common mappings to nicer brand strings
+    const map = {
+      'instagram':'Instagram',
+      'ig':'Instagram',
+      'facebook':'Facebook',
+      'fb':'Facebook',
+      'x':'X',
+      'twitter':'Twitter',
+      't':'Twitter',
+      'youtube':'YouTube',
+      'youtu':'YouTube',
+      'github':'GitHub',
+      'medium':'Medium',
+      'tiktok':'TikTok',
+      'shopify':'Shopify',
+      'nike':'Nike',
+      'adidas':'Adidas'
+    };
+    const base = h.split('.')[0];
+    if(map[base]) return map[base];
+    return titleCase(base);
+  }
+  function detectBrands(data, sources){
+    const found = new Set();
+    const prods = Array.isArray(data.products) ? data.products : [];
+
+    // 1) explicit product brand fields
+    for(const p of prods){
+      if (p && typeof p.brand === 'string' && p.brand.trim()){
+        found.add(p.brand.trim());
+      }
+    }
+
+    // 2) known brands from product names (expand as needed)
+    const knownBrands = ['Nike','Adidas','Supreme','Puma','Gucci','Louis Vuitton','Apple','Samsung','Sony'];
+    for(const p of prods){
+      const nm = (p && p.name) ? String(p.name) : '';
+      for(const kb of knownBrands){
+        if (nm.toLowerCase().includes(kb.toLowerCase())) found.add(kb);
+      }
+    }
+
+    // 3) hostnames from sources
+    for(const s of sources){
+      try{
+        const url = new URL(s);
+        found.add(prettyFromHost(url.hostname));
+      }catch{}
+    }
+
+    // 4) output
+    const list = Array.from(found).filter(Boolean);
+    return list.length ? list.join(' × ') : 'SporeZ Fusion Page';
+  }
+
+  function render(data){
+    const hero = data.hero || {};
+    const products = Array.isArray(data.products)? data.products : [];
+    const articles = Array.isArray(data.articles)? data.articles : [];
+    const sources = getSourceLinks(data);
+
+    const brandLogo = (data.brand && data.brand.logo) ? `<img src="${esc(data.brand.logo)}" alt="Brand">` : "";
+    const brandWord = esc(detectBrands(data, sources)); // << multi-source brands with fallback
+
+    const sourcesHTML = sources.length
+      ? sources.map((u,i)=>`<a href="${esc(u)}" target="_blank" rel="noopener">Source${i+1}</a>`).join("")
+      : "";
+
+    const topSitemap = `
+      <div class="top-sitemap">
+        <a href="https://sporez.netlify.app/" target="_blank" rel="noopener">Home</a>
+        ${products.length ? `<a href="#products" onclick="event.preventDefault();document.getElementById('products')?.scrollIntoView({behavior:'smooth'});">Products</a>` : ``}
+        ${articles.length ? `<a href="#info" onclick="event.preventDefault();document.getElementById('info')?.scrollIntoView({behavior:'smooth'});">Info</a>` : ``}
+        <a href="https://zetsumetsu.webnode.page" target="_blank" rel="noopener">Zetsumetsu Eoe™</a>
+        <a href="https://sporez.netlify.app/" target="_blank" rel="noopener">SporeZ</a>
+      </div>`;
+
+    root.innerHTML = `
+      <!-- BRAND HEADER -->
+      <div class="brand-header">
+        <div class="brand-line">
+          <div class="brand">
+            ${brandLogo}
+            <div class="wordmark">${brandWord}</div>
+          </div>
+          <div></div>
+        </div>
+        <!-- Facebook-like bar with source links -->
+        <div class="fb-bar">
+          <nav class="sources-nav">${sourcesHTML}</nav>
+        </div>
+        <!-- Top sitemap -->
+        ${topSitemap}
+      </div>
+
+      <!-- EXISTING CONTENT -->
+      <div class="hero">
+        ${hero.image ? `<div class="img-wrap"><img src="${esc(hero.image)}" alt=""></div>` : ""}
+        <h1>${esc(hero.title || "SporeZ Drop")}</h1>
+        ${hero.subtitle ? `<p class="muted">${esc(hero.subtitle)}</p>` : ""}
+        ${hero.ctaText ? `<p class="cta"><a href="${esc(hero.ctaLink||"#")}" target="_blank" rel="noopener"> ${esc(hero.ctaText)} </a></p>` : ""}
+      </div>
+
+      ${products.length ? `
+        <section class="section">
+          <div class="title">Products</div>
+          <div id="products" class="products">
+            ${products.map(p=>`
+              <div class="prod">
+                ${p.image?`<img src="${esc(p.image)}" alt="">`:``}
+                <div class="name">${esc(p.name||"")}</div>
+                <div class="price">${esc(p.price||"")}</div>
+                ${p.description?`<div class="muted" style="color:#3d4a55">${esc(p.description)}</div>`:""}
+                ${p.link?`<div><a href="${esc(p.link)}" target="_blank" rel="noopener" style="color:#0a6a83;text-decoration:none;font-weight:800">View</a></div>`:""}
+              </div>
+            `).join("")}
+          </div>
+        </section>` : ""}
+
+      ${articles.length ? `
+        <section class="section" style="margin-top:18px">
+          <div class="title">Info</div>
+          <div id="info" class="articles">
+            ${articles.map(a=>`
+              <article class="article">
+                <h3>${esc(a.heading||"")}</h3>
+                <div>${esc(a.content||"")}</div>
+              </article>
+            `).join("")}
+          </div>
+        </section>` : ""}
+
+      <!-- FOOTER SEO + MINI SITEMAP -->
+      <div class="site-footer">
+        <div>Generated preview via Jessica-SPZ auto-fusion. Source count: ${sources.length}. Updated ${new Date().toLocaleDateString()}.</div>
+        <div class="sitemap">
+          <a href="https://sporez.netlify.app/" target="_blank" rel="noopener">Home</a>
+          ${products.length ? `<a href="#products" onclick="event.preventDefault();document.getElementById('products')?.scrollIntoView({behavior:'smooth'});">Products</a>` : ``}
+          ${articles.length ? `<a href="#info" onclick="event.preventDefault();document.getElementById('info')?.scrollIntoView({behavior:'smooth'});">Info</a>` : ``}
+          <a href="https://zetsumetsu.webnode.page" target="_blank" rel="noopener">Zetsumetsu Eoe™</a>
+          <a href="https://sporez.netlify.app/" target="_blank" rel="noopener">SporeZ</a>
+        </div>
+        <div class="brandline">Zetsumetsu Eoe™ | ZETSUMETSU CORPORATION | Artworqq Kevin Suber</div>
+      </div>
+
+      <footer style="margin-top:8px;text-align:center;color:#6b7f94;font-size:12px">
+        SporeZ • Jessica-SPZ ${data.slug? "• "+esc(data.slug): ""}
+      </footer>
+    `;
+  }
+
+  try {
+    const b64 = (location.hash || "").replace(/^#j=/, "");
+    if (!b64) { root.textContent = "No preview data provided."; return; }
+    const data = b64ToJSON(b64);
+    render(data);
+  } catch (e) {
+    root.textContent = "Failed to load preview: " + (e && e.message ? e.message : e);
+  }
+})();
+</script>
+</body>
+</html>

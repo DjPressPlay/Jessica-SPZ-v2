@@ -1,0 +1,24 @@
+[build]
+  # No build step. We serve static files from /public.
+  publish = "public"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild" # default on Netlify; fine even with no deps
+
+# API routes → Netlify Functions
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+# SPA fallback (static files take precedence)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Nightly cleanup of old draft deploys published via /api/publish_via_deploy
+[[scheduled]]
+  path = "/.netlify/functions/cleanup_deploys"
+  schedule = "@daily"

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Jessica AI — Session Scraper • Card Builder</title>
+  <style>
+    body{margin:0;background:#0b0b0f;color:#eaeaea;font-family:Inter,system-ui,Arial,Helvetica,sans-serif}
+    header{padding:16px 20px;border-bottom:1px solid #222;display:flex;justify-content:space-between;align-items:center}
+    .pill{border:1px solid #444;border-radius:999px;padding:6px 12px;font-size:12px;opacity:.9}
+    .layout{display:grid;grid-template-columns:360px 1fr;gap:16px;padding:16px}
+    .panel{background:#111;border:1px solid #222;border-radius:12px;padding:12px}
+    textarea,input,button,select{background:#0e0e13;border:1px solid #2a2a35;color:#eaeaea;border-radius:8px;padding:8px}
+    textarea{width:100%;min-height:140px}
+    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+    .card{background:#0d0d12;border:2px solid #333;border-radius:16px;overflow:hidden}
+    .card .hdr{display:flex;justify-content:space-between;align-items:center;background:#0a0a0f;padding:8px 10px;border-bottom:1px solid #222}
+    .card .art{height:160px; background:#050508;border-bottom:1px solid #222; display:flex;align-items:center;justify-content:center}
+    .card .art img{max-width:100%;max-height:100%}
+    .card .type{display:flex;gap:8px;align-items:center;padding:8px 10px;border-bottom:1px solid #222}
+    .card .eff{padding:8px 10px;font-size:14px;min-height:84px}
+    .card .ftr{padding:8px 10px;border-top:1px dashed #333;font-size:12px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+    .tags{display:flex;gap:6px;flex-wrap:wrap}
+    .tag{border:1px solid #444;border-radius:999px;padding:2px 6px;font-size:11px;opacity:.85}
+    .r{font-weight:700}
+    .link{opacity:.9}
+  </style>
+</head>
+<body>
+  <header>
+    <div>🎴 <b>Jessica AI</b> — Real‑World NPC</div>
+    <div class="pill">Session: <span id="sid">…</span></div>
+  </header>
+
+  <div class="layout">
+    <section class="panel">
+      <h3>Search</h3>
+      <input id="q" placeholder="e.g., best new AI tools 2025"/>
+      <div class="row">
+        <button id="btn-search">Search</button>
+        <button id="btn-crawl">Crawl Links</button>
+        <button id="btn-enrich">Build Cards</button>
+      </div>
+      <p style="opacity:.8;font-size:12px">Uses Google CSE if keys exist (GCSE_ID/GCSE_KEY). Otherwise you can paste URLs below.</p>
+      <textarea id="urls" placeholder="Or paste URLs, one per line"></textarea>
+      <div class="row"><button id="btn-open">Open in new tab</button><button id="btn-clear">Clear</button></div>
+
+      <h4>Log</h4>
+      <pre id="log" style="min-height:80px;white-space:pre-wrap"></pre>
+    </section>
+
+    <section class="panel">
+      <h3>Cards</h3>
+      <div id="cards" class="cards"></div>
+    </section>
+  </div>
+
+  <script>
+    const sidEl = document.getElementById("sid");
+    const qEl = document.getElementById("q");
+    const urlsEl = document.getElementById("urls");
+    const logEl = document.getElementById("log");
+    const cardsEl = document.getElementById("cards");
+    let session = "sess-" + Date.now().toString(36);
+    sidEl.textContent = session;
+
+    function log(x){ logEl.textContent += (x + "\\n"); }
+    function getUrls(){
+      return urlsEl.value.split(/\\r?\\n/).map(s=>s.trim()).filter(Boolean);
+    }
+
+    async function doSearch(){
+      if(!qEl.value.trim()){ log("Need a query."); return; }
+      const res = await fetch("/api/search", {method:"POST", headers:{'content-type':'application/json'}, body: JSON.stringify({ q: qEl.value.trim(), num: 10 })});
+      const json = await res.json();
+      if(res.status !== 200){ log("Search error: " + (json.error||res.status)); return; }
+      log("Search results: " + json.count);
+      const links = json.items.map(it => it.link);
+      urlsEl.value = links.join("\\n");
+    }
+
+    async function doCrawl(){
+      const links = getUrls();
+      if(links.length===0){ log("No URLs."); return; }
+      const res = await fetch("/api/crawl", { method:"POST", headers:{'content-type':'application/json'}, body: JSON.stringify({ links }) });
+      const json = await res.json();
+      if(res.status !== 200){ log("Crawl error: " + (json.error||res.status)); return; }
+      // Persist crawled to textarea as JSON lines for enrich step
+      urlsEl.value = json.items.map(it => JSON.stringify(it)).join("\\n");
+      log("Crawled: " + json.items.length + " items");
+    }
+
+    async function doEnrich(){
+      // Accept either JSON lines (from crawl) or raw URLs
+      const lines = urlsEl.value.split(/\\r?\\n/).map(s=>s.trim()).filter(Boolean);
+      let items = [];
+      for(const line of lines){
+        try {
+          const obj = JSON.parse(line);
+          if(obj && obj.url) items.push(obj);
+        } catch {
+          items.push({ url: line });
+        }
+      }
+      const res = await fetch("/api/enrich", { method:"POST", headers:{'content-type':'application/json'}, body: JSON.stringify({ items, session }) });
+      const json = await res.json();
+      if(res.status !== 200){ log("Enrich error: " + (json.error||res.status)); return; }
+      cardsEl.innerHTML = "";
+      json.cards.forEach(c => cardsEl.appendChild(renderCard(c)));
+      log("Built cards: " + json.cards.length);
+    }
+
+    function renderCard(c){
+      const el = document.createElement("div");
+      el.className = "card";
+      el.innerHTML = `
+        <div class="hdr"><div>${c.header.icon} ${escapeHtml(c.header.name)}</div><div class="r">${escapeHtml(c.rarity)}</div></div>
+        <div class="art">${c.artwork.url ? `<img src="${escapeAttr(c.artwork.url)}" alt="${escapeAttr(c.artwork.alt||'')}" />` : ''}</div>
+        <div class="type"><div>★ ${String(c.typeBanner.stars)}</div><div>${escapeHtml(c.typeBanner.about)}</div><div>${escapeHtml(c.typeBanner.emoji)}</div></div>
+        <div class="eff"><div style="opacity:.9;margin-bottom:6px">${escapeHtml(c.effectBox.description)}</div>${c.effectBox.effects.map(e=>`<div>• ${escapeHtml(e)}</div>`).join("")}</div>
+        <div class="ftr"><div class="tags">${c.footer.tags.map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join("")}</div>
+          <div class="link"><a href="${escapeAttr(c.links.url)}" target="_blank">open ↗</a></div></div>
+      `;
+      return el;
+    }
+
+    function escapeHtml(s){ return String(s||"").replace(/[&<>"]/g, x=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[x])); }
+    function escapeAttr(s){ return escapeHtml(s).replace(/"/g, "&quot;"); }
+
+    document.getElementById("btn-search").addEventListener("click", doSearch);
+    document.getElementById("btn-crawl").addEventListener("click", doCrawl);
+    document.getElementById("btn-enrich").addEventListener("click", doEnrich);
+    document.getElementById("btn-open").addEventListener("click", () => {
+      const urls = getUrls(); urls.forEach(u => window.open(u, "_blank"));
+    });
+    document.getElementById("btn-clear").addEventListener("click", () => { urlsEl.value=""; cardsEl.innerHTML=""; logEl.textContent=""; });
+  </script>
+</body>
+</html>
