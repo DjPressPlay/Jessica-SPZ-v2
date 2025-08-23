@@ -15,7 +15,7 @@
 # SPA fallback (static files take precedence)
 [[redirects]]
   from = "/*"
-  to = "/index.html"
+  to = "/jessica.html"
   status = 200
 
 # Nightly cleanup of old draft deploys published via /api/publish_via_deploy
