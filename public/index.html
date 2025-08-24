@@ -259,7 +259,7 @@
 
     /* ===== Jessica: production endpoint (Netlify Function proxy) ===== */
 const API       = "/api/make_card";           // production-safe path
-const MODEL_ID  = "MXFP4";                    // OpenAI's gpt-oss 20B (your model id)
+const MODEL_ID  = "openai/gpt-oss-20b;                    // OpenAI's gpt-oss 20B (your model id)
 const LLM_SITE  = "http://127.0.0.1:1234";    // LM Studio base (the proxy will forward here)
 
     const input  = document.querySelector(".search-bar input");
