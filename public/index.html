@@ -184,127 +184,144 @@
     ⚡ Card data stream will appear here...
   </div>
 
-  <script>
-    /* ===== Deck build (visual only) ===== */
-    const cardsData = [
-      { title: "⚡ Zetsu Blade" },
-      { title: "🌌 Orbital Echo" },
-      { title: "🕷️ Spore Crawler" },
-      { title: "💎 Quantum Shard" },
-      { title: "🔥 Infernal Pulse" }
-    ];
-    const deck = document.getElementById("deck");
-    cardsData.forEach(c => {
-      const card = document.createElement("div");
-      card.className = "card";
-      card.innerHTML = `
-        <div class="card-header">${c.title}</div>
-        <div class="card-image"></div>
-        <div class="footer">Zetsumetsu Eoe™ | ZETSUMETSU CORPORATION | Artworqq Kevin Suber</div>
-      `;
-      deck.appendChild(card);
+<script>
+  /* ===== Deck build (visual only) ===== */
+  const cardsData = [
+    { title: "⚡ Zetsu Blade" },
+    { title: "🌌 Orbital Echo" },
+    { title: "🕷️ Spore Crawler" },
+    { title: "💎 Quantum Shard" },
+    { title: "🔥 Infernal Pulse" }
+  ];
+  const deck = document.getElementById("deck");
+  cardsData.forEach(c => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="card-header">${c.title}</div>
+      <div class="card-image"></div>
+      <div class="footer">Zetsumetsu Eoe™ | ZETSUMETSU CORPORATION | Artworqq Kevin Suber</div>
+    `;
+    deck.appendChild(card);
+  });
+
+  /* ===== Parallax orbs ===== */
+  const orb1 = document.getElementById("orb1");
+  const orb2 = document.getElementById("orb2");
+  document.addEventListener("mousemove", e => {
+    const { innerWidth, innerHeight } = window;
+    const x = (e.clientX / innerWidth - 0.5) * 100;
+    const y = (e.clientY / innerHeight - 0.5) * 100;
+    orb1.style.transform = `translate(${x}px, ${y}px) scale(1.1)`;
+    orb2.style.transform = `translate(${-x}px, ${-y}px) scale(1.1)`;
+  });
+
+  /* ===== Ritual GIF (click-to-dismiss, auto-hide after ~4.5s) ===== */
+  const GIF_SRC = "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmEzdjIzNmdvbDNnMm1obXA3MmQwcXAxN2dkeHV4dnRvcjI0dmZtNyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/rTzAcZats1TRlAxI7H/giphy.gif";
+  function removeExistingRitual() {
+    const old = document.getElementById("ritualFloat");
+    if (old) old.remove();
+  }
+  function hideAndRemove(node) {
+    if (!node || !node.parentNode) return;
+    node.style.pointerEvents = "none";
+    node.style.opacity = "0";
+    const cleanup = () => node.remove();
+    node.addEventListener("transitionend", cleanup, { once: true });
+    setTimeout(cleanup, 300);
+  }
+  function showRitual() {
+    removeExistingRitual();
+    const wrap = document.createElement("div");
+    wrap.id = "ritualFloat";
+    wrap.style.cssText = `
+      position: fixed; left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 999; opacity: 0;
+      transition: opacity .2s ease; pointer-events: none;
+    `;
+    const img = document.createElement("img");
+    img.alt = "Ritual Animation";
+    img.src = GIF_SRC + "?t=" + Date.now();
+    img.style.cssText = `
+      width: min(78vmin, 420px); height: auto; border-radius: 12px;
+      display: block; opacity: 0.65; pointer-events: auto; cursor: pointer;
+    `;
+    wrap.appendChild(img);
+    document.body.appendChild(wrap);
+    requestAnimationFrame(() => { wrap.style.opacity = "1"; wrap.style.pointerEvents = "auto"; });
+    img.addEventListener("click", () => hideAndRemove(wrap));
+    const autoHide = setTimeout(() => hideAndRemove(wrap), 4500);
+    const clearTimer = () => clearTimeout(autoHide);
+    wrap.addEventListener("DOMNodeRemoved", clearTimer, { once: true });
+  }
+
+  /* ===== SCRAPER endpoints (Netlify Functions) ===== */
+  const CRAWL_API  = "/api/crawl";
+  const ENRICH_API = "/api/enrich";
+  const FUSE_API   = "/api/fuse";
+
+  const input  = document.querySelector(".search-bar input");
+  const button = document.querySelector(".search-bar button");
+  const output = document.getElementById("output");
+
+  function isLikelyUrl(s) {
+    return /^https?:\/\//i.test(s);
+  }
+
+  async function postJSON(endpoint, payload) {
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload || {})
     });
+    const text = await res.text();
+    if (!res.ok) throw new Error(`POST ${endpoint} → ${res.status}: ${text}`);
+    try { return JSON.parse(text); } catch { return text; }
+  }
 
-    /* ===== Parallax orbs ===== */
-    const orb1 = document.getElementById("orb1");
-    const orb2 = document.getElementById("orb2");
-    document.addEventListener("mousemove", e => {
-      const { innerWidth, innerHeight } = window;
-      const x = (e.clientX / innerWidth - 0.5) * 100;
-      const y = (e.clientY / innerHeight - 0.5) * 100;
-      orb1.style.transform = `translate(${x}px, ${y}px) scale(1.1)`;
-      orb2.style.transform = `translate(${-x}px, ${-y}px) scale(1.1)`;
-    });
+  async function makeCardFromUrl(url) {
+    // 1) crawl the target
+    const crawled  = await postJSON(CRAWL_API,  { url });
+    // 2) enrich the crawl result
+    const enriched = await postJSON(ENRICH_API, { data: crawled, url });
+    // 3) fuse into a single card-ready object
+    const fused    = await postJSON(FUSE_API,   { data: enriched, url });
+    return fused;
+  }
 
-    /* ===== Ritual GIF (click-to-dismiss, auto-hide after ~4.5s) ===== */
-    const GIF_SRC = "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmEzdjIzNmdvbDNnMm1obXA3MmQwcXAxN2dkeHV4dnRvcjI0dmZtNyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/rTzAcZats1TRlAxI7H/giphy.gif";
+  /* ===== Single click path: validate → ritual → scrape → show/save ===== */
+  button?.addEventListener("click", async () => {
+    const url = (input?.value || "").trim();
+    if (!url) { output.textContent = "Enter a URL."; return; }
+    if (!isLikelyUrl(url)) { output.textContent = "Enter a full link starting with http(s)://"; return; }
 
-    function removeExistingRitual() {
-      const old = document.getElementById("ritualFloat");
-      if (old) old.remove();
-    }
-    function hideAndRemove(node) {
-      if (!node || !node.parentNode) return;
-      node.style.pointerEvents = "none";
-      node.style.opacity = "0";
-      const cleanup = () => node.remove();
-      node.addEventListener("transitionend", cleanup, { once: true });
-      setTimeout(cleanup, 300);
-    }
-    function showRitual() {
-      removeExistingRitual();
-      const wrap = document.createElement("div");
-      wrap.id = "ritualFloat";
-      wrap.style.cssText = `
-        position: fixed; left: 50%; top: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 999; opacity: 0;
-        transition: opacity .2s ease; pointer-events: none;
-      `;
-      const img = document.createElement("img");
-      img.alt = "Ritual Animation";
-      img.src = GIF_SRC + "?t=" + Date.now();
-      img.style.cssText = `
-        width: min(78vmin, 420px); height: auto; border-radius: 12px;
-        display: block; opacity: 0.65; pointer-events: auto; cursor: pointer;
-      `;
-      wrap.appendChild(img);
-      document.body.appendChild(wrap);
-      requestAnimationFrame(() => { wrap.style.opacity = "1"; wrap.style.pointerEvents = "auto"; });
-      img.addEventListener("click", () => hideAndRemove(wrap));
-      const autoHide = setTimeout(() => hideAndRemove(wrap), 4500);
-      const clearTimer = () => clearTimeout(autoHide);
-      wrap.addEventListener("DOMNodeRemoved", clearTimer, { once: true });
-    }
+    showRitual();
+    button.disabled = true;
+    output.textContent = "Scraping…";
 
-    /* ===== Jessica: production endpoint (Netlify Function proxy) ===== */
-const API       = "/api/make_card";           // production-safe path
-const MODEL_ID  = "openai/gpt-oss-20b";
-const LLM_SITE  = "http://127.0.0.1:1234";    // LM Studio base (the proxy will forward here)
+    try {
+      const cardData = await makeCardFromUrl(url);
 
-    const input  = document.querySelector(".search-bar input");
-    const button = document.querySelector(".search-bar button");
-    const output = document.getElementById("output");
+      // Show the raw card JSON (so you see exactly what came back)
+      output.textContent = (typeof cardData === "string")
+        ? cardData
+        : JSON.stringify(cardData, null, 2);
 
-    async function sendMakeCard(url) {
-     const body = {
-  model: MODEL_ID,
-  site: LLM_SITE,                 // <-- added
-  messages: [{ role: "user", content: `make card: ${url}` }],
-  stream: false
-};
-
-      const res = await fetch(API, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      });
-      if (!res.ok) {
-        const errText = await res.text().catch(() => "");
-        throw new Error(`HTTP ${res.status}: ${errText}`);
-      }
-      const data = await res.json();
-      return data?.choices?.[0]?.message?.content ?? "";
-    }
-
-    /* ===== Single click path: validate → ritual → fetch → show ===== */
-    button?.addEventListener("click", async () => {
-      const url = (input?.value || "").trim();
-      if (!url) { output.textContent = "Enter a URL."; return; }
-
-      showRitual();
-      button.disabled = true;
-      output.textContent = "Summoning…";
-
+      // Save for the viewer (preview.html can read this)
       try {
-        const raw = await sendMakeCard(url);
-        output.textContent = raw;       // show raw JSON/text from Jessica
-      } catch (e) {
-        output.textContent = (e && e.message) ? e.message : "Request failed.";
-      } finally {
-        button.disabled = false;
-      }
-    });
-  </script>
+        localStorage.setItem("jessica_card", JSON.stringify(cardData));
+      } catch {}
+
+      // If you want to auto-open the viewer, uncomment:
+      // window.location.href = "/preview.html";
+    } catch (e) {
+      output.textContent = (e && e.message) ? e.message : "Scrape failed.";
+    } finally {
+      button.disabled = false;
+    }
+  });
+</script>
+
 </body>
 </html>
