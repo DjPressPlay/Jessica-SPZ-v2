@@ -1,397 +1,366 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Jessica-SPZ Preview</title>
+<meta charset="UTF-8" />
+<title>Zetsu Card — Schema-Accurate Renderer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="dark">
 <style>
   :root{
-    --bg:#0b1219; --white:#ffffff; --ink:#0a0f14; --muted:#5f7387;
-    --line:#102534; --glow1:#00f0ff; --iris:#7b2ff7; --glow2:#00ff88;
-    --accent:#70ffe0; --ok:#66ff99;
+    --frame-color:#e63946;
+    --frame-outer:#000;
+    --text:#fff;
   }
-
-  *{box-sizing:border-box}
-  html,body{height:100%}
   body{
-    margin:0; color:#fff; font:14px/1.5 system-ui,Segoe UI,Roboto,Inter,Arial;
-    background:
-      linear-gradient(180deg, rgba(0,0,0,.45), transparent 35%),
-      radial-gradient(1200px 800px at 50% -10%, #0e1824 0%, var(--bg) 60%),
-      #0a0f14;
+    margin:0; background:#111; color:var(--text);
+    font-family:"Orbitron",system-ui,Segoe UI,Arial,Helvetica,sans-serif;
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:16px;
   }
 
-  .stage{
-    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:28px 14px;
-    background-image:
-      linear-gradient(45deg, rgba(255,255,255,.04) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.04) 75%, rgba(255,255,255,.04)),
-      linear-gradient(45deg, rgba(255,255,255,.04) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.04) 75%, rgba(255,255,255,.04));
-    background-size: 26px 26px;
-    background-position: 0 0, 13px 13px;
+  /* Frame */
+  .frameType{
+    position:relative; overflow:hidden;
+    border:12px solid var(--frame-outer); border-radius:14px;
+    width:clamp(360px, 92vw, 460px);
   }
+  .frameType-inner{
+    position:relative; overflow:hidden; border:6px solid var(--frame-color); border-radius:10px;
+    background:#1a1a1a;
+  }
+  .frameType-inner::before{
+    content:""; position:absolute; inset:0;
+    background:radial-gradient(120% 100% at 50% 0%, #1e1e1e 0%, #0e0e0e 65%, #111 100%);
+    z-index:0;
+  }
+  .card-header, .card-art, .type-banner, .effect-box, .meta-block, .meta-bottom { position:relative; z-index:1; }
 
-  @keyframes iridescentMove{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+  /* Header */
+  .card-header{
+    display:flex; justify-content:space-between; align-items:center;
+    background:#000; padding:6px 10px; font-size:.9rem; font-weight:800; text-transform:uppercase;
+    border-bottom:2px solid var(--frame-color); border-top-left-radius:8px; border-top-right-radius:8px;
+  }
+  .card-id{ background:#fff; color:#000; padding:2px 6px; border-radius:4px; font-size:.75rem; white-space:nowrap; }
+  .card-name{ flex:1; min-width:0; display:flex; justify-content:center; align-items:center; text-align:center; }
+  .card-name span{
+    display:inline-block; max-width:100%; white-space:nowrap;
+    overflow:visible; text-overflow:unset;
+    transform:scale(var(--scale,1)); transform-origin:center center; line-height:1;
+  }
+  .card-icon{ font-size:1.1rem; text-align:right; min-width:1.5em; }
 
-  .iframe-shell{
-    width:min(980px, 96vw);
-    border-radius:22px; padding:12px; position:relative;
-    background: rgba(0,0,0,.35);
-    box-shadow: 0 22px 60px rgba(0,0,0,.5);
-    border:2px solid transparent; background-clip:padding-box;
+  /* Artwork */
+  .card-art{
+    position:relative; margin:10px; background:#222; aspect-ratio:4/3;
+    border:3px solid var(--frame-color); border-radius:8px; overflow:hidden;
   }
-  .iframe-shell::before{
-    content:""; position:absolute; inset:-2px; border-radius:24px; padding:2px;
-    background: linear-gradient(135deg, var(--glow1), var(--iris), var(--glow2));
-    background-size:300% 300%; animation: iridescentMove 8s ease infinite;
-    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none;
-  }
+  .card-art img{ width:100%; height:100%; object-fit:cover; display:block; }
 
-  .paper{
-    border-radius:16px; overflow:hidden; background: var(--white); color: var(--ink);
-    border:1px solid #e8eef6;
-    box-shadow:
-      inset 0 2px 0 rgba(255,255,255,.9),
-      inset 0 -2px 0 rgba(0,0,0,.04),
-      0 1px 0 rgba(0,0,0,.08),
-      0 12px 28px rgba(0,0,0,.25);
+  /* Stat orbs */
+  .stat-orb{
+    position:absolute; width:54px; height:54px; border-radius:50%;
+    font-weight:800; font-size:1.02rem; display:flex; align-items:center; justify-content:center;
+    border:3px solid #fff; box-shadow:0 2px 8px rgba(0,0,0,.4);
   }
+  .stat-blue  { background:#3498db; top:6px;  left:6px; }
+  .stat-red   { background:#e63946; bottom:6px; left:6px; }
+  .stat-green { background:#2ecc71; bottom:6px; right:6px; }
 
-  .wrap{max-width:900px;margin:auto;padding:22px}
+  /* Type Banner (TRIBUTE | ABOUT | EMOJI) */
+  .type-banner{
+    background:#000; color:#fff; padding:6px 10px; font-weight:800;
+    border-top:2px solid var(--frame-color); border-bottom:2px solid var(--frame-color);
+    display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:8px;
+  }
+  .type-cell{ display:flex; justify-content:center; align-items:center; min-width:0; }
+  .type-about-wrap{ display:flex; justify-content:center; align-items:center; min-width:0; }
+  .type-about-box{
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:4px 12px; border:2px solid var(--frame-color); border-radius:6px;
+    background:#0b0b0b; box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
+    max-width:100%;
+  }
+  .type-about-text{ font-size:.95rem; letter-spacing:.02em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:280px; }
+  @media (max-width:480px){ .type-about-text{ max-width:200px; } }
+  .truncate{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+  .autoscale{ display:inline-block; transform:scale(var(--scale,1)); transform-origin:center center; line-height:1; }
 
-  /* ======= BRAND HEADER ======= */
-  .brand-header{padding:6px 0 0}
-  .brand-line{
-    display:flex; align-items:center; justify-content:space-between; gap:12px;
-    padding:8px 0 12px; border-bottom:1px solid #eef3fa;
+  /* Effects */
+  .effect-box{
+    background:#000; border-top:2px solid var(--frame-color); border-bottom:2px solid var(--frame-color);
+    padding:10px; display:flex; flex-direction:column; gap:8px;
   }
-  .brand{
-    display:flex; align-items:center; gap:10px; font-weight:900; letter-spacing:.3px;
-  }
-  .brand img{height:28px;width:auto;display:block}
-  .wordmark{
-    font-size:18px; text-transform:uppercase;
-    background:linear-gradient(90deg,var(--glow1),var(--iris),var(--glow2));
-    -webkit-background-clip:text; background-clip:text; color:transparent;
-  }
+  .effect-entry{ border:1px solid #2a2a2a; background:#0f0f0f; border-radius:8px; padding:8px 10px; }
+  .effect-bar{ display:flex; justify-content:space-between; align-items:center; font-size:.92rem; margin-bottom:4px; }
+  .effect-text{ font-size:.84rem; line-height:1.32; }
 
-  /* ======= FACEBOOK-LIKE BAR with sources ======= */
-  .fb-bar{
-    background:#f3f7fc; border:1px solid #e3edf7; border-radius:12px; margin:10px 0 12px;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 1px 2px rgba(10,22,40,.04);
+  /* Meta (Sets + Tags in one bracket) */
+  .meta-block{
+    border-top:2px solid var(--frame-color); border-bottom:2px solid var(--frame-color);
+    background:#000; padding:8px 10px; display:flex; flex-direction:column; gap:6px;
   }
-  .sources-nav{
-    display:flex; align-items:center; gap:8px; padding:8px; overflow:auto; justify-content:center;
-    scrollbar-width:thin;
-  }
-  .sources-nav a{
-    background:#fff; border:1px solid #d9e9f7; border-radius:999px; padding:8px 12px; white-space:nowrap;
-    color:#0a2430; text-decoration:none; font-weight:800; letter-spacing:.2px;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 1px 2px rgba(14,30,65,.06);
-    transition: background .15s ease, border-color .15s ease, transform .15s ease;
-  }
-  .sources-nav a:hover{background:#e7f3ff; border-color:#cbe3f6; transform:translateY(-1px)}
+  .meta-line{ display:flex; gap:8px; align-items:center; font-size:.78rem; color:#ccc; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .meta-label{ font-weight:800; text-transform:uppercase; color:#eee; letter-spacing:.02em; }
+  .meta-value{ flex:1; min-width:0; opacity:.95; }
 
-  /* ======= TOP SITEMAP (slightly larger) ======= */
-  .top-sitemap{
-    display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin:6px 0 16px;
+  /* Bottom bar */
+  .meta-bottom{
+    position:relative; border-top:2px solid var(--frame-color);
+    background:#111; padding:10px 12px 32px; text-align:center; color:#ccc;
   }
-  .top-sitemap a{
-    font-size:16px; font-weight:900; letter-spacing:.2px;
-    color:#0a2430; text-decoration:none;
-    background:#ffffff; border:1px solid #d9e9f7; border-radius:999px; padding:8px 14px;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 1px 3px rgba(14,30,65,.06);
+  .meta-footer-text{ font-size:.72rem; color:#cfcfcf; line-height:1.25; }
+  .meta-timestamp{ margin-top:4px; font-size:.66rem; color:#9f9f9f; }
+  .meta-bottom .rarity{
+    position:absolute; right:10px; bottom:6px;
+    font-weight:800; letter-spacing:.02em;
+    border:1px solid rgba(255,255,255,.2); padding:2px 8px; border-radius:4px;
   }
-  .top-sitemap a:hover{background:#eaf4ff}
-
-  /* ======= EXISTING hero/sections ======= */
-  .hero{text-align:center; display:grid; gap:10px}
-  .img-wrap{border-radius:16px; position:relative; border:2px solid transparent; background-clip:padding-box;}
-  .img-wrap::before{
-    content:""; position:absolute; inset:-2px; border-radius:18px; padding:2px;
-    background: linear-gradient(135deg, var(--glow1), var(--iris), var(--glow2));
-    background-size:300% 300%; animation: iridescentMove 10s ease infinite;
-    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none; opacity:.9;
+  .rarity.SR{ background:#2d7bdc; }
+  .rarity.UR{ background:#7c3aed; }
+  .rarity.Q { background:#f1c40f; color:#111; }
+  .rarity.ZEOE{
+    color:#fff;
+    background:conic-gradient(from 0deg, #ff0040, #ffd200, #00ffcc, #00a2ff, #ff4dff, #ff0040);
+    background-size:200% 200%; animation:holoShift 6s linear infinite;
+    border:1px solid rgba(255,255,255,.35); text-shadow:0 0 6px rgba(255,255,255,.35);
   }
-  .hero img{width:100%;max-height:360px;object-fit:cover;border-radius:14px;display:block;border:1px solid rgba(0,0,0,.06)}
-  h1{
-    margin:8px 0 0; font-size:22px; letter-spacing:.25px; text-transform:uppercase;
-    background:linear-gradient(90deg,var(--glow1),var(--iris),var(--glow2));
-    -webkit-background-clip:text; background-clip:text; color:transparent;
-    filter: drop-shadow(0 1px 8px rgba(0,255,200,.12));
-  }
-  .muted{color:#6b7f94}
-
-  .cta a{
-    display:inline-block; padding:10px 14px; border-radius:999px; text-decoration:none; font-weight:800;
-    color:#001b1f; background:linear-gradient(90deg,var(--glow1),var(--iris),var(--glow2));
-    border:0; box-shadow:0 8px 24px rgba(0,255,200,.18);
-  }
-
-  .section{
-    margin-top:16px; border-radius:14px; padding:12px;
-    background:#f7fbff; border:1px solid #e3edf7;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.9), inset 0 -1px 0 rgba(0,0,0,.03);
-  }
-  .section .title{
-    text-align:center; color:#5a6b7a; font-weight:800; letter-spacing:.2px; margin-bottom:10px; text-transform:uppercase;
-  }
-
-  .products{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
-  .prod{
-    position:relative; border-radius:12px; padding:10px; background:#0f1620; color:#eaf5ff;
-    display:grid; gap:8px; text-align:center; border:2px solid transparent; background-clip:padding-box;
-    box-shadow: inset 0 0 0 1px rgba(0,0,0,.45), 0 12px 26px rgba(0,0,0,.22);
-  }
-  .prod::before{
-    content:""; position:absolute; inset:-2px; border-radius:14px; padding:2px;
-    background: linear-gradient(135deg, var(--glow1), var(--iris), var(--glow2));
-    background-size:300% 300%; animation: iridescentMove 7s ease infinite;
-    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none;
-  }
-  .prod img{width:100%;height:120px;object-fit:cover;border-radius:10px;background:#0d1924;display:block;border:1px solid rgba(255,255,255,.06)}
-  .prod .name{font-weight:800;letter-spacing:.2px}
-  .prod .price{color:var(--ok);font-weight:800}
-  .prod a{color:var(--accent);text-decoration:none;font-weight:800}
-
-  .articles{display:grid; gap:10px}
-  .article{
-    background:#0f1620; color:#eaf5ff; padding:12px; border-radius:12px; border:1px solid #142131;
-    box-shadow: inset 0 0 0 1px rgba(0,0,0,.45), 0 10px 22px rgba(0,0,0,.2);
-  }
-  .article h3{margin:0 0 6px}
-
-  /* ======= FOOTER SEO + MINI SITEMAP ======= */
-  .site-footer{
-    margin-top:18px; padding-top:12px; border-top:1px solid #e9f0f8; color:#5a6b7a; font-size:12px;
-  }
-  .sitemap{
-    margin-top:8px; display:flex; gap:10px; flex-wrap:wrap;
-  }
-  .sitemap a{
-    color:#0a2430; text-decoration:none; border-bottom:1px dotted #a9c8de;
-  }
-  .sitemap a:hover{border-bottom-color:#6fb0d6}
-  .brandline{
-    margin-top:8px; text-align:center; color:#5a6b7a; font-size:12px; font-weight:700;
-    letter-spacing:.2px;
-  }
+  @keyframes holoShift{ 0%{background-position:0% 50%} 100%{background-position:200% 50%} }
+  @media (prefers-reduced-motion: reduce){ .rarity.ZEOE{ animation:none; } }
 </style>
 </head>
 <body>
-  <div class="stage">
-    <div class="iframe-shell">
-      <div class="paper">
-        <div class="wrap" id="root">Loading…</div>
+
+  <div class="frameType">
+    <div id="inner" class="frameType-inner">
+      <!-- Header -->
+      <div class="card-header" role="group" aria-label="Card header">
+        <div class="card-id" id="card-id" aria-label="Card ID"></div>
+        <div class="card-name" aria-live="polite"><span id="card-name" class="autoscale" dir="auto"></span></div>
+        <div class="card-icon" id="card-icon" aria-hidden="true"></div>
+      </div>
+
+      <!-- Artwork -->
+      <div class="card-art">
+        <img id="card-image" alt="" loading="lazy" decoding="async">
+        <div class="stat-orb stat-blue"  id="level"></div>
+        <div class="stat-orb stat-red"   id="atk"></div>
+        <div class="stat-orb stat-green" id="def"></div>
+      </div>
+
+      <!-- Type Banner -->
+      <div class="type-banner">
+        <div class="type-cell"><span id="tribute" class="autoscale truncate" dir="auto"></span></div>
+        <div class="type-about-wrap"><div class="type-about-box"><span id="about" class="type-about-text autoscale truncate" dir="auto"></span></div></div>
+        <div class="type-cell"><span id="type-emoji" class="autoscale truncate" dir="auto"></span></div>
+      </div>
+
+      <!-- Effects -->
+      <div class="effect-box" id="effect-box"></div>
+
+      <!-- Sets + Tags -->
+      <div class="meta-block">
+        <div class="meta-line"><div class="meta-label">Sets -</div><div id="sets-line" class="meta-value"></div></div>
+        <div class="meta-line"><div class="meta-label">Tags -</div><div id="tags-line" class="meta-value"></div></div>
+      </div>
+
+      <!-- Footer / Timestamp / Rarity -->
+      <div class="meta-bottom">
+        <div class="meta-footer-text" id="footer"></div>
+        <div class="meta-timestamp" id="timestamp"></div>
+        <div class="rarity" id="rarity"></div>
       </div>
     </div>
   </div>
 
 <script>
-(function(){
-  const root = document.getElementById('root');
+/* ===== Sample card ===== */
+const card = {
+  id: "000001234567",
+  name: "Falcon 9 Artworqq-PPLaunch [STAR-SHINE]",
+  icon: "🚀",
+  about: "Technology",
+  tribute: "🙇‍♂️🙇‍♂️🙇‍♂️", // ← real Tribute source
+  effects: [
+    { icons:"⭐🌌", emoji:"🛰️", text:"Falcon 9 lifts payload to orbit, achieving a successful launch." },
+    { icons:"🔧🚀", emoji:"⚙️", text:"First stage booster performs controlled descent and splash-down." }
+  ],
+  atk: "3000",
+  def: "2200",
+  level: "4",
+  rarity: "SR",
+  tags: ["SpaceX","Rocketry","Launch"],
+  card_sets: ["Orbital Operations","2025 Milestones"],
+  timestamp: "2025-08-21T14:32:00Z",
+  footer: "Jessica AI | Zetsumetsu Eoe™ | ZETSUMETSU CORPORATION | Artworqq Kevin Suber",
+  card_images: [{ image_url:"https://i.ytimg.com/vi/KDR4dk9JydM/maxresdefault.jpg" }],
+  frameType: "technology"
+};
 
-  function esc(s){ return String(s||"").replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c])); }
-  function b64ToJSON(b64){
-    const bin = atob((b64||"").replace(/[^A-Za-z0-9+/=]/g,""));
-    const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
-    const text = new TextDecoder().decode(bytes);
-    return JSON.parse(text);
+/* ===== Frame color maps ===== */
+const colorPalette = {
+  "silver":"#C0C0C0","blue":"#0000FF","dark-blue":"#00008B","green":"#008000",
+  "gold":"#FFD700","maroon":"#800000","bright-red":"#FF4949","sky-blue":"#87CEEB",
+  "teal":"#008080","cyan":"#00FFFF","magenta":"#FF00FF","red-orange":"#FF4500",
+  "sky-blue-light":"#ADD8E6","forest-green":"#228B22","orange":"#FFA500",
+  "light-green":"#90EE90","violet":"#EE82EE","dark-violet":"#9400D3","peach":"#FFDAB9",
+  "gray-gradient":"#D3D3D3","beige":"#F5F5DC","yellow-green":"#9ACD32","black":"#000000",
+  "light-gray":"#D3D3D3","rose":"#FFC0CB","neon-yellow":"#FFFF00","peach-light":"#FFDAB9",
+  "dark-red":"#8B0000","gray":"#808080","black-red-holo":"#8B0000","purple":"#6A0DAD",
+  "neon-multicolor":"#FF00FF"
+};
+const card_type_map = {
+  technology:{ color:"silver" }, science:{ color:"blue" }, investigative:{ color:"dark-blue" },
+  sports:{ color:"green" }, business:{ color:"gold" }
+};
+const rarityBorder = {
+  Normal:{ color:"#aaa", iridescent:false }, Rare:{ color:"#ddd", iridescent:false },
+  SR:{ color:"#2d7bdc", iridescent:false }, UR:{ color:"#7c3aed", iridescent:false },
+  Quantum:{ color:"#f1c40f", iridescent:false }, ZEOE:{ color:null, iridescent:true }
+};
+
+/* ===== Apply frame color / rarity ===== */
+(function applyFrame(){
+  const inner = document.getElementById("inner");
+  let baseColor = "#e63946";
+  const ft = String(card.frameType||"").toLowerCase().replace(/\s+/g,"_");
+  if (card_type_map[ft]) {
+    const key = card_type_map[ft].color;
+    if (colorPalette[key]) baseColor = colorPalette[key];
   }
-
-  function getSourceLinks(data){
-    const candidates = [];
-    const push = (v)=>{
-      if(!v) return;
-      if(Array.isArray(v)) v.forEach(push);
-      else if(typeof v === "string") candidates.push(v);
-    };
-    push(data.sourceLinks);
-    push(data.sources);
-    push(data.links);
-    if (data.meta && data.meta.sources) push(data.meta.sources);
-    if (data.hero){
-      push(data.hero.ctaLink);
-      if (data.hero.links) push(data.hero.links);
-    }
-    (Array.isArray(data.products)?data.products:[]).forEach(p=> push(p.link));
-    (Array.isArray(data.articles)?data.articles:[]).forEach(a=> push(a.link));
-
-    // Dedup & only http(s)
-    const seen = new Set();
-    return candidates
-      .filter(u=>/^https?:\/\//i.test(u||""))
-      .filter(u=>{ if(seen.has(u)) return false; seen.add(u); return true; });
+  let useIri = false; const r = card.rarity;
+  if (r && rarityBorder[r]) {
+    if (rarityBorder[r].iridescent) useIri = true;
+    else if (rarityBorder[r].color) baseColor = rarityBorder[r].color;
   }
-
-  // ---- Multi-source brand detection ----
-  function titleCase(s){
-    return s.replace(/\b([a-z])/g, m=>m.toUpperCase());
-  }
-  function prettyFromHost(host){
-    const h = (host||"").toLowerCase().replace(/^www\./,'');
-    // common mappings to nicer brand strings
-    const map = {
-      'instagram':'Instagram',
-      'ig':'Instagram',
-      'facebook':'Facebook',
-      'fb':'Facebook',
-      'x':'X',
-      'twitter':'Twitter',
-      't':'Twitter',
-      'youtube':'YouTube',
-      'youtu':'YouTube',
-      'github':'GitHub',
-      'medium':'Medium',
-      'tiktok':'TikTok',
-      'shopify':'Shopify',
-      'nike':'Nike',
-      'adidas':'Adidas'
-    };
-    const base = h.split('.')[0];
-    if(map[base]) return map[base];
-    return titleCase(base);
-  }
-  function detectBrands(data, sources){
-    const found = new Set();
-    const prods = Array.isArray(data.products) ? data.products : [];
-
-    // 1) explicit product brand fields
-    for(const p of prods){
-      if (p && typeof p.brand === 'string' && p.brand.trim()){
-        found.add(p.brand.trim());
-      }
-    }
-
-    // 2) known brands from product names (expand as needed)
-    const knownBrands = ['Nike','Adidas','Supreme','Puma','Gucci','Louis Vuitton','Apple','Samsung','Sony'];
-    for(const p of prods){
-      const nm = (p && p.name) ? String(p.name) : '';
-      for(const kb of knownBrands){
-        if (nm.toLowerCase().includes(kb.toLowerCase())) found.add(kb);
-      }
-    }
-
-    // 3) hostnames from sources
-    for(const s of sources){
-      try{
-        const url = new URL(s);
-        found.add(prettyFromHost(url.hostname));
-      }catch{}
-    }
-
-    // 4) output
-    const list = Array.from(found).filter(Boolean);
-    return list.length ? list.join(' × ') : 'SporeZ Fusion Page';
-  }
-
-  function render(data){
-    const hero = data.hero || {};
-    const products = Array.isArray(data.products)? data.products : [];
-    const articles = Array.isArray(data.articles)? data.articles : [];
-    const sources = getSourceLinks(data);
-
-    const brandLogo = (data.brand && data.brand.logo) ? `<img src="${esc(data.brand.logo)}" alt="Brand">` : "";
-    const brandWord = esc(detectBrands(data, sources)); // << multi-source brands with fallback
-
-    const sourcesHTML = sources.length
-      ? sources.map((u,i)=>`<a href="${esc(u)}" target="_blank" rel="noopener">Source${i+1}</a>`).join("")
-      : "";
-
-    const topSitemap = `
-      <div class="top-sitemap">
-        <a href="https://sporez.netlify.app/" target="_blank" rel="noopener">Home</a>
-        ${products.length ? `<a href="#products" onclick="event.preventDefault();document.getElementById('products')?.scrollIntoView({behavior:'smooth'});">Products</a>` : ``}
-        ${articles.length ? `<a href="#info" onclick="event.preventDefault();document.getElementById('info')?.scrollIntoView({behavior:'smooth'});">Info</a>` : ``}
-        <a href="https://zetsumetsu.webnode.page" target="_blank" rel="noopener">Zetsumetsu Eoe™</a>
-        <a href="https://sporez.netlify.app/" target="_blank" rel="noopener">SporeZ</a>
-      </div>`;
-
-    root.innerHTML = `
-      <!-- BRAND HEADER -->
-      <div class="brand-header">
-        <div class="brand-line">
-          <div class="brand">
-            ${brandLogo}
-            <div class="wordmark">${brandWord}</div>
-          </div>
-          <div></div>
-        </div>
-        <!-- Facebook-like bar with source links -->
-        <div class="fb-bar">
-          <nav class="sources-nav">${sourcesHTML}</nav>
-        </div>
-        <!-- Top sitemap -->
-        ${topSitemap}
-      </div>
-
-      <!-- EXISTING CONTENT -->
-      <div class="hero">
-        ${hero.image ? `<div class="img-wrap"><img src="${esc(hero.image)}" alt=""></div>` : ""}
-        <h1>${esc(hero.title || "SporeZ Drop")}</h1>
-        ${hero.subtitle ? `<p class="muted">${esc(hero.subtitle)}</p>` : ""}
-        ${hero.ctaText ? `<p class="cta"><a href="${esc(hero.ctaLink||"#")}" target="_blank" rel="noopener"> ${esc(hero.ctaText)} </a></p>` : ""}
-      </div>
-
-      ${products.length ? `
-        <section class="section">
-          <div class="title">Products</div>
-          <div id="products" class="products">
-            ${products.map(p=>`
-              <div class="prod">
-                ${p.image?`<img src="${esc(p.image)}" alt="">`:``}
-                <div class="name">${esc(p.name||"")}</div>
-                <div class="price">${esc(p.price||"")}</div>
-                ${p.description?`<div class="muted" style="color:#3d4a55">${esc(p.description)}</div>`:""}
-                ${p.link?`<div><a href="${esc(p.link)}" target="_blank" rel="noopener" style="color:#0a6a83;text-decoration:none;font-weight:800">View</a></div>`:""}
-              </div>
-            `).join("")}
-          </div>
-        </section>` : ""}
-
-      ${articles.length ? `
-        <section class="section" style="margin-top:18px">
-          <div class="title">Info</div>
-          <div id="info" class="articles">
-            ${articles.map(a=>`
-              <article class="article">
-                <h3>${esc(a.heading||"")}</h3>
-                <div>${esc(a.content||"")}</div>
-              </article>
-            `).join("")}
-          </div>
-        </section>` : ""}
-
-      <!-- FOOTER SEO + MINI SITEMAP -->
-      <div class="site-footer">
-        <div>Generated preview via Jessica-SPZ auto-fusion. Source count: ${sources.length}. Updated ${new Date().toLocaleDateString()}.</div>
-        <div class="sitemap">
-          <a href="https://sporez.netlify.app/" target="_blank" rel="noopener">Home</a>
-          ${products.length ? `<a href="#products" onclick="event.preventDefault();document.getElementById('products')?.scrollIntoView({behavior:'smooth'});">Products</a>` : ``}
-          ${articles.length ? `<a href="#info" onclick="event.preventDefault();document.getElementById('info')?.scrollIntoView({behavior:'smooth'});">Info</a>` : ``}
-          <a href="https://zetsumetsu.webnode.page" target="_blank" rel="noopener">Zetsumetsu Eoe™</a>
-          <a href="https://sporez.netlify.app/" target="_blank" rel="noopener">SporeZ</a>
-        </div>
-        <div class="brandline">Zetsumetsu Eoe™ | ZETSUMETSU CORPORATION | Artworqq Kevin Suber</div>
-      </div>
-
-      <footer style="margin-top:8px;text-align:center;color:#6b7f94;font-size:12px">
-        SporeZ • Jessica-SPZ ${data.slug? "• "+esc(data.slug): ""}
-      </footer>
-    `;
-  }
-
-  try {
-    const b64 = (location.hash || "").replace(/^#j=/, "");
-    if (!b64) { root.textContent = "No preview data provided."; return; }
-    const data = b64ToJSON(b64);
-    render(data);
-  } catch (e) {
-    root.textContent = "Failed to load preview: " + (e && e.message ? e.message : e);
-  }
+  document.documentElement.style.setProperty("--frame-color", baseColor);
+  inner.classList.toggle("iridescent", useIri);
 })();
+
+/* ===== Bind fields (no fake defaults) ===== */
+const $ = id => document.getElementById(id);
+$("card-id").textContent   = card.id || "";
+$("card-name").textContent = card.name || "";
+$("card-icon").textContent = card.icon || "";
+
+/* image + alt */
+const img = $("card-image");
+img.src = (card.card_images && card.card_images[0] && card.card_images[0].image_url) ? card.card_images[0].image_url : "";
+img.alt = (card.name ? card.name + " — artwork" : "Card artwork");
+
+/* ===== GET TRIBUTE NUMBER (per spec) ===== */
+const typeInfo = { max_tributes: 6 }; // adjust if you have per-type limits
+
+// -- GET TRIBUTE NUMBER--
+const levelResolved = (typeof resolveLevel === "function")
+  ? resolveLevel(card, typeInfo)
+  : (Number(card.level) || 1);
+
+const maxTributes = (typeInfo?.max_tributes ?? 6);
+
+const tributesResolved = (typeof makeTributes === "function")
+  ? makeTributes(levelResolved, maxTributes)
+  : Math.min(levelResolved, maxTributes);
+
+card.level = levelResolved;        // store back so other code can read it
+card.tributes = tributesResolved;  // numeric tribute count
+
+/* ===== Auto Calculator (tribute-first) ===== */
+/* Counts 🙇 variants if no numeric tributes present (legacy support). */
+function countTributes(s){
+  if (!s) return 0;
+  const kneel = (s.match(/🙇/gu) || []).length;
+  const starsFallback = (s.match(/⭐/gu) || []).length; // optional legacy
+  return kneel || starsFallback;
+}
+
+function autoCalc(card) {
+  const tributeCount =
+    (typeof card.tributes === "number")
+      ? card.tributes
+      : countTributes(card.tribute);
+
+  const level = tributeCount || (Number(card.level) || 1);
+  const effectsCount = Array.isArray(card.effects) ? card.effects.length : 0;
+
+  const atk = (level * 1000) + (effectsCount * 500);
+  const def = Math.floor(atk / 2);
+
+  return { level, atk, def };
+}
+
+/* ===== Stats bind ===== */
+const stats = autoCalc(card);
+$("level").textContent = stats.level;
+$("atk").textContent   = stats.atk;
+$("def").textContent   = stats.def;
+
+/* banner */
+$("tribute").textContent   = card.tribute || "";
+$("about").textContent     = card.about   || "";
+$("type-emoji").textContent= card.icon    || "";
+
+/* effects (node builder) */
+const effBox = $("effect-box");
+effBox.replaceChildren();
+(card.effects||[]).forEach(e=>{
+  const entry = document.createElement("div"); entry.className="effect-entry";
+  const bar = document.createElement("div"); bar.className="effect-bar";
+  const icons = document.createElement("div"); icons.textContent = e.icons || "";
+  const emj   = document.createElement("div"); emj.textContent   = e.emoji || "";
+  bar.append(icons, emj);
+  const text = document.createElement("div"); text.className="effect-text"; text.textContent = e.text || "";
+  entry.append(bar, text);
+  effBox.append(entry);
+});
+
+/* meta lines */
+$("sets-line").textContent = (Array.isArray(card.card_sets)?card.card_sets:[]).join(" ");
+$("tags-line").textContent = (Array.isArray(card.tags)?card.tags:[]).join(" ");
+$("footer").textContent    = card.footer    || "";
+$("timestamp").textContent = card.timestamp || "";
+
+/* rarity badge text + class (Quantum -> Q class) */
+const rb = $("rarity");
+rb.textContent = card.rarity || "";
+const rarityClassMap = { Normal:"Normal", Rare:"Rare", SR:"SR", UR:"UR", Quantum:"Q", ZEOE:"ZEOE" };
+rb.classList.add(rarityClassMap[card.rarity] || (card.rarity || ""));
+
+/* ===== Autoscale ===== */
+function autoscaleToLength(el, maxChars, minScale = 0.6){
+  if(!el) return; el.style.setProperty('--scale','1');
+  const len = [...(el.textContent || '').trim()].length;
+  el.style.setProperty('--scale', String(len > maxChars ? Math.max(minScale, maxChars / len) : 1));
+}
+function autoshrinkFontToFit(el, { min=0.50, pad=4, squeezeLeft=null, squeezeRight=null, squeezePx=6 } = {}){
+  if (!el || !el.parentElement) return;
+  const base = parseFloat(el.dataset.baseFs || getComputedStyle(el).fontSize) || 14;
+  el.dataset.baseFs = base; el.style.fontSize = base + 'px';
+  if (squeezeLeft)  squeezeLeft.style.marginRight  = '';
+  if (squeezeRight) squeezeRight.style.marginLeft  = '';
+  let avail = Math.max(1, el.parentElement.clientWidth - pad);
+  if (el.scrollWidth <= avail) return;
+  if (squeezeLeft)  squeezeLeft.style.marginRight  = `-${squeezePx}px`;
+  if (squeezeRight) squeezeRight.style.marginLeft  = `-${squeezePx}px`;
+  avail = Math.max(1, el.parentElement.clientWidth - pad);
+  const scale = Math.max(min, avail / el.scrollWidth);
+  el.style.fontSize = (base * scale) + 'px';
+}
+function applyAutoscaleAll(){
+  autoscaleToLength($('tribute'), 10, 0.6);
+  autoscaleToLength($('type-emoji'), 8, 0.6);
+  autoscaleToLength($('about'), 20, 0.75);
+  const nameSpan = document.querySelector('.card-name span');
+  autoshrinkFontToFit(nameSpan, { min:0.50, pad:4, squeezeLeft: document.querySelector('.card-id'), squeezeRight: $('card-icon'), squeezePx:6 });
+}
+applyAutoscaleAll();
+if (document.fonts && document.fonts.ready) { document.fonts.ready.then(applyAutoscaleAll).catch(()=>{}); }
+
+/* Throttle resize */
+let rafId=null;
+addEventListener('resize', () => {
+  if (rafId) cancelAnimationFrame(rafId);
+  rafId = requestAnimationFrame(()=>{ applyAutoscaleAll(); rafId=null; });
+});
 </script>
 </body>
 </html>
