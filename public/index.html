@@ -20,7 +20,7 @@
       position: relative;
     }
 
-    /* Grid background - covers viewport */
+    /* Grid background */
     body::before {
       content: "";
       position: fixed;
@@ -33,7 +33,7 @@
       pointer-events: none;
     }
 
-    /* Floating neon orbs (moving lights) */
+    /* Floating neon orbs */
     .glow-orb {
       position: fixed;
       border-radius: 50%;
@@ -56,7 +56,6 @@
       position: relative;
       height: 420px;
     }
-
     .card {
       width: 380px;
       height: 460px;
@@ -73,20 +72,16 @@
       display: flex;
       flex-direction: column;
     }
-
-    /* stacked look via nth-child transforms */
     .card:nth-child(1) { transform: rotate(-8deg); z-index: 1; }
     .card:nth-child(2) { transform: rotate(-4deg); z-index: 2; }
     .card:nth-child(3) { transform: rotate(0deg); z-index: 3; }
     .card:nth-child(4) { transform: rotate(4deg); z-index: 2; }
     .card:nth-child(5) { transform: rotate(8deg); z-index: 1; }
-
     .card:hover {
       transform: scale(1.05) rotate(0deg) !important;
       box-shadow: 0 0 40px rgba(0,255,255,0.7), 0 0 60px rgba(255,0,255,0.6);
       z-index: 10;
     }
-
     .card-header {
       background: linear-gradient(90deg, #0ff, #f0f);
       border-radius: 14px 14px 0 0;
@@ -98,7 +93,6 @@
       position: relative;
       z-index: 2;
     }
-
     .card-image {
       flex: 1;
       background: url("https://miro.medium.com/v2/resize:fit:1100/format:webp/1*8Jf-7lPV8m1S8Aht4ipr4w.png") center/cover no-repeat;
@@ -106,7 +100,6 @@
       position: relative;
       z-index: 1;
     }
-
     .footer {
       font-size: 0.65rem;
       text-align: center;
@@ -178,41 +171,11 @@
     <input type="text" placeholder="Create a ZTCG Card from any data link...">
     <button>Creation Ritual</button>
   </div>
-  
-<!-- Summon Card Button -->
-<div style="margin-top:1rem; text-align:center;">
-  <button id="summon-btn">🔮 Summon Card</button>
-</div>
 
-<script>
-  // Grab your preview card data (replace with your real card builder)
-  function getCurrentCardData() {
-    return window.card || {
-      id: "TMP-" + Date.now(),
-      name: document.getElementById("card-name")?.textContent || "Unnamed",
-      icon: "✨",
-      about: "Unknown",
-      tribute: "🙇‍♂️",
-      effects: [],
-      atk: "0",
-      def: "0",
-      level: "1",
-      rarity: "Normal",
-      tags: [],
-      card_sets: [],
-      timestamp: new Date().toISOString(),
-      footer: "Summoned Preview",
-      card_images: []
-    };
-  }
-
-  document.getElementById("summon-btn").addEventListener("click", () => {
-    const card = getCurrentCardData();
-    const id = "summon_" + Date.now();
-    localStorage.setItem(id, JSON.stringify(card));
-    window.open(`summon_btn.html?id=${id}`, "SummonCard", "width=520,height=820");
-  });
-</script>
+  <!-- Summon Card Button -->
+  <div style="margin-top:1rem; text-align:center;">
+    <button id="summon-btn">🔮 Summon Card</button>
+  </div>
 
   <!-- Data stream -->
   <div class="output" id="output">
@@ -251,22 +214,11 @@
     orb2.style.transform = `translate(${-x}px, ${-y}px) scale(1.1)`;
   });
 
-  /* ===== Ritual GIF (click-to-dismiss, auto-hide after ~4.5s) ===== */
+  /* ===== Ritual GIF ===== */
   const GIF_SRC = "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmEzdjIzNmdvbDNnMm1obXA3MmQwcXAxN2dkeHV4dnRvcjI0dmZtNyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/rTzAcZats1TRlAxI7H/giphy.gif";
-  function removeExistingRitual() {
+  function showRitual() {
     const old = document.getElementById("ritualFloat");
     if (old) old.remove();
-  }
-  function hideAndRemove(node) {
-    if (!node || !node.parentNode) return;
-    node.style.pointerEvents = "none";
-    node.style.opacity = "0";
-    const cleanup = () => node.remove();
-    node.addEventListener("transitionend", cleanup, { once: true });
-    setTimeout(cleanup, 300);
-  }
-  function showRitual() {
-    removeExistingRitual();
     const wrap = document.createElement("div");
     wrap.id = "ritualFloat";
     wrap.style.cssText = `
@@ -280,18 +232,15 @@
     img.src = GIF_SRC + "?t=" + Date.now();
     img.style.cssText = `
       width: min(78vmin, 420px); height: auto; border-radius: 12px;
-      display: block; opacity: 0.65; pointer-events: auto; cursor: pointer;
+      display: block; opacity: 0.65; cursor: pointer;
     `;
     wrap.appendChild(img);
     document.body.appendChild(wrap);
-    requestAnimationFrame(() => { wrap.style.opacity = "1"; wrap.style.pointerEvents = "auto"; });
-    img.addEventListener("click", () => hideAndRemove(wrap));
-    const autoHide = setTimeout(() => hideAndRemove(wrap), 4500);
-    const clearTimer = () => clearTimeout(autoHide);
-    wrap.addEventListener("DOMNodeRemoved", clearTimer, { once: true });
+    requestAnimationFrame(() => { wrap.style.opacity = "1"; });
+    setTimeout(() => wrap.remove(), 4500);
   }
 
-  /* ===== SCRAPER endpoints (Netlify Functions) ===== */
+  /* ===== SCRAPER endpoints ===== */
   const CRAWL_API  = "/api/crawl";
   const ENRICH_API = "/api/enrich";
   const FUSE_API   = "/api/fuse";
@@ -314,10 +263,7 @@
   }
 
   async function makeCardFromUrl(url) {
-    // 1) crawl expects { links: [...] }
     const crawled = await postJSON(CRAWL_API, { links: [url], session: "web" });
-
-    // 2) enrich expects { items: [...] }
     const items = (crawled.results || []).map(r => ({
       url:   r.url,
       title: r.title,
@@ -325,18 +271,15 @@
       image: r.image
     }));
     const enriched = await postJSON(ENRICH_API, { items, session: crawled.session });
-
-    // 3) fuse accepts either results or cards (send both)
     const fused = await postJSON(FUSE_API, {
       session: crawled.session,
       results: crawled.results || [],
       cards:   enriched.cards || []
     });
-
-    return fused.card || fused; // prefer single preview-ready card
+    return fused.card || fused;
   }
 
-  /* ===== Single click path: validate → ritual → scrape → show/save ===== */
+  /* ===== Ritual → scrape → save card ===== */
   button?.addEventListener("click", async () => {
     const url = (input?.value || "").trim();
     if (!url) { output.textContent = "Enter a URL."; return; }
@@ -348,21 +291,24 @@
 
     try {
       const card = await makeCardFromUrl(url);
-
       output.textContent = (typeof card === "string") ? card : JSON.stringify(card, null, 2);
 
-      try { localStorage.setItem("jessica_card", JSON.stringify(card)); } catch {}
+      // 🔹 Always reset storage, then save fresh card
+      localStorage.removeItem("jessica_card");
+      localStorage.setItem("jessica_card", JSON.stringify(card));
 
-      // Optional: auto-open the viewer
-      // if (card) window.location.href = "/preview.html";
     } catch (e) {
       output.textContent = (e && e.message) ? e.message : "Scrape failed.";
     } finally {
       button.disabled = false;
     }
   });
-</script>
 
+  /* ===== Summon button: open summon page ===== */
+  document.getElementById("summon-btn").addEventListener("click", () => {
+    window.open("summon_btn.html", "SummonCard", "width=520,height=820");
+  });
+</script>
 
 </body>
 </html>
