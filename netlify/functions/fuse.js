@@ -20,9 +20,9 @@ exports.handler = async (event) => {
     const byUrl = Object.create(null);
     for (const r of normResults) if (r.url) byUrl[r.url] = r;
 
-    // Turn incoming cards into preview schema, filling blanks from crawl result (by URL match)
+    // Build preview-cards from incoming cards, filling blanks from matched crawl result
     const builtCards = (cardsIn.length ? cardsIn : []).map(c => {
-      const url = (c._source_url || c.url || "").trim();
+      const url = urlOfCard(c, null);
       const r   = byUrl[url] || null;
       return normalizeCard(c, r);
     });
@@ -63,105 +63,166 @@ function absolutize(base, src){
     return new URL(src, b.origin + b.pathname).toString();
   }catch{ return src; }
 }
+function text(s){ return (typeof s === "string" ? s.replace(/\s+/g," ").trim() : ""); }
+function firstNonEmpty(list){ for (const v of list){ if (v && String(v).trim()) return String(v).trim(); } return ""; }
 
-/* -------- crawl result -> normalized -------- */
-function normalizeResult(r={}){
-  const url   = (r.url || "").trim();
-  const title = text(r.title);
-  const desc  = text(r.description);
-  const image = (r.image || "").trim();
-  const site  = text(r.siteName) || hostOf(url);
-  const keys  = Array.isArray(r.keywords) ? r.keywords.filter(Boolean).map(text) : [];
-  return { url, title, desc, image, site, keys };
+/* ---------- extra helpers for enriched-card schemas ---------- */
+function urlOfCard(c={}, r=null){
+  return (c._source_url || c.url || (c.links && c.links.url) || (r && r.url) || "").trim();
 }
-
-/* -------- card (any shape) + matching result -> preview card -------- */
-function normalizeCard(c={}, r=null){
-  const url   = (c._source_url || c.url || (r && r.url) || "").trim();
-  const name  = firstNonEmpty([c.name, r && r.title, hostOf(url), url]);
-  const imgIn = firstNonEmpty([
-    firstCardImage(c),
-    r && r.image ? absolutize(r.url, r.image) : ""
-  ]);
-
-  // effects: use existing, else build from description/title
-  let effects = Array.isArray(c.effects) ? c.effects.filter(e => e && text(e.text)).map(e => ({
-    icons: e.icons || "", emoji: e.emoji || "", text: text(e.text)
-  })) : [];
-  if (!effects.length && r) {
-    const effTexts = [r.desc, r.title].filter(Boolean);
-    effects = effTexts.slice(0,3).map(t => ({ icons:"", emoji:"", text: truncate(t, 280) }));
+function asEffectArray(effects){
+  if (!effects) return [];
+  if (Array.isArray(effects)) {
+    if (effects.length && typeof effects[0] === "object") {
+      return effects.filter(e => e && text(e.text)).map(e => ({
+        icons: e.icons || "", emoji: e.emoji || "", text: text(e.text)
+      }));
+    }
+    return effects.map(t => ({ icons:"", emoji:"", text: text(String(t||"")) }))
+                  .filter(e => e.text);
   }
-
-  // tags/sets
-  const tags = (Array.isArray(c.tags) ? c.tags.map(text) : []).concat(r && r.keys || []);
-  const card_sets = Array.isArray(c.card_sets) && c.card_sets.length
-    ? c.card_sets.map(text)
-    : (r && r.site ? [r.site] : []);
-
-  // footer: flatten object -> string
-  const footer = footerToString(c.footer);
-
-  // rarity: drop placeholder "Zetsumetsu EOE"
-  const rarity = (text(c.rarity) === "Zetsumetsu EOE") ? "" : text(c.rarity);
-
-  return {
-    id: c.id || shortHash(url || name || ""),
-    name: text(name),
-    icon: c.icon || "",
-    about: text(c.about || ""),
-    tribute: text(c.tribute || ""),
-    effects,
-    rarity,
-    tags: uniq(tags).slice(0,12),
-    card_sets: uniq(card_sets).slice(0,6),
-    timestamp: c.timestamp || new Date().toISOString(),
-    footer,
-    card_images: imgIn ? [{ image_url: imgIn }] : [],
-    frameType: text(c.frameType || ""),
-    _source_url: url
-  };
+  if (typeof effects === "string") {
+    const t = text(effects);
+    return t ? [{ icons:"", emoji:"", text:t }] : [];
+  }
+  return [];
 }
-
+function collectImages(list){
+  const out = [];
+  for (const v of list || []) {
+    const s = String(v||"").trim();
+    if (s) out.push(s);
+  }
+  return uniq(out);
+}
 function firstCardImage(c){
+  if (c && c.hero && c.hero.image) return String(c.hero.image);
+  if (c && c.image) return String(c.image);
   if (!Array.isArray(c.card_images)) return "";
   const x = c.card_images.find(i => i && i.image_url);
   return x ? String(x.image_url) : "";
 }
 
+/* -------- crawl result -> normalized -------- */
+function normalizeResult(r={}){
+  const url   = (r.url || "").trim();
+  const title = text(r.title || r.name);
+  const desc  = text(r.description || r.desc);
+  const image = (r.image || "").trim();
+  const site  = text(r.siteName || r.site) || hostOf(url);
+  const keys  = Array.isArray(r.keywords) ? r.keywords.filter(Boolean).map(text)
+             : Array.isArray(r.keys)     ? r.keys.filter(Boolean).map(text)
+             : [];
+  return { url, title, desc, image, site, keys };
+}
+
+/* -------- card (any shape) + matching result -> preview card -------- */
+function normalizeCard(c={}, r=null){
+  const url   = urlOfCard(c, r);
+  const hero  = c.hero || {};
+  const tb    = c.typeBanner || {};
+  const efb   = c.effectBox || {};
+  const foot  = c.footer || {};
+
+  // Name & Image
+  const name  = firstNonEmpty([c.name, hero.title, tb.title, r && r.title, hostOf(url), url]);
+  const imgIn = firstNonEmpty([
+    firstCardImage(c),
+    r && r.image ? absolutize(r.url, r.image) : ""
+  ]);
+
+  // Effects (prefer explicit, else effectBox, else r.desc/title)
+  let effects = asEffectArray(c.effects);
+  if (!effects.length && (efb.description || (Array.isArray(efb.effects) && efb.effects.length))){
+    const bundle = [];
+    if (efb.description) bundle.push({ icons:"", emoji:"", text: text(efb.description) });
+    if (Array.isArray(efb.effects)) for (const t of efb.effects){
+      const m = text(String(t||"")); if (m) bundle.push({ icons:"", emoji:"", text: truncate(m,280) });
+    }
+    effects = bundle;
+  }
+  if (!effects.length && r){
+    const effTexts = [r.desc, r.title].filter(Boolean);
+    effects = effTexts.slice(0,3).map(t => ({ icons:"", emoji:"", text: truncate(t, 280) }));
+  }
+
+  // Tags / Sets
+  const tags = uniq([
+    ...(Array.isArray(c.tags) ? c.tags.map(text) : []),
+    ...(Array.isArray(foot.tags) ? foot.tags.map(text) : []),
+    ...(r && r.keys || [])
+  ]).slice(0,12);
+
+  const card_sets = (Array.isArray(c.card_sets) && c.card_sets.length)
+    ? c.card_sets.map(text)
+    : (foot.set ? [text(foot.set)] : (r && r.site ? [r.site] : []));
+
+  // Icon/About/Tribute/Rarity
+  const icon    = firstNonEmpty([c.icon, tb.emoji, hero.icon]);
+  const about   = firstNonEmpty([c.about, tb.about, tb.subtitle, hero.subtitle, hero.title]);
+  const tribute = firstNonEmpty([c.tribute, String(tb.stars||"")]);
+  const rarity  = firstNonEmpty([c.rarity, tb.rarity, foot.rarity]);
+
+  // Images
+  const imgs = collectImages([imgIn].concat((c.card_images||[]).map(i => i.image_url)));
+
+  return {
+    id: c.id || shortHash(url || name || ""),
+    name: text(name),
+    icon: icon || "",
+    about: text(about || ""),
+    tribute: text(tribute || ""),
+    effects: effects.slice(0,4),
+    rarity: text(rarity || ""),
+    tags,
+    card_sets,
+    timestamp: c.timestamp || new Date().toISOString(),
+    footer: footerToString(c.footer || foot),
+    card_images: imgs.map(u => ({ image_url: u })),
+    frameType: text(c.frameType || ""),
+    _source_url: url
+  };
+}
+
+/* -------- footer: flatten object -> string -------- */
 function footerToString(f){
-  if (!f) return "Zetsumetsu Eoe™ | ZETSUMETSU CORPORATION | Artworqq Kevin Suber";
-  if (typeof f === "string") return f;
-  try {
+  try{
+    if (!f) return "Zetsumetsu Eoe™ | ZETSUMETSU CORPORATION | Artworqq Kevin Suber";
+    if (typeof f === "string") return f;
     const parts = [];
     if (Array.isArray(f.tags) && f.tags.length) parts.push(f.tags.join(" "));
-    if (f.set) parts.push(String(f.set));
+    if (f.set)       parts.push(String(f.set));
     if (f.timestamp) parts.push(String(f.timestamp));
     parts.push("Zetsumetsu Eoe™ | ZETSUMETSU CORPORATION | Artworqq Kevin Suber");
     return parts.filter(Boolean).join(" | ");
-  } catch {
+  }catch{
     return "Zetsumetsu Eoe™ | ZETSUMETSU CORPORATION | Artworqq Kevin Suber";
   }
 }
 
-function text(s){ return (typeof s === "string" ? s.replace(/\s+/g," ").trim() : ""); }
-function firstNonEmpty(list){ for (const v of list){ if (v && String(v).trim()) return String(v).trim(); } return ""; }
-
-/* -------- build from result only -------- */
+/* -------- build from result only (sane defaults) -------- */
 function cardFromResult(r){
   const name = r.title || r.site || r.url;
   const effects = [];
-  if (r.desc) effects.push({ icons:"", emoji:"", text: truncate(r.desc, 280) });
+  if (r.desc)  effects.push({ icons:"", emoji:"", text: truncate(r.desc, 280) });
   if (r.title && r.title !== r.desc) effects.push({ icons:"", emoji:"", text: truncate(r.title, 280) });
+
+  // quick host-based defaults
+  const host = hostOf(r.url || "") || "";
+  let icon = "🔗";
+  if (/\b(youtube|youtu\.be|tiktok|instagram|x\.com|twitter)\b/i.test(host)) icon = "📺";
+  else if (/\b(amazon|ebay|etsy|gumroad|shopify|aliexpress)\b/i.test(host)) icon = "🛍️";
+  else if (/\b(reddit|medium|substack|news|cnn|bbc|nytimes|verge|wired|bloomberg|forbes)\b/i.test(host)) icon = "📰";
+  else if (/\b(github|gitlab|npmjs|developer|docs)\b/i.test(host)) icon = "⚙️";
 
   return {
     id: shortHash(r.url || name),
     name,
-    icon: "",
-    about: "",
-    tribute: "",
+    icon,
+    about: r.site || host,
+    tribute: "1",
     effects,
-    rarity: "",
+    rarity: "Normal",
     tags: r.keys || [],
     card_sets: r.site ? [r.site] : [],
     timestamp: new Date().toISOString(),
@@ -201,11 +262,11 @@ function fuseCards(list){
     id: primary.id || shortHash(name || Date.now()+""),
     name, icon, about, tribute,
     effects: effects.slice(0,4),
-    rarity: primary.rarity || "",
+    rarity: text(primary.rarity || ""),
     tags, card_sets: sets,
     timestamp: new Date().toISOString(),
     footer: primary.footer || "Zetsumetsu Eoe™ | ZETSUMETSU CORPORATION | Artworqq Kevin Suber",
     card_images: imgs.map(u => ({ image_url: u })),
-    frameType: primary.frameType || ""
+    frameType: text(primary.frameType || "")
   };
 }
