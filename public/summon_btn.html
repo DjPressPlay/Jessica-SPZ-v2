@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="color-scheme" content="dark">
 
-<link rel="stylesheet" href="summon_style.css"> <!-- keep CSS external if you want -->
+<link rel="stylesheet" href="summon_style.css">
 </head>
 <body>
 
@@ -57,37 +57,27 @@
   </div>
 
 <script>
-/* Example summoned card data — replace later with passed-in data */
-const card = {
-  id: "000001234567",
-  name: "Falcon 9 Artworqq-PPLaunch [STAR-SHINE]",
-  icon: "🚀",
-  about: "Technology",
-  tribute: "🙇‍♂️🙇‍♂️🙇‍♂️",
-  effects: [
-    { icons:"⭐🌌", emoji:"🛰️", text:"Falcon 9 lifts payload to orbit." },
-    { icons:"🔧🚀", emoji:"⚙️", text:"First stage booster descends and lands." }
-  ],
-  atk: "3000",
-  def: "2200",
-  level: "4",
-  rarity: "SR",
-  tags: ["SpaceX","Rocketry","Launch"],
-  card_sets: ["Orbital Ops","2025 Milestones"],
-  timestamp: "2025-08-21T14:32:00Z",
-  footer: "Jessica AI | Zetsumetsu EOE™ | ZETSUMETSU CORPORATION | Artworqq Kevin Suber",
-  card_images: [{ image_url:"https://i.ytimg.com/vi/KDR4dk9JydM/maxresdefault.jpg" }],
-  frameType: "technology"
-};
+/* ===== Load card from localStorage ===== */
+let card = null;
+try {
+  const stored = localStorage.getItem("jessica_card");
+  if (stored) card = JSON.parse(stored);
+} catch(e){ console.error("No valid card found", e); }
+
+if (!card) {
+  card = { id:"-", name:"No Card Found", icon:"❌", about:"", tribute:"", effects:[], atk:"0", def:"0", level:"1",
+           rarity:"Normal", tags:[], card_sets:[], timestamp:"", footer:"Summon failed — no saved card",
+           card_images:[] };
+}
 
 /* ===== Bind fields ===== */
 const $ = id => document.getElementById(id);
-$("card-id").textContent   = card.id;
-$("card-name").textContent = card.name;
-$("card-icon").textContent = card.icon;
-$("tribute").textContent   = card.tribute;
-$("about").textContent     = card.about;
-$("type-emoji").textContent= card.icon;
+$("card-id").textContent   = card.id || "";
+$("card-name").textContent = card.name || "";
+$("card-icon").textContent = card.icon || "";
+$("tribute").textContent   = card.tribute || "";
+$("about").textContent     = card.about || "";
+$("type-emoji").textContent= card.icon || "";
 
 /* Artwork */
 const img = $("card-image");
@@ -95,9 +85,9 @@ img.src = card.card_images?.[0]?.image_url || "";
 img.alt = card.name ? card.name + " — artwork" : "";
 
 /* Stats */
-$("level").textContent = card.level;
-$("atk").textContent   = card.atk;
-$("def").textContent   = card.def;
+$("level").textContent = card.level || "";
+$("atk").textContent   = card.atk   || "";
+$("def").textContent   = card.def   || "";
 
 /* Effects */
 const effBox = $("effect-box");
@@ -112,11 +102,11 @@ effBox.replaceChildren();
 });
 
 /* Meta */
-$("sets-line").textContent = card.card_sets.join(" ");
-$("tags-line").textContent = card.tags.join(" ");
-$("footer").textContent    = card.footer;
-$("timestamp").textContent = card.timestamp;
-$("rarity").textContent    = card.rarity;
+$("sets-line").textContent = (card.card_sets||[]).join(" ");
+$("tags-line").textContent = (card.tags||[]).join(" ");
+$("footer").textContent    = card.footer || "";
+$("timestamp").textContent = card.timestamp || "";
+$("rarity").textContent    = card.rarity || "";
 </script>
 </body>
 </html>
