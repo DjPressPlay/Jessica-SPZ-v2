@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Summon — Zetsu Card</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="dark">
+
+<link rel="stylesheet" href="summon_style.css"> <!-- keep CSS external if you want -->
+</head>
+<body>
+
+  <div class="frameType">
+    <div id="inner" class="frameType-inner">
+      <!-- Header -->
+      <div class="card-header">
+        <div class="card-id" id="card-id"></div>
+        <div class="card-name"><span id="card-name" class="autoscale" dir="auto"></span></div>
+        <div class="card-icon" id="card-icon"></div>
+      </div>
+
+      <!-- Artwork -->
+      <div class="card-art">
+        <img id="card-image" alt="" loading="lazy" decoding="async">
+        <div class="stat-orb stat-blue"  id="level"></div>
+        <div class="stat-orb stat-red"   id="atk"></div>
+        <div class="stat-orb stat-green" id="def"></div>
+      </div>
+
+      <!-- Type Banner -->
+      <div class="type-banner">
+        <div class="type-cell"><span id="tribute" class="autoscale truncate"></span></div>
+        <div class="type-about-wrap">
+          <div class="type-about-box">
+            <span id="about" class="type-about-text autoscale truncate"></span>
+          </div>
+        </div>
+        <div class="type-cell"><span id="type-emoji" class="autoscale truncate"></span></div>
+      </div>
+
+      <!-- Effects -->
+      <div class="effect-box" id="effect-box"></div>
+
+      <!-- Sets + Tags -->
+      <div class="meta-block">
+        <div class="meta-line"><div class="meta-label">Sets -</div><div id="sets-line" class="meta-value"></div></div>
+        <div class="meta-line"><div class="meta-label">Tags -</div><div id="tags-line" class="meta-value"></div></div>
+      </div>
+
+      <!-- Footer / Timestamp / Rarity -->
+      <div class="meta-bottom">
+        <div class="meta-footer-text" id="footer"></div>
+        <div class="meta-timestamp" id="timestamp"></div>
+        <div class="rarity" id="rarity"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* Example summoned card data — replace later with passed-in data */
+const card = {
+  id: "000001234567",
+  name: "Falcon 9 Artworqq-PPLaunch [STAR-SHINE]",
+  icon: "🚀",
+  about: "Technology",
+  tribute: "🙇‍♂️🙇‍♂️🙇‍♂️",
+  effects: [
+    { icons:"⭐🌌", emoji:"🛰️", text:"Falcon 9 lifts payload to orbit." },
+    { icons:"🔧🚀", emoji:"⚙️", text:"First stage booster descends and lands." }
+  ],
+  atk: "3000",
+  def: "2200",
+  level: "4",
+  rarity: "SR",
+  tags: ["SpaceX","Rocketry","Launch"],
+  card_sets: ["Orbital Ops","2025 Milestones"],
+  timestamp: "2025-08-21T14:32:00Z",
+  footer: "Jessica AI | Zetsumetsu EOE™ | ZETSUMETSU CORPORATION | Artworqq Kevin Suber",
+  card_images: [{ image_url:"https://i.ytimg.com/vi/KDR4dk9JydM/maxresdefault.jpg" }],
+  frameType: "technology"
+};
+
+/* ===== Bind fields ===== */
+const $ = id => document.getElementById(id);
+$("card-id").textContent   = card.id;
+$("card-name").textContent = card.name;
+$("card-icon").textContent = card.icon;
+$("tribute").textContent   = card.tribute;
+$("about").textContent     = card.about;
+$("type-emoji").textContent= card.icon;
+
+/* Artwork */
+const img = $("card-image");
+img.src = card.card_images?.[0]?.image_url || "";
+img.alt = card.name ? card.name + " — artwork" : "";
+
+/* Stats */
+$("level").textContent = card.level;
+$("atk").textContent   = card.atk;
+$("def").textContent   = card.def;
+
+/* Effects */
+const effBox = $("effect-box");
+effBox.replaceChildren();
+(card.effects||[]).forEach(e=>{
+  const entry = document.createElement("div"); entry.className="effect-entry";
+  const bar = document.createElement("div"); bar.className="effect-bar";
+  bar.append(e.icons||"", " ", e.emoji||"");
+  const text = document.createElement("div"); text.className="effect-text"; text.textContent = e.text||"";
+  entry.append(bar, text);
+  effBox.append(entry);
+});
+
+/* Meta */
+$("sets-line").textContent = card.card_sets.join(" ");
+$("tags-line").textContent = card.tags.join(" ");
+$("footer").textContent    = card.footer;
+$("timestamp").textContent = card.timestamp;
+$("rarity").textContent    = card.rarity;
+</script>
+</body>
+</html>
