@@ -269,7 +269,7 @@ card.tributes = tributesResolved;  // numeric tribute count
 function countTributes(s){
   if (!s) return 0;
   const kneel = (s.match(/🙇/gu) || []).length;
-  const starsFallback = (s.match(/⭐/gu) || []).length; // optional legacy
+ // const starsFallback = (s.match(/⭐/gu) || []).length; // optional legacy
   return kneel || starsFallback;
 }
 
@@ -294,8 +294,9 @@ $("level").textContent = stats.level;
 $("atk").textContent   = stats.atk;
 $("def").textContent   = stats.def;
 
-/* banner */
-$("tribute").textContent   = card.tribute || "";
+/* banner */const TRIBUTE_EMOJI = "🙇‍♂️";
+$("tribute").textContent = TRIBUTE_EMOJI.repeat(Number(card.tributes) || 0);
+
 $("about").textContent     = card.about   || "";
 $("type-emoji").textContent= card.icon    || "";
 
