@@ -174,10 +174,10 @@
 
 <script>
 /* ===== Load card from localStorage ===== */
-let card = null;
+let card = null, hadStored = false;
 try {
   const stored = localStorage.getItem("jessica_card");
-  if (stored) card = JSON.parse(stored);
+  if (stored) { card = JSON.parse(stored); hadStored = true; }
 } catch(e){ console.error("No valid jessica_card in storage", e); }
 
 /* ===== Fallback if nothing in storage ===== */
@@ -189,6 +189,53 @@ if (!card) {
     footer:"No saved card in localStorage", card_images:[]
   };
 }
+
+/* ===== Sanitize / normalize incoming data (format step) ===== */
+function toArray(v){
+  if (Array.isArray(v)) return v;
+  if (typeof v === "string") {
+    // split on | , ; or newlines; fall back to spaces only if we find no separators
+    const parts = v.includes("|") || v.includes(",") || v.includes(";")
+      ? v.split(/[|,;]+/)
+      : v.split(/\s+/);
+    return parts.map(s=>s.trim()).filter(Boolean);
+  }
+  return [];
+}
+function dedupeCaseInsensitive(arr){
+  const seen = new Set(); const out = [];
+  for (const t of arr) {
+    const k = t.toLowerCase();
+    if (seen.has(k)) continue;
+    seen.add(k); out.push(t);
+  }
+  return out;
+}
+function cleanFooter(s){
+  let f = String(s || "").trim();
+  // strip leading "Info" with common separators
+  f = f.replace(/^\s*info\s*(?:[\|\-–—:]\s*)?/i, "");
+  // de-dupe pipe-separated tokens but keep your order/signature intact
+  const parts = f.split("|").map(p=>p.trim()).filter(Boolean);
+  const cleaned = dedupeCaseInsensitive(parts.filter(p => p.toLowerCase() !== "info"));
+  return cleaned.join(" | ");
+}
+function cleanTags(v){
+  const arr = toArray(v).map(t=>t.trim()).filter(Boolean);
+  return dedupeCaseInsensitive(arr.filter(t => t.toLowerCase() !== "info"));
+}
+function cleanEffects(effects){
+  return (Array.isArray(effects) ? effects : []).map(e => ({
+    icons: String(e?.icons ?? ""),
+    emoji: String(e?.emoji ?? ""),
+    text:  String(e?.text  ?? "").replace(/^Effect:\s*/i, "").trim()
+  }));
+}
+
+// mutate card minimally, no key renames
+card.footer = cleanFooter(card.footer);
+card.tags   = cleanTags(card.tags);
+card.effects= cleanEffects(card.effects);
 
 /* ===== Frame color maps ===== */
 const colorPalette = { silver:"#C0C0C0", blue:"#0000FF", green:"#008000", gold:"#FFD700", maroon:"#800000" };
@@ -221,28 +268,87 @@ const img = $("card-image");
 img.src = card.card_images?.[0]?.image_url || "";
 img.alt = card.name || "Card artwork";
 
-/* Stats calc */
-function countTributes(s){ return (s.match(/🙇/gu)||[]).length; }
-function autoCalc(card){
-  const tributeCount = card.tributes ?? countTributes(card.tribute);
-  const level = tributeCount || Number(card.level) || 1;
-  const atk = (level*1000) + ((card.effects?.length||0)*500);
-  return { level, atk, def:Math.floor(atk/2) };
+/* ===== Tribute & Stats calc (fix stars fallback bug) ===== */
+function countTributes(s){
+  if (!s) return 0;
+  const kneel = (s.match(/🙇/gu) || []).length;
+  const starsFallback = (s.match(/⭐/gu) || []).length;
+  return kneel || starsFallback;
+}
+function autoCalc(cardObj){
+  const tributeCount = (typeof cardObj.tributes === "number")
+    ? cardObj.tributes
+    : countTributes(cardObj.tribute);
+  const level = tributeCount || Number(cardObj.level) || 1;
+  const effectsCount = Array.isArray(cardObj.effects) ? cardObj.effects.length : 0;
+  const atk = (level*1000) + (effectsCount*500);
+  const def = Math.floor(atk/2);
+  return { level, atk, def, tributes: tributeCount || 0 };
 }
 const stats = autoCalc(card);
-$("level").textContent = stats.level;
-$("atk").textContent   = stats.atk;
-$("def").textContent   = stats.def;
-$("tribute").textContent = "🙇‍♂️".repeat(card.tributes || countTributes(card.tribute));
+card.level = stats.level;
+card.atk   = String(stats.atk);
+card.def   = String(stats.def);
+if (typeof card.tributes !== "number") card.tributes = stats.tributes;
+
+/* Bind stats + banner */
+$("level").textContent   = stats.level;
+$("atk").textContent     = stats.atk;
+$("def").textContent     = stats.def;
+const TRIBUTE_EMOJI = "🙇‍♂️";
+$("tribute").textContent = TRIBUTE_EMOJI.repeat(Number(card.tributes) || countTributes(card.tribute));
 
 /* Banner + meta */
-$("about").textContent     = card.about   || "";
-$("type-emoji").textContent= card.icon    || "";
-$("sets-line").textContent = (card.card_sets||[]).join(" ");
-$("tags-line").textContent = (card.tags||[]).join(" ");
-$("footer").textContent    = card.footer  || "";
-$("timestamp").textContent = card.timestamp || "";
+$("about").textContent      = card.about   || "";
+$("type-emoji").textContent = card.icon    || "";
+$("sets-line").textContent  = (card.card_sets||[]).join(" ");
+$("tags-line").textContent  = (card.tags||[]).join(" ");
+$("footer").textContent     = card.footer  || "";
+$("timestamp").textContent  = card.timestamp || "";
 const rb=$("rarity"); rb.textContent=card.rarity||"";
+
+/* ===== Save back (Preview formats & saves) ===== */
+try {
+  // Only write back if we actually loaded something real
+  if (hadStored) localStorage.setItem("jessica_card", JSON.stringify(card));
+} catch(e){ /* ignore storage errors */ }
+
+/* ===== Autoscale ===== */
+function autoscaleToLength(el, maxChars, minScale = 0.6){
+  if(!el) return; el.style.setProperty('--scale','1');
+  const len = [...(el.textContent || '').trim()].length;
+  el.style.setProperty('--scale', String(len > maxChars ? Math.max(minScale, maxChars / len) : 1));
+}
+function autoshrinkFontToFit(el, { min=0.50, pad=4, squeezeLeft=null, squeezeRight=null, squeezePx=6 } = {}){
+  if (!el || !el.parentElement) return;
+  const base = parseFloat(el.dataset.baseFs || getComputedStyle(el).fontSize) || 14;
+  el.dataset.baseFs = base; el.style.fontSize = base + 'px';
+  if (squeezeLeft)  squeezeLeft.style.marginRight  = '';
+  if (squeezeRight) squeezeRight.style.marginLeft  = '';
+  let avail = Math.max(1, el.parentElement.clientWidth - pad);
+  if (el.scrollWidth <= avail) return;
+  if (squeezeLeft)  squeezeLeft.style.marginRight  = `-${squeezePx}px`;
+  if (squeezeRight) squeezeRight.style.marginLeft  = `-${squeezePx}px`;
+  avail = Math.max(1, el.parentElement.clientWidth - pad);
+  const scale = Math.max(min, avail / el.scrollWidth);
+  el.style.fontSize = (base * scale) + 'px';
+}
+function applyAutoscaleAll(){
+  autoscaleToLength(document.getElementById('tribute'), 10, 0.6);
+  autoscaleToLength(document.getElementById('type-emoji'), 8, 0.6);
+  autoscaleToLength(document.getElementById('about'), 20, 0.75);
+  const nameSpan = document.querySelector('.card-name span');
+  autoshrinkFontToFit(nameSpan, { min:0.50, pad:4, squeezeLeft: document.querySelector('.card-id'), squeezeRight: document.getElementById('card-icon'), squeezePx:6 });
+}
+applyAutoscaleAll();
+if (document.fonts && document.fonts.ready) { document.fonts.ready.then(applyAutoscaleAll).catch(()=>{}); }
+
+/* Throttle resize */
+let rafId=null;
+addEventListener('resize', () => {
+  if (rafId) cancelAnimationFrame(rafId);
+  rafId = requestAnimationFrame(()=>{ applyAutoscaleAll(); rafId=null; });
+});
 </script>
 </body>
 </html>
