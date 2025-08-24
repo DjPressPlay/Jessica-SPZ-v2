@@ -116,6 +116,40 @@ function normalizeResult(r={}){
   return { url, title, desc, image, site, keys };
 }
 
+/* -------- footer cleaning (no timestamps) -------- */
+function cleanFooterString(s){
+  if (!s) return "";
+  let out = String(s);
+  // remove ISO-8601 timestamps like 2025-08-24T09:50:17.962Z (with optional leading pipe)
+  out = out.replace(/\s*\|\s*\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z/g, "");
+  // collapse duplicate separators and trim
+  out = out.replace(/\s*\|\s*\|/g, " | ");
+  out = out.trim().replace(/^\|\s*|\s*\|$/g, "");
+  return out;
+}
+
+function footerToString(f){
+  const BRAND = "Zetsumetsu Eoe™ | ZETSUMETSU CORPORATION | Artworqq Kevin Suber";
+  try{
+    if (!f) return BRAND;
+
+    if (typeof f === "string") {
+      const cleaned = cleanFooterString(f);
+      return cleanFooterString([cleaned, BRAND].filter(Boolean).join(" | "));
+    }
+
+    // Object form: build WITHOUT timestamp
+    const parts = [];
+    if (Array.isArray(f.tags) && f.tags.length) parts.push(f.tags.join(" | "));
+    if (f.set) parts.push(String(f.set));
+    // (intentionally ignoring f.timestamp)
+    parts.push(BRAND);
+    return cleanFooterString(parts.filter(Boolean).join(" | "));
+  }catch{
+    return BRAND;
+  }
+}
+
 /* -------- card (any shape) + matching result -> preview card -------- */
 function normalizeCard(c={}, r=null){
   const url   = urlOfCard(c, r);
@@ -184,22 +218,6 @@ function normalizeCard(c={}, r=null){
   };
 }
 
-/* -------- footer: flatten object -> string -------- */
-function footerToString(f){
-  try{
-    if (!f) return "Zetsumetsu Eoe™ | ZETSUMETSU CORPORATION | Artworqq Kevin Suber";
-    if (typeof f === "string") return f;
-    const parts = [];
-    if (Array.isArray(f.tags) && f.tags.length) parts.push(f.tags.join(" "));
-    if (f.set)       parts.push(String(f.set));
-    if (f.timestamp) parts.push(String(f.timestamp));
-    parts.push("Zetsumetsu Eoe™ | ZETSUMETSU CORPORATION | Artworqq Kevin Suber");
-    return parts.filter(Boolean).join(" | ");
-  }catch{
-    return "Zetsumetsu Eoe™ | ZETSUMETSU CORPORATION | Artworqq Kevin Suber";
-  }
-}
-
 /* -------- build from result only (sane defaults) -------- */
 function cardFromResult(r){
   const name = r.title || r.site || r.url;
@@ -226,7 +244,7 @@ function cardFromResult(r){
     tags: r.keys || [],
     card_sets: r.site ? [r.site] : [],
     timestamp: new Date().toISOString(),
-    footer: "Zetsumetsu Eoe™ | ZETSUMETSU CORPORATION | Artworqq Kevin Suber",
+    footer: footerToString(""),
     card_images: r.image ? [{ image_url: absolutize(r.url, r.image) }] : [],
     frameType: "",
     _source_url: r.url
@@ -265,7 +283,7 @@ function fuseCards(list){
     rarity: text(primary.rarity || ""),
     tags, card_sets: sets,
     timestamp: new Date().toISOString(),
-    footer: primary.footer || "Zetsumetsu Eoe™ | ZETSUMETSU CORPORATION | Artworqq Kevin Suber",
+    footer: footerToString(primary.footer || ""),
     card_images: imgs.map(u => ({ image_url: u })),
     frameType: text(primary.frameType || "")
   };
