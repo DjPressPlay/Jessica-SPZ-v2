@@ -265,9 +265,7 @@
   const button = document.querySelector(".search-bar button");
   const output = document.getElementById("output");
 
-  function isLikelyUrl(s) {
-    return /^https?:\/\//i.test(s);
-  }
+  function isLikelyUrl(s) { return /^https?:\/\//i.test(s); }
 
   async function postJSON(endpoint, payload) {
     const res = await fetch(endpoint, {
@@ -281,13 +279,26 @@
   }
 
   async function makeCardFromUrl(url) {
-    // 1) crawl the target
-    const crawled  = await postJSON(CRAWL_API,  { url });
-    // 2) enrich the crawl result
-    const enriched = await postJSON(ENRICH_API, { data: crawled, url });
-    // 3) fuse into a single card-ready object
-    const fused    = await postJSON(FUSE_API,   { data: enriched, url });
-    return fused;
+    // 1) crawl expects { links: [...] }
+    const crawled = await postJSON(CRAWL_API, { links: [url], session: "web" });
+
+    // 2) enrich expects { items: [...] }
+    const items = (crawled.results || []).map(r => ({
+      url:   r.url,
+      title: r.title,
+      desc:  r.description,
+      image: r.image
+    }));
+    const enriched = await postJSON(ENRICH_API, { items, session: crawled.session });
+
+    // 3) fuse accepts either results or cards (send both)
+    const fused = await postJSON(FUSE_API, {
+      session: crawled.session,
+      results: crawled.results || [],
+      cards:   enriched.cards || []
+    });
+
+    return fused.card || fused; // prefer single preview-ready card
   }
 
   /* ===== Single click path: validate → ritual → scrape → show/save ===== */
@@ -301,20 +312,14 @@
     output.textContent = "Scraping…";
 
     try {
-      const cardData = await makeCardFromUrl(url);
+      const card = await makeCardFromUrl(url);
 
-      // Show the raw card JSON (so you see exactly what came back)
-      output.textContent = (typeof cardData === "string")
-        ? cardData
-        : JSON.stringify(cardData, null, 2);
+      output.textContent = (typeof card === "string") ? card : JSON.stringify(card, null, 2);
 
-      // Save for the viewer (preview.html can read this)
-      try {
-        localStorage.setItem("jessica_card", JSON.stringify(cardData));
-      } catch {}
+      try { localStorage.setItem("jessica_card", JSON.stringify(card)); } catch {}
 
-      // If you want to auto-open the viewer, uncomment:
-      // window.location.href = "/preview.html";
+      // Optional: auto-open the viewer
+      // if (card) window.location.href = "/preview.html";
     } catch (e) {
       output.textContent = (e && e.message) ? e.message : "Scrape failed.";
     } finally {
@@ -322,6 +327,7 @@
     }
   });
 </script>
+
 
 </body>
 </html>
