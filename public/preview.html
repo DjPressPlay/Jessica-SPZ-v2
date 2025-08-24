@@ -133,10 +133,10 @@
   <div class="frameType">
     <div id="inner" class="frameType-inner">
       <!-- Header -->
-      <div class="card-header" role="group" aria-label="Card header">
-        <div class="card-id" id="card-id" aria-label="Card ID"></div>
-        <div class="card-name" aria-live="polite"><span id="card-name" class="autoscale" dir="auto"></span></div>
-        <div class="card-icon" id="card-icon" aria-hidden="true"></div>
+      <div class="card-header">
+        <div class="card-id" id="card-id"></div>
+        <div class="card-name"><span id="card-name" class="autoscale"></span></div>
+        <div class="card-icon" id="card-icon"></div>
       </div>
 
       <!-- Artwork -->
@@ -149,9 +149,9 @@
 
       <!-- Type Banner -->
       <div class="type-banner">
-        <div class="type-cell"><span id="tribute" class="autoscale truncate" dir="auto"></span></div>
-        <div class="type-about-wrap"><div class="type-about-box"><span id="about" class="type-about-text autoscale truncate" dir="auto"></span></div></div>
-        <div class="type-cell"><span id="type-emoji" class="autoscale truncate" dir="auto"></span></div>
+        <div class="type-cell"><span id="tribute" class="autoscale truncate"></span></div>
+        <div class="type-about-wrap"><div class="type-about-box"><span id="about" class="type-about-text autoscale truncate"></span></div></div>
+        <div class="type-cell"><span id="type-emoji" class="autoscale truncate"></span></div>
       </div>
 
       <!-- Effects -->
@@ -173,195 +173,76 @@
   </div>
 
 <script>
-/* ===== Sample card ===== */
-const card = {
-  id: "000001234567",
-  name: "Falcon 9 Artworqq-PPLaunch [STAR-SHINE]",
-  icon: "🚀",
-  about: "Technology",
-  tribute: "🙇‍♂️🙇‍♂️🙇‍♂️", // ← real Tribute source
-  effects: [
-    { icons:"⭐🌌", emoji:"🛰️", text:"Falcon 9 lifts payload to orbit, achieving a successful launch." },
-    { icons:"🔧🚀", emoji:"⚙️", text:"First stage booster performs controlled descent and splash-down." }
-  ],
-  atk: "3000",
-  def: "2200",
-  level: "4",
-  rarity: "SR",
-  tags: ["SpaceX","Rocketry","Launch"],
-  card_sets: ["Orbital Operations","2025 Milestones"],
-  timestamp: "2025-08-21T14:32:00Z",
-  footer: "Jessica AI | Zetsumetsu Eoe™ | ZETSUMETSU CORPORATION | Artworqq Kevin Suber",
-  card_images: [{ image_url:"https://i.ytimg.com/vi/KDR4dk9JydM/maxresdefault.jpg" }],
-  frameType: "technology"
-};
+/* ===== Load card from localStorage ===== */
+let card = null;
+try {
+  const stored = localStorage.getItem("jessica_card");
+  if (stored) card = JSON.parse(stored);
+} catch(e){ console.error("No valid jessica_card in storage", e); }
+
+/* ===== Fallback if nothing in storage ===== */
+if (!card) {
+  card = {
+    id:"000001234567", name:"Fallback Card", icon:"✨", about:"No Data",
+    tribute:"🙇", effects:[], atk:"0", def:"0", level:"1", rarity:"Normal",
+    tags:[], card_sets:[], timestamp:new Date().toISOString(),
+    footer:"No saved card in localStorage", card_images:[]
+  };
+}
 
 /* ===== Frame color maps ===== */
-const colorPalette = {
-  "silver":"#C0C0C0","blue":"#0000FF","dark-blue":"#00008B","green":"#008000",
-  "gold":"#FFD700","maroon":"#800000","bright-red":"#FF4949","sky-blue":"#87CEEB",
-  "teal":"#008080","cyan":"#00FFFF","magenta":"#FF00FF","red-orange":"#FF4500",
-  "sky-blue-light":"#ADD8E6","forest-green":"#228B22","orange":"#FFA500",
-  "light-green":"#90EE90","violet":"#EE82EE","dark-violet":"#9400D3","peach":"#FFDAB9",
-  "gray-gradient":"#D3D3D3","beige":"#F5F5DC","yellow-green":"#9ACD32","black":"#000000",
-  "light-gray":"#D3D3D3","rose":"#FFC0CB","neon-yellow":"#FFFF00","peach-light":"#FFDAB9",
-  "dark-red":"#8B0000","gray":"#808080","black-red-holo":"#8B0000","purple":"#6A0DAD",
-  "neon-multicolor":"#FF00FF"
-};
-const card_type_map = {
-  technology:{ color:"silver" }, science:{ color:"blue" }, investigative:{ color:"dark-blue" },
-  sports:{ color:"green" }, business:{ color:"gold" }
-};
-const rarityBorder = {
-  Normal:{ color:"#aaa", iridescent:false }, Rare:{ color:"#ddd", iridescent:false },
-  SR:{ color:"#2d7bdc", iridescent:false }, UR:{ color:"#7c3aed", iridescent:false },
-  Quantum:{ color:"#f1c40f", iridescent:false }, ZEOE:{ color:null, iridescent:true }
-};
+const colorPalette = { silver:"#C0C0C0", blue:"#0000FF", green:"#008000", gold:"#FFD700", maroon:"#800000" };
+const card_type_map = { technology:{ color:"silver" }, science:{ color:"blue" }, sports:{ color:"green" }, business:{ color:"gold" } };
+const rarityBorder = { Normal:{ color:"#aaa" }, Rare:{ color:"#ddd" }, SR:{ color:"#2d7bdc" }, UR:{ color:"#7c3aed" }, Quantum:{ color:"#f1c40f" }, ZEOE:{ iridescent:true } };
 
 /* ===== Apply frame color / rarity ===== */
 (function applyFrame(){
   const inner = document.getElementById("inner");
   let baseColor = "#e63946";
-  const ft = String(card.frameType||"").toLowerCase().replace(/\s+/g,"_");
+  const ft = String(card.frameType||"").toLowerCase();
   if (card_type_map[ft]) {
     const key = card_type_map[ft].color;
     if (colorPalette[key]) baseColor = colorPalette[key];
   }
-  let useIri = false; const r = card.rarity;
-  if (r && rarityBorder[r]) {
-    if (rarityBorder[r].iridescent) useIri = true;
-    else if (rarityBorder[r].color) baseColor = rarityBorder[r].color;
+  if (card.rarity && rarityBorder[card.rarity] && rarityBorder[card.rarity].color) {
+    baseColor = rarityBorder[card.rarity].color;
   }
   document.documentElement.style.setProperty("--frame-color", baseColor);
-  inner.classList.toggle("iridescent", useIri);
 })();
 
-/* ===== Bind fields (no fake defaults) ===== */
+/* ===== Bind fields ===== */
 const $ = id => document.getElementById(id);
 $("card-id").textContent   = card.id || "";
 $("card-name").textContent = card.name || "";
 $("card-icon").textContent = card.icon || "";
 
-/* image + alt */
+/* Artwork */
 const img = $("card-image");
-img.src = (card.card_images && card.card_images[0] && card.card_images[0].image_url) ? card.card_images[0].image_url : "";
-img.alt = (card.name ? card.name + " — artwork" : "Card artwork");
+img.src = card.card_images?.[0]?.image_url || "";
+img.alt = card.name || "Card artwork";
 
-/* ===== GET TRIBUTE NUMBER (per spec) ===== */
-const typeInfo = { max_tributes: 6 }; // adjust if you have per-type limits
-
-// -- GET TRIBUTE NUMBER--
-const levelResolved = (typeof resolveLevel === "function")
-  ? resolveLevel(card, typeInfo)
-  : (Number(card.level) || 1);
-
-const maxTributes = (typeInfo?.max_tributes ?? 6);
-
-const tributesResolved = (typeof makeTributes === "function")
-  ? makeTributes(levelResolved, maxTributes)
-  : Math.min(levelResolved, maxTributes);
-
-card.level = levelResolved;        // store back so other code can read it
-card.tributes = tributesResolved;  // numeric tribute count
-
-/* ===== Auto Calculator (tribute-first) ===== */
-/* Counts 🙇 variants if no numeric tributes present (legacy support). */
-function countTributes(s){
-  if (!s) return 0;
-  const kneel = (s.match(/🙇/gu) || []).length;
- // const starsFallback = (s.match(/⭐/gu) || []).length; // optional legacy
-  return kneel || starsFallback;
+/* Stats calc */
+function countTributes(s){ return (s.match(/🙇/gu)||[]).length; }
+function autoCalc(card){
+  const tributeCount = card.tributes ?? countTributes(card.tribute);
+  const level = tributeCount || Number(card.level) || 1;
+  const atk = (level*1000) + ((card.effects?.length||0)*500);
+  return { level, atk, def:Math.floor(atk/2) };
 }
-
-function autoCalc(card) {
-  const tributeCount =
-    (typeof card.tributes === "number")
-      ? card.tributes
-      : countTributes(card.tribute);
-
-  const level = tributeCount || (Number(card.level) || 1);
-  const effectsCount = Array.isArray(card.effects) ? card.effects.length : 0;
-
-  const atk = (level * 1000) + (effectsCount * 500);
-  const def = Math.floor(atk / 2);
-
-  return { level, atk, def };
-}
-
-/* ===== Stats bind ===== */
 const stats = autoCalc(card);
 $("level").textContent = stats.level;
 $("atk").textContent   = stats.atk;
 $("def").textContent   = stats.def;
+$("tribute").textContent = "🙇‍♂️".repeat(card.tributes || countTributes(card.tribute));
 
-/* banner */const TRIBUTE_EMOJI = "🙇‍♂️";
-$("tribute").textContent = TRIBUTE_EMOJI.repeat(Number(card.tributes) || 0);
-
+/* Banner + meta */
 $("about").textContent     = card.about   || "";
 $("type-emoji").textContent= card.icon    || "";
-
-/* effects (node builder) */
-const effBox = $("effect-box");
-effBox.replaceChildren();
-(card.effects||[]).forEach(e=>{
-  const entry = document.createElement("div"); entry.className="effect-entry";
-  const bar = document.createElement("div"); bar.className="effect-bar";
-  const icons = document.createElement("div"); icons.textContent = e.icons || "";
-  const emj   = document.createElement("div"); emj.textContent   = e.emoji || "";
-  bar.append(icons, emj);
-  const text = document.createElement("div"); text.className="effect-text"; text.textContent = e.text || "";
-  entry.append(bar, text);
-  effBox.append(entry);
-});
-
-/* meta lines */
-$("sets-line").textContent = (Array.isArray(card.card_sets)?card.card_sets:[]).join(" ");
-$("tags-line").textContent = (Array.isArray(card.tags)?card.tags:[]).join(" ");
-$("footer").textContent    = card.footer    || "";
+$("sets-line").textContent = (card.card_sets||[]).join(" ");
+$("tags-line").textContent = (card.tags||[]).join(" ");
+$("footer").textContent    = card.footer  || "";
 $("timestamp").textContent = card.timestamp || "";
-
-/* rarity badge text + class (Quantum -> Q class) */
-const rb = $("rarity");
-rb.textContent = card.rarity || "";
-const rarityClassMap = { Normal:"Normal", Rare:"Rare", SR:"SR", UR:"UR", Quantum:"Q", ZEOE:"ZEOE" };
-rb.classList.add(rarityClassMap[card.rarity] || (card.rarity || ""));
-
-/* ===== Autoscale ===== */
-function autoscaleToLength(el, maxChars, minScale = 0.6){
-  if(!el) return; el.style.setProperty('--scale','1');
-  const len = [...(el.textContent || '').trim()].length;
-  el.style.setProperty('--scale', String(len > maxChars ? Math.max(minScale, maxChars / len) : 1));
-}
-function autoshrinkFontToFit(el, { min=0.50, pad=4, squeezeLeft=null, squeezeRight=null, squeezePx=6 } = {}){
-  if (!el || !el.parentElement) return;
-  const base = parseFloat(el.dataset.baseFs || getComputedStyle(el).fontSize) || 14;
-  el.dataset.baseFs = base; el.style.fontSize = base + 'px';
-  if (squeezeLeft)  squeezeLeft.style.marginRight  = '';
-  if (squeezeRight) squeezeRight.style.marginLeft  = '';
-  let avail = Math.max(1, el.parentElement.clientWidth - pad);
-  if (el.scrollWidth <= avail) return;
-  if (squeezeLeft)  squeezeLeft.style.marginRight  = `-${squeezePx}px`;
-  if (squeezeRight) squeezeRight.style.marginLeft  = `-${squeezePx}px`;
-  avail = Math.max(1, el.parentElement.clientWidth - pad);
-  const scale = Math.max(min, avail / el.scrollWidth);
-  el.style.fontSize = (base * scale) + 'px';
-}
-function applyAutoscaleAll(){
-  autoscaleToLength($('tribute'), 10, 0.6);
-  autoscaleToLength($('type-emoji'), 8, 0.6);
-  autoscaleToLength($('about'), 20, 0.75);
-  const nameSpan = document.querySelector('.card-name span');
-  autoshrinkFontToFit(nameSpan, { min:0.50, pad:4, squeezeLeft: document.querySelector('.card-id'), squeezeRight: $('card-icon'), squeezePx:6 });
-}
-applyAutoscaleAll();
-if (document.fonts && document.fonts.ready) { document.fonts.ready.then(applyAutoscaleAll).catch(()=>{}); }
-
-/* Throttle resize */
-let rafId=null;
-addEventListener('resize', () => {
-  if (rafId) cancelAnimationFrame(rafId);
-  rafId = requestAnimationFrame(()=>{ applyAutoscaleAll(); rafId=null; });
-});
+const rb=$("rarity"); rb.textContent=card.rarity||"";
 </script>
 </body>
 </html>
