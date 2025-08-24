@@ -23,9 +23,9 @@
     /* Grid background - covers viewport */
     body::before {
       content: "";
-      position: fixed; /* fixed ensures full viewport coverage */
+      position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background-image: 
+      background-image:
         linear-gradient(transparent 95%, rgba(0,255,255,0.08) 95%),
         linear-gradient(90deg, transparent 95%, rgba(255,0,255,0.08) 95%);
       background-size: 40px 40px;
@@ -166,6 +166,7 @@
   </style>
 </head>
 <body>
+
   <div class="glow-orb orb1" id="orb1"></div>
   <div class="glow-orb orb2" id="orb2"></div>
 
@@ -184,7 +185,7 @@
   </div>
 
   <script>
-    /* ===== Deck build (unchanged) ===== */
+    /* ===== Deck build (visual only) ===== */
     const cardsData = [
       { title: "⚡ Zetsu Blade" },
       { title: "🌌 Orbital Echo" },
@@ -192,7 +193,6 @@
       { title: "💎 Quantum Shard" },
       { title: "🔥 Infernal Pulse" }
     ];
-
     const deck = document.getElementById("deck");
     cardsData.forEach(c => {
       const card = document.createElement("div");
@@ -205,7 +205,7 @@
       deck.appendChild(card);
     });
 
-    /* ===== Parallax orbs (unchanged) ===== */
+    /* ===== Parallax orbs ===== */
     const orb1 = document.getElementById("orb1");
     const orb2 = document.getElementById("orb2");
     document.addEventListener("mousemove", e => {
@@ -216,79 +216,91 @@
       orb2.style.transform = `translate(${-x}px, ${-y}px) scale(1.1)`;
     });
 
-    /* ===== Ritual GIF: small, semi-transparent, auto-remove from DOM ===== */
+    /* ===== Ritual GIF (click-to-dismiss, auto-hide after ~4.5s) ===== */
     const GIF_SRC = "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmEzdjIzNmdvbDNnMm1obXA3MmQwcXAxN2dkeHV4dnRvcjI0dmZtNyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/rTzAcZats1TRlAxI7H/giphy.gif";
-
-    const ritualInput = document.querySelector(".search-bar input");
-    const ritualBtn   = document.querySelector(".search-bar button");
-    const outputBox   = document.getElementById("output");
 
     function removeExistingRitual() {
       const old = document.getElementById("ritualFloat");
       if (old) old.remove();
     }
-
     function hideAndRemove(node) {
       if (!node || !node.parentNode) return;
-      node.style.pointerEvents = "none"; // stop intercepting clicks immediately
+      node.style.pointerEvents = "none";
       node.style.opacity = "0";
       const cleanup = () => node.remove();
       node.addEventListener("transitionend", cleanup, { once: true });
-      setTimeout(cleanup, 300); // safety fallback
+      setTimeout(cleanup, 300);
     }
-
     function showRitual() {
-      removeExistingRitual(); // ensure no hidden blocker remains
-
-      // build fresh container each click
+      removeExistingRitual();
       const wrap = document.createElement("div");
       wrap.id = "ritualFloat";
       wrap.style.cssText = `
-        position: fixed;
-        left: 50%; top: 50%;
+        position: fixed; left: 50%; top: 50%;
         transform: translate(-50%, -50%);
-        z-index: 999;
-        opacity: 0;
-        transition: opacity .2s ease;
-        pointer-events: none; /* safe while animating in */
+        z-index: 999; opacity: 0;
+        transition: opacity .2s ease; pointer-events: none;
       `;
-
       const img = document.createElement("img");
       img.alt = "Ritual Animation";
-      img.src = GIF_SRC + "?t=" + Date.now(); // restart GIF every click
+      img.src = GIF_SRC + "?t=" + Date.now();
       img.style.cssText = `
-        width: min(78vmin, 420px);
-        height: auto;
-        border-radius: 12px;
-        display: block;
-        opacity: 0.65; /* semi-transparent */
-        pointer-events: auto; /* allow click-to-dismiss */
-        cursor: pointer;
+        width: min(78vmin, 420px); height: auto; border-radius: 12px;
+        display: block; opacity: 0.65; pointer-events: auto; cursor: pointer;
       `;
-
       wrap.appendChild(img);
       document.body.appendChild(wrap);
-
-      // fade in & enable clicks
-      requestAnimationFrame(() => {
-        wrap.style.opacity = "1";
-        wrap.style.pointerEvents = "auto";
-      });
-
-      // click to hide early
+      requestAnimationFrame(() => { wrap.style.opacity = "1"; wrap.style.pointerEvents = "auto"; });
       img.addEventListener("click", () => hideAndRemove(wrap));
-
-      // auto-hide after 2s
-      const autoHide = setTimeout(() => hideAndRemove(wrap), 4500)
-      // clean timer if removed earlier
+      const autoHide = setTimeout(() => hideAndRemove(wrap), 4500);
       const clearTimer = () => clearTimeout(autoHide);
       wrap.addEventListener("DOMNodeRemoved", clearTimer, { once: true });
     }
 
-    ritualBtn.addEventListener("click", () => {
-      const q = (ritualInput.value || "").trim();
-      if (!q) outputBox.textContent = "no data";
+    /* ===== Jessica: production endpoint (Netlify Function proxy) ===== */
+    const API = "/api/make_card";              // <-- production-safe path
+    const MODEL_ID = "YOUR_MODEL_ID";          // must match LM Studio model id (proxy may also set this)
+
+    const input  = document.querySelector(".search-bar input");
+    const button = document.querySelector(".search-bar button");
+    const output = document.getElementById("output");
+
+    async function sendMakeCard(url) {
+      const body = {
+        model: MODEL_ID,
+        messages: [{ role: "user", content: `make card: ${url}` }],
+        stream: false
+      };
+      const res = await fetch(API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) {
+        const errText = await res.text().catch(() => "");
+        throw new Error(`HTTP ${res.status}: ${errText}`);
+      }
+      const data = await res.json();
+      return data?.choices?.[0]?.message?.content ?? "";
+    }
+
+    /* ===== Single click path: validate → ritual → fetch → show ===== */
+    button?.addEventListener("click", async () => {
+      const url = (input?.value || "").trim();
+      if (!url) { output.textContent = "Enter a URL."; return; }
+
       showRitual();
+      button.disabled = true;
+      output.textContent = "Summoning…";
+
+      try {
+        const raw = await sendMakeCard(url);
+        output.textContent = raw;       // show raw JSON/text from Jessica
+      } catch (e) {
+        output.textContent = (e && e.message) ? e.message : "Request failed.";
+      } finally {
+        button.disabled = false;
+      }
     });
   </script>
 </body>
