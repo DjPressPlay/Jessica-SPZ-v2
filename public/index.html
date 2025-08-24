@@ -1,570 +1,295 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Charset & Viewport -->
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-
-  <!-- Primary Meta (brand-aligned) -->
-  <title>Jessica-SPZ • SporeZ Link Fusion — Part of Zetsumetsu Eoe™</title>
-  <meta name="description" content="Jessica-SPZ (an extension of SporeZ) fuses your links into a single branded SporeZ drop page. SporeZ is a URL shortener + mini brand-page builder. Part of Zetsumetsu Eoe™ — Zetsumetsu Corporation.">
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://jessicaspz.netlify.app/" />
-
-  <!-- Optional keywords per your preference -->
-  <meta name="keywords" content="Jessica-SPZ, SporeZ, Zetsumetsu Eoe, Zetsumetsu Corporation, URL shortener, mini brand page, link fusion, Artworqq, Kevin Suber" />
-
-  <!-- Open Graph -->
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="Zetsumetsu Corporation" />
-  <meta property="og:url" content="https://jessicaspz.netlify.app/" />
-  <meta property="og:title" content="Jessica-SPZ • SporeZ Link Fusion — Part of Zetsumetsu Eoe™" />
-  <meta property="og:description" content="Jessica-SPZ (an extension of SporeZ) fuses your links into a single branded SporeZ drop page. SporeZ is a URL shortener + mini brand-page builder." />
-  <meta property="og:image" content="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExanhzZzZnM2VrdnY2b3Z4Zmt2ZWNxOGEzZWIxdTV3Zmp1YXc1dDFzOCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/DCqjTqTnUBOSAK1WfH/giphy.gif" />
-  <meta property="og:image:alt" content="SporeZ holographic motion mark" />
-
-  <!-- Twitter -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:url" content="https://jessicaspz.netlify.app/" />
-  <meta name="twitter:title" content="Jessica-SPZ • SporeZ Link Fusion — Part of Zetsumetsu Eoe™" />
-  <meta name="twitter:description" content="Jessica-SPZ (an extension of SporeZ) fuses your links into a single branded SporeZ drop page. SporeZ is a URL shortener + mini brand-page builder." />
-  <meta name="twitter:image" content="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExanhzZzZnM2VrdnY2b3Z4Zmt2ZWNxOGEzZWIxdTV3Zmp1YXc1dDFzOCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/DCqjTqTnUBOSAK1WfH/giphy.gif" />
-  <meta name="theme-color" content="#0b1219" />
-
-  <!-- Base JSON-LD (will be updated dynamically after fusion) -->
-  <script id="ld-json" type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@graph": [
-      { "@type": "Organization", "@id": "#org", "name": "Zetsumetsu Corporation", "brand": "Zetsumetsu Eoe™" },
-      { "@type": "WebSite", "@id": "#website", "name": "SporeZ", "url": "https://sporez.netlify.app/", "isPartOf": { "@id": "#org" } },
-      {
-        "@type": "WebApplication",
-        "name": "Jessica-SPZ",
-        "url": "https://jessicaspz.netlify.app/",
-        "applicationCategory": "BusinessApplication",
-        "isPartOf": { "@id": "#website" },
-        "creator": { "@type": "Person", "name": "Kevin J. Suber Jr. (Artworqq)" }
-      }
-    ]
-  }
-  </script>
-
+  <meta charset="UTF-8">
+  <title>SporeZ — Card Deck</title>
   <style>
-    :root{
-      --bg:#070b10; --panel:#0c121a; --muted:#8aa2bc;
-      --line:#102534; --glow1:#00f0ff; --glow2:#00ff88; --iris:#7b2ff7; --white:#e8f1ff;
-      --accent:#70ffe0; --danger:#ff4d6d; --ok:#66ff99;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      background:
-        radial-gradient(1400px 900px at 50% -10%, #0e1824 0%, var(--bg) 60%),
-        linear-gradient(180deg, rgba(0,0,0,.4), transparent 40%);
-      color:var(--white); font:14px/1.5 system-ui,Segoe UI,Roboto,Inter,Arial;
-      display:flex; align-items:flex-start; justify-content:center;
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+    body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: #000;
+      color: #eee;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+      overflow-x: hidden;
+      position: relative;
     }
 
-    /* Global holo gradient animation */
-    @keyframes iridescentMove {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+    /* Grid background - covers viewport */
+    body::before {
+      content: "";
+      position: fixed; /* fixed ensures full viewport coverage */
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: 
+        linear-gradient(transparent 95%, rgba(0,255,255,0.08) 95%),
+        linear-gradient(90deg, transparent 95%, rgba(255,0,255,0.08) 95%);
+      background-size: 40px 40px;
+      z-index: -3;
+      pointer-events: none;
     }
 
-    /* Generic holo-border helper */
-    .holo {
-      position:relative; border-radius:16px; border:2px solid transparent; background-clip:padding-box;
+    /* Floating neon orbs (moving lights) */
+    .glow-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.4;
+      z-index: -2;
+      transition: transform 0.1s linear;
+      will-change: transform;
     }
-    .holo::before{
-      content:""; position:absolute; inset:-2px; border-radius:inherit; padding:2px;
-      background: linear-gradient(135deg, var(--glow1), var(--iris), var(--glow2));
-      background-size:300% 300%; animation: iridescentMove 8s ease infinite;
-      -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-      -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none;
+    .orb1 { width: 450px; height: 450px; background: #00ffff; top: -15%; left: -10%; }
+    .orb2 { width: 350px; height: 350px; background: #ff00ff; bottom: -20%; right: -10%; }
+
+    /* Deck container */
+    .deck {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      perspective: 1200px;
+      margin-bottom: 3rem;
+      position: relative;
+      height: 420px;
     }
 
-    .wrap{width:min(1240px,96vw); padding:24px 16px 32px}
-    header{display:grid; gap:8px; place-items:center; text-align:center; margin-bottom:18px}
-    h1{
-      margin:0;
-      font-size:26px; letter-spacing:.6px; text-transform:uppercase;
-      background:linear-gradient(90deg,var(--glow1),var(--iris),var(--glow2));
-      -webkit-background-clip:text; background-clip:text; color:transparent;
-      text-align:center;
-      filter: drop-shadow(0 2px 10px rgba(0,255,200,.12));
-    }
-    .sub{color:var(--muted); text-align:center}
-
-    /* Two-pane layout: narrow sticky left, big right */
-    .grid{
-      display:grid;
-      grid-template-columns: minmax(300px, 380px) 1fr;
-      gap:18px;
-      align-items:start;
+    .card {
+      width: 380px;
+      height: 460px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #111, #222);
+      box-shadow: 0 0 25px rgba(0,255,255,0.4), 0 0 40px rgba(255,0,255,0.3);
+      border: 3px solid transparent;
+      background-clip: padding-box;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.4s ease, box-shadow 0.3s ease;
+      margin: 0 -80px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
-    /* Panels */
-    .panel{
-      background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.00));
-      border:1px solid var(--line); border-radius:16px; padding:14px;
-      box-shadow:
-        0 0 0 1px rgba(0,0,0,.35),
-        0 12px 32px rgba(0,0,0,.45);
-    }
-    .panel h2{
-      margin:0 0 12px; font-size:12px; font-weight:800; letter-spacing:.26px; text-transform:uppercase;
-      color:var(--muted); text-align:center;
-    }
+    /* stacked look via nth-child transforms */
+    .card:nth-child(1) { transform: rotate(-8deg); z-index: 1; }
+    .card:nth-child(2) { transform: rotate(-4deg); z-index: 2; }
+    .card:nth-child(3) { transform: rotate(0deg); z-index: 3; }
+    .card:nth-child(4) { transform: rotate(4deg); z-index: 2; }
+    .card:nth-child(5) { transform: rotate(8deg); z-index: 1; }
 
-    /* Left controls: sticky + scrollable */
-    .controls{display:grid; gap:12px; position:sticky; top:12px; max-height:calc(100vh - 24px); overflow:auto}
-    textarea, input[type="text"]{
-      width:100%; background:#0a1118; color:var(--white); border:1px solid #142131; border-radius:12px;
-      padding:12px 12px; outline:none; font:13px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      box-shadow: inset 0 0 0 1px rgba(0,0,0,.35);
-    }
-    textarea{min-height:120px; resize:vertical}
-    .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:center}
-    .row > * { flex:1 1 auto }
-
-    .pill{
-      display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; font-size:12px;
-      border:1px solid #173346; background:#0c1720; color:var(--muted); justify-content:center
+    .card:hover {
+      transform: scale(1.05) rotate(0deg) !important;
+      box-shadow: 0 0 40px rgba(0,255,255,0.7), 0 0 60px rgba(255,0,255,0.6);
+      z-index: 10;
     }
 
-    .btn{
-      appearance:none; border:1px solid #143244; background:#0e1b26; color:#fff;
-      padding:10px 14px; border-radius:12px; font-weight:800; letter-spacing:.25px; cursor:pointer;
-      transition:.18s transform ease,.18s box-shadow ease,.18s border-color ease; text-align:center;
-    }
-    .btn:hover{transform:translateY(-1px); box-shadow:0 10px 24px rgba(0,0,0,.35); border-color:#18465f}
-    .btn.primary{
-      background:linear-gradient(90deg,var(--glow1),var(--iris),var(--glow2)); color:#001b1f; border-color:transparent;
-      box-shadow: 0 0 14px rgba(0,240,255,.28), 0 0 28px rgba(0,255,136,.18);
-    }
-
-    .stack{display:grid; gap:10px}
-    pre{
-      margin:0; max-height:160px; overflow:auto; background:#071018; color:#c6ecff;
-      border:1px solid #0f2536; border-radius:12px; padding:10px; font-size:12px;
+    .card-header {
+      background: linear-gradient(90deg, #0ff, #f0f);
+      border-radius: 14px 14px 0 0;
+      padding: 0.5rem;
+      font-weight: bold;
+      text-align: center;
+      color: #000;
+      font-size: 0.9rem;
+      position: relative;
+      z-index: 2;
     }
 
-    /* Right: live preview area */
-    .preview{
-      display:grid; gap:14px; padding:10px; border-radius:18px;
-      background: rgba(7, 12, 18, .65);
-      box-shadow: 0 0 40px rgba(0, 240, 255, 0.07);
-      border:1px solid rgba(16,37,52,.8);
+    .card-image {
+      flex: 1;
+      background: url("https://miro.medium.com/v2/resize:fit:1100/format:webp/1*8Jf-7lPV8m1S8Aht4ipr4w.png") center/cover no-repeat;
+      filter: brightness(0.85);
+      position: relative;
+      z-index: 1;
     }
 
-    /* Card with holo border */
-    .card{
-      position:relative; border-radius:18px; padding:16px; overflow:hidden;
-      border:2px solid rgba(255,255,255,.06);
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,0)),
-        radial-gradient(100% 70% at 0% 0%, rgba(0,240,255,.08), transparent 60%),
-        radial-gradient(100% 70% at 100% 0%, rgba(0,255,136,.08), transparent 60%),
-        #0b1219;
-      box-shadow:
-        0 0 0 1px rgba(0,0,0,.55) inset,
-        0 30px 50px rgba(0,0,0,.35),
-        0 0 60px rgba(0,240,255,.05);
-    }
-    .card.holo::before{
-      content:""; position:absolute; inset:-2px; border-radius:20px; padding:2px;
-      background: linear-gradient(135deg, var(--glow1), var(--iris), var(--glow2));
-      background-size:300% 300%; animation: iridescentMove 10s ease infinite;
-      -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-      -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none; opacity:.85;
+    .footer {
+      font-size: 0.65rem;
+      text-align: center;
+      padding: 0.4rem;
+      background: rgba(0,0,0,0.6);
+      color: #0ff;
+      border-top: 1px solid rgba(255,255,255,0.2);
+      z-index: 2;
     }
 
-    .card .frame{ position:absolute; inset:0; pointer-events:none; background:conic-gradient(from 0deg, rgba(0,240,255,.2), rgba(0,255,136,.2), rgba(0,240,255,.2)); mask:linear-gradient(#000,transparent 30%); opacity:.12; }
-
-    .hero{display:grid; gap:10px; place-items:center; text-align:center}
-    .hero .img-wrap{ width:100%; border-radius:16px; }
-    .hero .img-wrap.holo::before{ opacity:.9; }
-    .hero img{
-      width:100%; height:44vh; max-height:320px; object-fit:cover; border-radius:14px; display:block;
-      background:linear-gradient(135deg,#0d1720,#0a1219);
-      border:1px solid rgba(255,255,255,.06);
-      box-shadow: 0 8px 30px rgba(0,0,0,.35);
+    /* Search bar */
+    .search-bar {
+      width: 90%;
+      max-width: 500px;
+      display: flex;
+      margin-bottom: 2rem;
+      z-index: 5;
     }
-    .hero h3{margin:6px 0 0; font-size:20px; letter-spacing:.2px}
-    .hero p{margin:0; color:var(--muted); font-size:13px}
-    .cta{margin-top:8px}
-    .cta a{
-      display:inline-block; padding:10px 14px; border-radius:999px; text-decoration:none; font-weight:800;
-      color:#001b1f; background:linear-gradient(90deg,var(--glow1),var(--iris),var(--glow2));
-      border:0; box-shadow:0 8px 24px rgba(0,255,200,.18);
+    .search-bar input {
+      flex: 1;
+      padding: 0.9rem;
+      border-radius: 10px 0 0 10px;
+      border: none;
+      outline: none;
+      font-size: 1rem;
+      background: #111;
+      color: #0ff;
+      box-shadow: inset 0 0 12px rgba(0,255,255,0.4);
     }
-
-    .columns{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px}
-    .box{ border:1px solid #142131; border-radius:14px; padding:12px; background:#0c141caa; }
-    .box.holo::before{opacity:.5}
-
-    .products{display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:12px}
-
-    /* Product card with iridescent outline */
-    .prod{
-      position:relative; border-radius:12px; padding:10px; background:#0b131b;
-      display:grid; gap:8px; text-align:center; border:2px solid transparent; background-clip:padding-box;
-      box-shadow: inset 0 0 0 1px rgba(0,0,0,.45), 0 10px 26px rgba(0,0,0,.28);
+    .search-bar button {
+      padding: 0.9rem 1.2rem;
+      border-radius: 0 10px 10px 0;
+      border: none;
+      background: linear-gradient(90deg,#00f0ff,#ff00ff);
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 0 12px rgba(255,0,255,0.6);
+      transition: transform 0.2s ease;
     }
-    .prod::before{
-      content:""; position:absolute; inset:-2px; border-radius:14px; padding:2px;
-      background: linear-gradient(135deg, var(--glow1), var(--iris), var(--glow2));
-      background-size:300% 300%; animation: iridescentMove 7s ease infinite;
-      -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-      -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none;
-    }
+    .search-bar button:hover { transform: scale(1.05); }
 
-    .prod img{width:100%; height:120px; object-fit:cover; border-radius:10px; background:#0d1924; display:block; border:1px solid rgba(255,255,255,.06)}
-    .prod .name{font-weight:800; letter-spacing:.2px}
-    .prod .price{color:var(--ok); font-weight:800}
-    .prod a{color:var(--accent); text-decoration:none; font-weight:800}
-
-    footer{margin-top:10px; text-align:center; color:var(--muted); font-size:12px}
-    .center{text-align:center}
-    .bad{color:var(--danger)}
-
-    @media (max-width:980px){
-      .grid{grid-template-columns:1fr}
-      .columns{grid-template-columns:1fr}
-      .hero img{height:36vh; max-height:260px}
+    /* Data stream */
+    .output {
+      width: 90%;
+      max-width: 700px;
+      background: #050505;
+      border-radius: 12px;
+      padding: 1rem;
+      font-size: 0.85rem;
+      max-height: 240px;
+      overflow-y: auto;
+      box-shadow: inset 0 0 12px rgba(0,255,200,0.2);
+      color: #0ff;
+      white-space: pre-wrap;
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <h1>Jessica-SPZ — SporeZ Link Fusion</h1>
-      <div class="sub">
-        <span class="pill" id="sid-pill">Session: <b id="sid">…</b></span>
-      </div>
-    </header>
+  <div class="glow-orb orb1" id="orb1"></div>
+  <div class="glow-orb orb2" id="orb2"></div>
 
-    <div class="grid">
-      <!-- LEFT: Controls (sticky) -->
-      <section class="panel controls">
-        <h2>Input Links</h2>
-        <textarea id="links" placeholder="Paste 1 link per line"></textarea>
+  <!-- Deck of cards -->
+  <div class="deck" id="deck"></div>
 
-        <div class="row">
-          <label class="pill"><input type="radio" name="mode" value="auto" checked />&nbsp;Auto</label>
-          <label class="pill"><input type="radio" name="mode" value="sell" />&nbsp;Sell</label>
-          <label class="pill"><input type="radio" name="mode" value="info" />&nbsp;Info</label>
-          <label class="pill"><input type="radio" name="mode" value="hybrid" />&nbsp;Hybrid</label>
-        </div>
+  <!-- Search bar -->
+  <div class="search-bar">
+    <input type="text" placeholder="Create a ZTCG Card from any data link...">
+    <button>Creation Ritual</button>
+  </div>
 
-        <div class="row">
-          <label class="pill"><input type="checkbox" id="defSell" checked />&nbsp;Default: Sell product</label>
-          <label class="pill"><input type="checkbox" id="defInfo" />&nbsp;Default: Show info</label>
-        </div>
-
-        <div class="row">
-          <input id="slug" type="text" placeholder="slug (optional, e.g. my-drop)" />
-        </div>
-
-        <div class="row">
-          <button class="btn primary" id="btn-run">Crawl + Fuse</button>
-          <button class="btn" id="btn-preview">Preview</button>
-          <!-- Publish button removed -->
-        </div>
-
-        <div class="stack">
-          <h2>Log</h2>
-          <pre id="log">ready.</pre>
-          <h2>Fused JSON</h2>
-          <pre id="json">{}</pre>
-        </div>
-      </section>
-
-      <!-- RIGHT: Live Preview -->
-      <section class="panel preview">
-        <h2>Live Preview</h2>
-        <div class="card holo" id="card">
-          <div class="frame"></div>
-
-          <div class="hero" id="hero">
-            <div class="img-wrap holo">
-              <img id="heroImg" alt="Fusion hero image" />
-            </div>
-            <h3 id="heroTitle" class="center">Your Fused Page Will Appear Here</h3>
-            <p id="heroSub" class="center">Paste links on the left and run <b>Crawl + Fuse</b>.</p>
-            <div class="cta" id="heroCta"></div>
-          </div>
-
-          <div class="columns">
-            <div class="box holo">
-              <div class="center" style="margin-bottom:8px; color:var(--muted); font-weight:800; letter-spacing:.2px;">Products</div>
-              <div class="products" id="products"></div>
-            </div>
-            <div class="box holo">
-              <div class="center" style="margin-bottom:8px; color:var(--muted); font-weight:800; letter-spacing:.2px;">Info</div>
-              <div id="info"></div>
-            </div>
-          </div>
-
-          <footer id="footer">SporeZ • Jessica-SPZ • Auto-Fusion</footer>
-        </div>
-      </section>
-    </div>
+  <!-- Data stream -->
+  <div class="output" id="output">
+    ⚡ Card data stream will appear here...
   </div>
 
   <script>
-    // --- Session ID (SporeZ-style) ---
-    function getOrCreateSessionId() {
-      try {
-        const k = "spz_session_id";
-        let v = sessionStorage.getItem(k);
-        if (!v) {
-          v = "spz_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,8);
-          sessionStorage.setItem(k, v);
-        }
-        return v;
-      } catch {
-        return "spz_local_"+Date.now();
-      }
+    /* ===== Deck build (unchanged) ===== */
+    const cardsData = [
+      { title: "⚡ Zetsu Blade" },
+      { title: "🌌 Orbital Echo" },
+      { title: "🕷️ Spore Crawler" },
+      { title: "💎 Quantum Shard" },
+      { title: "🔥 Infernal Pulse" }
+    ];
+
+    const deck = document.getElementById("deck");
+    cardsData.forEach(c => {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div class="card-header">${c.title}</div>
+        <div class="card-image"></div>
+        <div class="footer">Zetsumetsu Eoe™ | ZETSUMETSU CORPORATION | Artworqq Kevin Suber</div>
+      `;
+      deck.appendChild(card);
+    });
+
+    /* ===== Parallax orbs (unchanged) ===== */
+    const orb1 = document.getElementById("orb1");
+    const orb2 = document.getElementById("orb2");
+    document.addEventListener("mousemove", e => {
+      const { innerWidth, innerHeight } = window;
+      const x = (e.clientX / innerWidth - 0.5) * 100;
+      const y = (e.clientY / innerHeight - 0.5) * 100;
+      orb1.style.transform = `translate(${x}px, ${y}px) scale(1.1)`;
+      orb2.style.transform = `translate(${-x}px, ${-y}px) scale(1.1)`;
+    });
+
+    /* ===== Ritual GIF: small, semi-transparent, auto-remove from DOM ===== */
+    const GIF_SRC = "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmEzdjIzNmdvbDNnMm1obXA3MmQwcXAxN2dkeHV4dnRvcjI0dmZtNyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/rTzAcZats1TRlAxI7H/giphy.gif";
+
+    const ritualInput = document.querySelector(".search-bar input");
+    const ritualBtn   = document.querySelector(".search-bar button");
+    const outputBox   = document.getElementById("output");
+
+    function removeExistingRitual() {
+      const old = document.getElementById("ritualFloat");
+      if (old) old.remove();
     }
-    const SID = getOrCreateSessionId();
-    document.getElementById("sid").textContent = SID;
 
-    // --- UI refs ---
-    const elLinks = document.getElementById("links");
-    const elLog   = document.getElementById("log");
-    const elJSON  = document.getElementById("json");
-    const elSlug  = document.getElementById("slug");
-    const elHeroImg = document.getElementById("heroImg");
-    const elHeroTitle = document.getElementById("heroTitle");
-    const elHeroSub = document.getElementById("heroSub");
-    const elHeroCta = document.getElementById("heroCta");
-    const elProducts = document.getElementById("products");
-    const elInfo = document.getElementById("info");
-    const elFooter = document.getElementById("footer");
-
-    const $ = (s) => document.querySelector(s);
-    const getMode = () => (document.querySelector('input[name="mode"]:checked')?.value || "auto");
-    const getDefaults = () => ({ sell: $('#defSell').checked, info: $('#defInfo').checked });
-
-    function log(msg, isErr=false){
-      elLog.textContent += "\n" + (isErr ? "⛔ " : "• ") + msg;
-      elLog.scrollTop = elLog.scrollHeight;
+    function hideAndRemove(node) {
+      if (!node || !node.parentNode) return;
+      node.style.pointerEvents = "none"; // stop intercepting clicks immediately
+      node.style.opacity = "0";
+      const cleanup = () => node.remove();
+      node.addEventListener("transitionend", cleanup, { once: true });
+      setTimeout(cleanup, 300); // safety fallback
     }
 
-    async function postJSON(path, body){
-      const res = await fetch(path, {
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify(body || {})
+    function showRitual() {
+      removeExistingRitual(); // ensure no hidden blocker remains
+
+      // build fresh container each click
+      const wrap = document.createElement("div");
+      wrap.id = "ritualFloat";
+      wrap.style.cssText = `
+        position: fixed;
+        left: 50%; top: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 999;
+        opacity: 0;
+        transition: opacity .2s ease;
+        pointer-events: none; /* safe while animating in */
+      `;
+
+      const img = document.createElement("img");
+      img.alt = "Ritual Animation";
+      img.src = GIF_SRC + "?t=" + Date.now(); // restart GIF every click
+      img.style.cssText = `
+        width: min(78vmin, 420px);
+        height: auto;
+        border-radius: 12px;
+        display: block;
+        opacity: 0.65; /* semi-transparent */
+        pointer-events: auto; /* allow click-to-dismiss */
+        cursor: pointer;
+      `;
+
+      wrap.appendChild(img);
+      document.body.appendChild(wrap);
+
+      // fade in & enable clicks
+      requestAnimationFrame(() => {
+        wrap.style.opacity = "1";
+        wrap.style.pointerEvents = "auto";
       });
-      if(!res.ok){
-        const t = await res.text().catch(()=> "");
-        throw new Error(`HTTP ${res.status} ${t}`);
-      }
-      return res.json();
+
+      // click to hide early
+      img.addEventListener("click", () => hideAndRemove(wrap));
+
+      // auto-hide after 2s
+      const autoHide = setTimeout(() => hideAndRemove(wrap), 4500)
+      // clean timer if removed earlier
+      const clearTimer = () => clearTimeout(autoHide);
+      wrap.addEventListener("DOMNodeRemoved", clearTimer, { once: true });
     }
 
-    // --- BRAND / SEO CONSTANTS ---
-    const SITES = {
-      jessica: "https://jessicaspz.netlify.app",
-      sporez:  "https://sporez.netlify.app"
-    };
-    const DEFAULT_OG =
-      "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExanhzZzZnM2VrdnY2b3Z4Zmt2ZWNxOGEzZWIxdTV3Zmp1YXc1dDFzOCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/DCqjTqTnUBOSAK1WfH/giphy.gif";
-
-    // --- SEO helpers ---
-    function setAttr(el, attr, val){ if(el) el.setAttribute(attr, val); }
-    function priceToNumberUSD(str){
-      const n = parseFloat(String(str||"").replace(/[^0-9.]/g, ""));
-      return Number.isFinite(n) ? n.toFixed(2) : undefined;
-    }
-    function canonicalFor(slug){
-      return slug ? `${SITES.sporez}/drop/${encodeURIComponent(slug)}` : `${SITES.jessica}/`;
-    }
-
-    function updateSEO(d){
-      const hero = d?.hero || {};
-      const slug = d?.slug || elSlug.value.trim();
-      const url  = canonicalFor(slug);
-      const title = hero.title ? `${hero.title} • SporeZ` : "Jessica-SPZ • SporeZ Link Fusion — Part of Zetsumetsu Eoe™";
-      const desc  = hero.subtitle || "Jessica-SPZ (an extension of SporeZ) fuses your links into a single branded SporeZ drop page. SporeZ is a URL shortener + mini brand-page builder. Part of Zetsumetsu Eoe™ — Zetsumetsu Corporation.";
-      const image = hero.image || DEFAULT_OG;
-
-      // Document & Meta
-      document.title = title;
-      setAttr(document.querySelector('link[rel="canonical"]'), "href", url);
-      setAttr(document.querySelector('meta[name="description"]'), "content", desc);
-
-      setAttr(document.querySelector('meta[property="og:site_name"]'), "content", "Zetsumetsu Corporation");
-      setAttr(document.querySelector('meta[property="og:url"]'), "content", url);
-      setAttr(document.querySelector('meta[property="og:title"]'), "content", title);
-      setAttr(document.querySelector('meta[property="og:description"]'), "content", desc);
-      setAttr(document.querySelector('meta[property="og:image"]'), "content", image);
-
-      setAttr(document.querySelector('meta[name="twitter:url"]'), "content", url);
-      setAttr(document.querySelector('meta[name="twitter:title"]'), "content", title);
-      setAttr(document.querySelector('meta[name="twitter:description"]'), "content", desc);
-      setAttr(document.querySelector('meta[name="twitter:image"]'), "content", image);
-
-      // JSON-LD graph
-      const products = Array.isArray(d?.products) ? d.products : [];
-      const graph = [
-        { "@type":"Organization", "@id":"#org", "name":"Zetsumetsu Corporation", "brand":"Zetsumetsu Eoe™" },
-        { "@type":"WebSite", "@id":"#website", "name":"SporeZ", "url": SITES.sporez, "isPartOf": { "@id":"#org" } },
-        {
-          "@type":"WebApplication",
-          "name":"Jessica-SPZ",
-          "url": SITES.jessica,
-          "applicationCategory":"BusinessApplication",
-          "isPartOf": { "@id":"#website" },
-          "creator": { "@type":"Person", "name":"Kevin J. Suber Jr. (Artworqq)" }
-        },
-        { "@type":"WebPage", "name": title, "url": url, "description": desc, "image": image }
-      ];
-      if(products.length){
-        graph.push({
-          "@type":"ItemList",
-          "itemListElement": products.slice(0,8).map((p,i)=>{
-            const price = priceToNumberUSD(p.price);
-            const item = {
-              "@type":"Product",
-              "position": i+1,
-              "name": p.name || "Unnamed",
-              "description": p.description || "",
-              "image": p.image || undefined,
-              "url": p.link || url
-            };
-            if(price){
-              item.offers = { "@type":"Offer", "price": price, "priceCurrency":"USD", "url": p.link || url };
-            }
-            return item;
-          })
-        });
-      }
-      const tag = document.getElementById("ld-json");
-      if(tag) tag.textContent = JSON.stringify({ "@context":"https://schema.org", "@graph": graph });
-    }
-
-    // --- State
-    let fused = null;
-
-    // Fallback sample
-    const sampleFused = {
-      mode:"hybrid",
-      slug:"sample-" + Date.now().toString(36),
-      hero:{ title:"Zetsu-Grade Fusion Page", subtitle:"Auto-built from your links", image:"", ctaText:"Claim Your Drop", ctaLink:"#"},
-      products:[
-        {name:"Holo Tee", price:"$29", link:"#", description:"Shimmer print • Limited"},
-        {name:"Z-Cap", price:"$19", link:"#", description:"Low-profile • Night mode"},
-        {name:"Signal Tag", price:"$9", link:"#", description:"Metal core • NFC"}
-      ],
-      articles:[
-        {heading:"What This Page Does", content:"Jessica-SPZ crawls your links, extracts key info and products, and fuses it into a single, market-ready SporeZ page."},
-        {heading:"How It Chooses Layout", content:"Mode: Auto (or Sell/Info/Hybrid). Defaults guarantee a complete page even if a site blocks scraping."}
-      ],
-      media:[]
-    };
-
-    async function runCrawlAndFuse(){
-      try{
-        elLog.textContent = "running…";
-        const links = elLinks.value.split(/\n+/).map(s=>s.trim()).filter(Boolean);
-        if(!links.length){ log("Add at least one link.", true); return; }
-
-        log("Crawling links…");
-        const crawl = await postJSON("/api/crawl", { links, session: SID });
-
-        log("Fusing content…");
-        fused = await postJSON("/api/fuse", {
-          results: crawl.results || [],
-          mode: getMode(),
-          defaults: getDefaults(),
-          session: SID,
-          slug: elSlug.value.trim() || undefined
-        });
-
-        elJSON.textContent = JSON.stringify(fused, null, 2);
-        log("Fusion complete.");
-        renderPreview(fused);
-      }catch(e){ log("Error: " + e.message, true); }
-    }
-
-    function ensure(v, fb){ return (v===undefined || v===null || v==="") ? fb : v; }
-
-    function renderPreview(data){
-      const d = data || sampleFused;
-      const hero = d.hero || {};
-      const prods = Array.isArray(d.products) ? d.products : [];
-      const arts = Array.isArray(d.articles) ? d.articles : [];
-
-      elHeroTitle.textContent = ensure(hero.title, "Your Fused Page");
-      elHeroSub.textContent   = ensure(hero.subtitle, "Merged info + offers in one layout.");
-      elHeroImg.src = hero.image || "";
-      elHeroImg.alt = hero.title ? `${hero.title} — hero image` : "Fusion hero image";
-      elHeroImg.style.display = hero.image ? "block" : "none";
-
-      elHeroCta.innerHTML = "";
-      if(hero.ctaText){
-        const a = document.createElement("a");
-        a.href = hero.ctaLink || "#"; a.textContent = hero.ctaText; a.target = "_blank"; a.rel = "noopener";
-        elHeroCta.appendChild(a);
-      }
-
-      // Products
-      elProducts.innerHTML = "";
-      (prods.length ? prods.slice(0,8) : (getDefaults().sell ? [
-        {name:"Starter Pack", price:"$29", link:"#"},
-        {name:"Mystery Drop", price:"$19", link:"#"}
-      ] : [])).forEach(p=> elProducts.appendChild(prodNode(p)));
-
-      // Info
-      elInfo.innerHTML = "";
-      (arts.length ? arts.slice(0,6) : (getDefaults().info ? [
-        {heading:"About", content:"This section will summarize your fused links: brand purpose, key features, and how to act."}
-      ] : [])).forEach(a=> elInfo.appendChild(infoNode(a)));
-
-      elFooter.textContent = (d.mode ? d.mode.toUpperCase()+" • " : "") + "SporeZ • Jessica-SPZ";
-
-      // SEO update
-      updateSEO(d);
-    }
-
-    function prodNode(p){
-      const div = document.createElement("div"); div.className = "prod";
-      const img = document.createElement("img"); img.src = p.image || ""; img.alt = p.name || "Product image"; img.style.display = p.image ? "block" : "none";
-      const name = document.createElement("div"); name.className = "name"; name.textContent = p.name || "Unnamed";
-      const price = document.createElement("div"); price.className = "price"; price.textContent = p.price || "";
-      const link = document.createElement("a"); link.href = p.link || "#"; link.target = "_blank"; link.rel = "noopener"; link.textContent = "View";
-      const desc = document.createElement("div"); desc.style.color = "var(--muted)"; desc.style.fontSize = "12px"; desc.textContent = p.description || "";
-      div.append(img, name, price, desc, link); return div;
-    }
-
-    function infoNode(a){
-      const box = document.createElement("div"); box.style.display = "grid"; box.style.gap = "6px";
-      const h = document.createElement("div"); h.style.fontWeight = "800"; h.textContent = a.heading || "Info";
-      const c = document.createElement("div"); c.style.whiteSpace = "pre-wrap"; c.style.color = "var(--white)"; c.textContent = a.content || "";
-      box.append(h,c); return box;
-    }
-
-    function openLivePreview(data){
-      const d = data || sampleFused;
-      const json = JSON.stringify(d);
-      const bytes = new TextEncoder().encode(json);
-      const b64 = btoa(Array.from(bytes, b => String.fromCharCode(b)).join(""));
-      const url = `/preview.html#j=${b64}`;
-      window.open(url, "_blank");
-    }
-
-    // Buttons
-    document.getElementById("btn-run").addEventListener("click", runCrawlAndFuse);
-    document.getElementById("btn-preview").addEventListener("click", ()=> openLivePreview(fused || sampleFused));
-
-    // First paint
-    renderPreview(sampleFused);
+    ritualBtn.addEventListener("click", () => {
+      const q = (ritualInput.value || "").trim();
+      if (!q) outputBox.textContent = "no data";
+      showRitual();
+    });
   </script>
 </body>
 </html>
