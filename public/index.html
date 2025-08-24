@@ -178,6 +178,17 @@
     <input type="text" placeholder="Create a ZTCG Card from any data link...">
     <button>Creation Ritual</button>
   </div>
+  
+<!-- Summon Card Button -->
+<div style="margin-top:1rem; text-align:center;">
+  <button id="summon-btn">🔮 Summon Card</button>
+</div>
+
+<script>
+  document.getElementById("summon-btn").addEventListener("click", () => {
+    window.open("summon_btn.html", "SummonCard", "width=520,height=820");
+  });
+</script>
 
   <!-- Data stream -->
   <div class="output" id="output">
