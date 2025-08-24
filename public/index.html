@@ -185,8 +185,32 @@
 </div>
 
 <script>
+  // Grab your preview card data (replace with your real card builder)
+  function getCurrentCardData() {
+    return window.card || {
+      id: "TMP-" + Date.now(),
+      name: document.getElementById("card-name")?.textContent || "Unnamed",
+      icon: "✨",
+      about: "Unknown",
+      tribute: "🙇‍♂️",
+      effects: [],
+      atk: "0",
+      def: "0",
+      level: "1",
+      rarity: "Normal",
+      tags: [],
+      card_sets: [],
+      timestamp: new Date().toISOString(),
+      footer: "Summoned Preview",
+      card_images: []
+    };
+  }
+
   document.getElementById("summon-btn").addEventListener("click", () => {
-    window.open("summon_btn.html", "SummonCard", "width=520,height=820");
+    const card = getCurrentCardData();
+    const id = "summon_" + Date.now();
+    localStorage.setItem(id, JSON.stringify(card));
+    window.open(`summon_btn.html?id=${id}`, "SummonCard", "width=520,height=820");
   });
 </script>
 
