@@ -258,19 +258,22 @@
     }
 
     /* ===== Jessica: production endpoint (Netlify Function proxy) ===== */
-    const API = "/api/make_card";              // <-- production-safe path
-    const MODEL_ID = "YOUR_MODEL_ID";          // must match LM Studio model id (proxy may also set this)
+const API       = "/api/make_card";           // production-safe path
+const MODEL_ID  = "MXFP4";                    // OpenAI's gpt-oss 20B (your model id)
+const LLM_SITE  = "http://127.0.0.1:1234";    // LM Studio base (the proxy will forward here)
 
     const input  = document.querySelector(".search-bar input");
     const button = document.querySelector(".search-bar button");
     const output = document.getElementById("output");
 
     async function sendMakeCard(url) {
-      const body = {
-        model: MODEL_ID,
-        messages: [{ role: "user", content: `make card: ${url}` }],
-        stream: false
-      };
+     const body = {
+  model: MODEL_ID,
+  site: LLM_SITE,                 // <-- added
+  messages: [{ role: "user", content: `make card: ${url}` }],
+  stream: false
+};
+
       const res = await fetch(API, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
