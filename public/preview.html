@@ -278,7 +278,7 @@ card.tributes = tributesResolved;  // numeric tribute count
 function countTributes(s){
   if (!s) return 0;
   const kneel = (s.match(/🙇/gu) || []).length;
-  const starsFallback = (s.match(/⭐/gu) || []).length; // optional legacy
+  
   return kneel || starsFallback;
 }
 
