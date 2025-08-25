@@ -179,14 +179,15 @@ const card = {
   name: "Falcon 9 Artworqq-PPLaunch [STAR-SHINE]",
   icon: "🚀",
   about: "Technology",
-  tribute: "🙇‍♂️🙇‍♂️🙇‍♂️", // ← real Tribute source
+  tribute: "🙇‍♂️🙇‍♂️🙇‍♂️", // ← real Tribute source (🙇 only)
   effects: [
     { icons:"⭐🌌", emoji:"🛰️", text:"Falcon 9 lifts payload to orbit, achieving a successful launch." },
     { icons:"🔧🚀", emoji:"⚙️", text:"First stage booster performs controlled descent and splash-down." }
   ],
-  atk: "3000",
-  def: "2200",
-  level: "4",
+  // ATK/DEF/level are computed from tributes in this preview — left here for visibility but ignored by the calculator below
+  atk: "",
+  def: "",
+  level: "",
   rarity: "SR",
   tags: ["SpaceX","Rocketry","Launch"],
   card_sets: ["Orbital Operations","2025 Milestones"],
@@ -236,7 +237,7 @@ const rarityBorder = {
   inner.classList.toggle("iridescent", useIri);
 })();
 
-/* ===== Bind fields (no fake defaults) ===== */
+/* ===== Bind fields ===== */
 const $ = id => document.getElementById(id);
 $("card-id").textContent   = card.id || "";
 $("card-name").textContent = card.name || "";
@@ -247,57 +248,59 @@ const img = $("card-image");
 img.src = (card.card_images && card.card_images[0] && card.card_images[0].image_url) ? card.card_images[0].image_url : "";
 img.alt = (card.name ? card.name + " — artwork" : "Card artwork");
 
-/* ===== GET TRIBUTE NUMBER (per spec) ===== */
-const typeInfo = { max_tributes: 6 }; // adjust if you have per-type limits
+/* ===== Tribute/Stats (Preview calc) ===== */
+const typeInfo = { max_tributes: 10 };
 
-// -- GET TRIBUTE NUMBER--
-const levelResolved = (typeof resolveLevel === "function")
-  ? resolveLevel(card, typeInfo)
-  : (Number(card.level) || 1);
-
-const maxTributes = (typeInfo?.max_tributes ?? 6);
-
-const tributesResolved = (typeof makeTributes === "function")
-  ? makeTributes(levelResolved, maxTributes)
-  : Math.min(levelResolved, maxTributes);
-
-card.level = levelResolved;        // store back so other code can read it
-card.tributes = tributesResolved;  // numeric tribute count
-
-/* ===== Auto Calculator (tribute-first) ===== */
-/* Counts 🙇 variants if no numeric tributes present (legacy support). */
+/* 🙇 only — no star fallback */
 function countTributes(s){
   if (!s) return 0;
-  const kneel = (s.match(/🙇/gu) || []).length;
-  const starsFallback = (s.match(/⭐/gu) || []).length; // optional legacy
-  return kneel || starsFallback;
+  return (s.match(/🙇/gu) || []).length;
 }
 
-function autoCalc(card) {
-  const tributeCount =
-    (typeof card.tributes === "number")
-      ? card.tributes
-      : countTributes(card.tribute);
+/* Normalize tribute number for preview:
+   - numeric → use it
+   - else count 🙇 in string
+   - clamp to 0..10
+   - level = tributes
+   - ATK = level*1000 + effects*500
+   - DEF = floor(ATK/2)
+*/
+function normalizeTributeAndStats(card){
+  const MAX = typeInfo.max_tributes;
+  let n = 0;
 
-  const level = tributeCount || (Number(card.level) || 1);
+  if (card && card.tribute != null) {
+    const raw = card.tribute;
+    const num = typeof raw === "number"
+      ? raw
+      : (typeof raw === "string" && raw.trim() !== "" ? Number(raw) : NaN);
+    if (!Number.isNaN(num) && num >= 0) n = Math.floor(num);
+    else n = countTributes(raw);
+  }
+
+  n = Math.max(0, Math.min(MAX, n));
+  card.tributes = n;
+  card.tribute  = "🙇‍♂️".repeat(n);
+
   const effectsCount = Array.isArray(card.effects) ? card.effects.length : 0;
-
+  const level = n; // level derives ONLY from tributes in preview
   const atk = (level * 1000) + (effectsCount * 500);
   const def = Math.floor(atk / 2);
 
   return { level, atk, def };
 }
 
-/* ===== Stats bind ===== */
-const stats = autoCalc(card);
-$("level").textContent = stats.level;
-$("atk").textContent   = stats.atk;
-$("def").textContent   = stats.def;
+const stats = normalizeTributeAndStats(card);
+
+/* Bind stats to orbs */
+$("level").textContent = String(stats.level);
+$("atk").textContent   = String(stats.atk);
+$("def").textContent   = String(stats.def);
 
 /* banner */
-$("tribute").textContent   = card.tribute || "";
-$("about").textContent     = card.about   || "";
-$("type-emoji").textContent= card.icon    || "";
+$("tribute").textContent    = card.tribute || "";
+$("about").textContent      = card.about   || "";
+$("type-emoji").textContent = card.icon    || "";
 
 /* effects (node builder) */
 const effBox = $("effect-box");
@@ -346,11 +349,11 @@ function autoshrinkFontToFit(el, { min=0.50, pad=4, squeezeLeft=null, squeezeRig
   el.style.fontSize = (base * scale) + 'px';
 }
 function applyAutoscaleAll(){
-  autoscaleToLength($('tribute'), 10, 0.6);
-  autoscaleToLength($('type-emoji'), 8, 0.6);
-  autoscaleToLength($('about'), 20, 0.75);
+  autoscaleToLength(document.getElementById('tribute'), 10, 0.6);
+  autoscaleToLength(document.getElementById('type-emoji'), 8, 0.6);
+  autoscaleToLength(document.getElementById('about'), 20, 0.75);
   const nameSpan = document.querySelector('.card-name span');
-  autoshrinkFontToFit(nameSpan, { min:0.50, pad:4, squeezeLeft: document.querySelector('.card-id'), squeezeRight: $('card-icon'), squeezePx:6 });
+  autoshrinkFontToFit(nameSpan, { min:0.50, pad:4, squeezeLeft: document.querySelector('.card-id'), squeezeRight: document.getElementById('card-icon'), squeezePx:6 });
 }
 applyAutoscaleAll();
 if (document.fonts && document.fonts.ready) { document.fonts.ready.then(applyAutoscaleAll).catch(()=>{}); }
