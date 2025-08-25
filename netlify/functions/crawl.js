@@ -1,14 +1,22 @@
 // netlify/functions/crawl.js
 // Single-link scraper: always returns media + 2 sentences about the title.
+// Accepts { url:"..." } OR { links:[...] }, but only crawls 1.
 
 exports.handler = async (event) => {
   try {
     if (event.httpMethod !== "POST") return resText(405, "Method Not Allowed");
 
     const body = safeJSON(event.body);
-    if (!body || !body.url) return resJSON(400, { error: "Missing url" });
 
-    let safeUrl = body.url.trim();
+    // accept either body.url or body.links[0]
+    let safeUrl = "";
+    if (typeof body?.url === "string" && body.url.trim()) {
+      safeUrl = body.url.trim();
+    } else if (Array.isArray(body?.links) && body.links.length) {
+      safeUrl = body.links[0].trim();
+    }
+    if (!safeUrl) return resJSON(400, { error: "Missing url" });
+
     if (!/^https?:\/\//i.test(safeUrl)) safeUrl = "https://" + safeUrl;
 
     try {
@@ -25,15 +33,14 @@ exports.handler = async (event) => {
 
       const title = extractTitle(html) || firstHeadingText(html) || hostFromUrl(safeUrl);
       const sentences = extractTwoSentences(html, title);
-      const media = extractMedia(html, safeUrl, true); // true = preferVideo
+      const media = extractMedia(html, safeUrl, true); // preferVideo=true
       const siteName = extractSiteName(html) || hostFromUrl(safeUrl);
       const keywords = extractKeywords(html);
 
-      // return single object only
       return resJSON(200, {
         url: safeUrl,
         title,
-        sentences,     // array of 2 sentences
+        sentences,     // array of 2
         media,         // image or video
         siteName,
         keywords,
