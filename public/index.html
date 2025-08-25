@@ -293,9 +293,13 @@
       const card = await makeCardFromUrl(url);
       output.textContent = (typeof card === "string") ? card : JSON.stringify(card, null, 2);
 
-      // 🔹 Always reset storage, then save fresh card
+      // 🔹 Always reset storage, then save fresh card (with CLEAN footer only)
+      const CLEAN_FOOTER = "Jessica AI • SPZ | Zetsumetsu Eoe™ | ZETSUMETSU CORPORATION | Artworqq Kevin Suber";
       localStorage.removeItem("jessica_card");
-      localStorage.setItem("jessica_card", JSON.stringify(card));
+      localStorage.setItem("jessica_card", JSON.stringify({
+        ...card,
+        footer: CLEAN_FOOTER
+      }));
 
     } catch (e) {
       output.textContent = (e && e.message) ? e.message : "Scrape failed.";
