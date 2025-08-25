@@ -279,6 +279,33 @@
     return fused.card || fused;
   }
 
+  // --- tribute helpers (formatter responsibility) ---
+  const TRIBUTE_EMOJI = "🙇‍♂️";
+  const MAX_TRIBUTES = 6;
+  function countKneel(s){ return (s && typeof s === "string") ? (s.match(/🙇/gu)||[]).length : 0; }
+  function normalizeTributeOn(card){
+    // numeric string or number → use it; else count emojis
+    let n = 0;
+    if (card && card.tribute != null) {
+      const raw = card.tribute;
+      const num = typeof raw === "number" ? raw : (typeof raw === "string" && raw.trim() !== "" ? Number(raw) : NaN);
+      if (!Number.isNaN(num) && num > 0) n = Math.floor(num);
+      else n = countKneel(raw);
+    }
+    n = Math.max(0, Math.min(MAX_TRIBUTES, n));
+    card.tributes = n;
+    card.tribute  = TRIBUTE_EMOJI.repeat(n); // what the UI shows
+    // also set level from tributes if not already aligned
+    const effectsCount = Array.isArray(card.effects) ? card.effects.length : 0;
+    const level = n || (Number(card.level)||1);
+    const atk = (level * 1000) + (effectsCount * 500);
+    const def = Math.floor(atk/2);
+    card.level = String(level);
+    card.atk   = String(atk);
+    card.def   = String(def);
+    return card;
+  }
+
   /* ===== Ritual → scrape → save card ===== */
   button?.addEventListener("click", async () => {
     const url = (input?.value || "").trim();
@@ -290,16 +317,21 @@
     output.textContent = "Scraping…";
 
     try {
-      const card = await makeCardFromUrl(url);
-      output.textContent = (typeof card === "string") ? card : JSON.stringify(card, null, 2);
+      let card = await makeCardFromUrl(url);
 
-      // 🔹 Always reset storage, then save fresh card (with CLEAN footer only)
+      // format tributes + stats here (preview’s job)
+      card = normalizeTributeOn(card);
+
+      // show the formatted card in the stream
+      output.textContent = JSON.stringify(card, null, 2);
+
+      // clean footer only (remove "Info |")
       const CLEAN_FOOTER = "Jessica AI • SPZ | Zetsumetsu Eoe™ | ZETSUMETSU CORPORATION | Artworqq Kevin Suber";
+      card.footer = CLEAN_FOOTER;
+
+      // reset then save
       localStorage.removeItem("jessica_card");
-      localStorage.setItem("jessica_card", JSON.stringify({
-        ...card,
-        footer: CLEAN_FOOTER
-      }));
+      localStorage.setItem("jessica_card", JSON.stringify(card));
 
     } catch (e) {
       output.textContent = (e && e.message) ? e.message : "Scrape failed.";
