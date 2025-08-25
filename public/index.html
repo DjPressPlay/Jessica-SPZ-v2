@@ -281,7 +281,7 @@
 
   // --- tribute helpers (formatter responsibility) ---
   const TRIBUTE_EMOJI = "🙇‍♂️";
-  const MAX_TRIBUTES = 6;
+  const MAX_TRIBUTES = 10;
   function countKneel(s){ return (s && typeof s === "string") ? (s.match(/🙇/gu)||[]).length : 0; }
   function normalizeTributeOn(card){
     // numeric string or number → use it; else count emojis
