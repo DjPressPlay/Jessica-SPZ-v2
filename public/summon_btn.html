@@ -58,19 +58,32 @@
   </div>
 
 <script>
-/* ===== Render-Only Summon ===== */
-/* Pull exactly what Preview/Index saved. Do NOT compute or mutate. */
+/* ========= fetch exactly what index/preview saved ========= */
+const STORAGE_KEY = "jessica_card";
+function safeParse(s){ try { return JSON.parse(s); } catch { return null; } }
 
-let card = null;
-try {
-  const raw = localStorage.getItem("jessica_card");
-  if (raw) card = JSON.parse(raw);
-} catch (e) {
-  console.warn("Could not parse jessica_card:", e);
+function getSavedCard(){
+  // 1) same-window localStorage
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (raw) {
+    const obj = safeParse(raw);
+    if (obj) return obj;
+  }
+  // 2) opener localStorage (popup case)
+  try {
+    if (window.opener) {
+      const raw2 = window.opener.localStorage.getItem(STORAGE_KEY);
+      const obj2 = safeParse(raw2);
+      if (obj2) return obj2;
+    }
+  } catch {}
+  return null;
 }
 
+let card = getSavedCard();
+
+/* render an “empty card” if nothing saved — still only the card UI */
 if (!card) {
-  // Minimal fallback so page doesn't break if nothing is saved yet
   card = {
     id: "-",
     name: "No Card Found",
@@ -91,7 +104,7 @@ if (!card) {
   };
 }
 
-/* ===== Visual frame tint only (no data mutation) ===== */
+/* ========= visual frame tint only (no mutation) ========= */
 const colorPalette = {
   silver:"#C0C0C0", blue:"#0000FF", "dark-blue":"#00008B", green:"#008000",
   gold:"#FFD700", maroon:"#800000", "bright-red":"#FF4949", "sky-blue":"#87CEEB",
@@ -131,16 +144,16 @@ const rarityBorder = {
   inner.classList.toggle("iridescent", useIri);
 })();
 
-/* ===== Bind helpers (render-only) ===== */
+/* ========= bind (render-only) ========= */
 const $ = id => document.getElementById(id);
 const set = (id, v) => { const el = $(id); if (el) el.textContent = (v ?? ""); };
 
-/* Header */
+/* header */
 set("card-id", card.id);
 set("card-name", card.name);
 set("card-icon", card.icon);
 
-/* Artwork */
+/* artwork */
 const img = $("card-image");
 if (img) {
   const url = card.card_images?.[0]?.image_url || "";
@@ -148,17 +161,17 @@ if (img) {
   img.alt = card.name ? `${card.name} — artwork` : "Card artwork";
 }
 
-/* Stats — EXACT values from saved card */
+/* stats — EXACT values from saved card */
 set("level", card.level);
 set("atk", card.atk);
 set("def", card.def);
 
-/* Type banner — show tribute string exactly as saved */
+/* banner — show tribute string exactly as saved */
 set("tribute", card.tribute);
 set("about", card.about);
 set("type-emoji", card.icon);
 
-/* Effects */
+/* effects */
 const effBox = $("effect-box");
 if (effBox) {
   effBox.replaceChildren();
@@ -175,21 +188,22 @@ if (effBox) {
   });
 }
 
-/* Meta */
+/* meta */
 set("sets-line", Array.isArray(card.card_sets) ? card.card_sets.join(" ") : "");
 set("tags-line", Array.isArray(card.tags) ? card.tags.join(" ") : "");
 set("footer", card.footer);
 set("timestamp", card.timestamp);
 
-/* Rarity badge */
+/* rarity */
 const rb = $("rarity");
 if (rb) {
   rb.textContent = card.rarity || "";
+  rb.className = "rarity";
   const rarityClassMap = { Normal:"Normal", Rare:"Rare", SR:"SR", UR:"UR", Quantum:"Q", ZEOE:"ZEOE" };
   rb.classList.add(rarityClassMap[card.rarity] || (card.rarity || ""));
 }
 
-/* ===== Visual autoscale only (no data changes) ===== */
+/* autoscale (visual only) */
 function autoscaleToLength(el, maxChars, minScale = 0.6){
   if(!el) return; el.style.setProperty('--scale','1');
   const len = [...(el.textContent || '').trim()].length;
