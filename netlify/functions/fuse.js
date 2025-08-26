@@ -1,5 +1,6 @@
 // netlify/functions/fuse.js
 // Fuse results + cards into ONE preview-ready card for preview.html (no deps).
+// Slimmed to trust enrich outputs. No classifier/maps here; adds frame color/rarity meta.
 
 exports.handler = async (event) => {
   try {
@@ -32,9 +33,9 @@ exports.handler = async (event) => {
       for (const r of normResults) builtCards.push(cardFromResult(r));
     }
 
-    // Fuse into one and finalize (type → emoji/frame/stars)
+    // Fuse into one and finalize (keep enrich fields; add fallbacks + frame meta)
     let card = fuseCards(builtCards);
-    card = finalizeCard(card); // add type/emoji/frameType/tribute
+    card = finalizeCard(card);
 
     return json(200, { session, card, sources: normResults.map(r => r.url).filter(Boolean) });
   } catch (err) {
@@ -43,54 +44,32 @@ exports.handler = async (event) => {
   }
 };
 
-/* ---------------- mappings ---------------- */
-const CARD_TYPE_MAP = {
-  "Breaking News": { frameType: "breaking_news",      color: "bright-red",        max_stars: 6 },
-  "Politics":      { frameType: "politics",           color: "maroon",            max_stars: 9 },
-  "National News": { frameType: "national_news",      color: "dark-blue",         max_stars: 8 },
-  "International News": { frameType: "international_news", color: "blue",         max_stars: 8 },
-  "Local News":    { frameType: "local_news",         color: "sky-blue",          max_stars: 7 },
-  "Economy":       { frameType: "economy",            color: "teal",              max_stars: 8 },
-  "Business":      { frameType: "business",           color: "gold",              max_stars: 7 },
-  "Sales":         { frameType: "sales",              color: "cyan",              max_stars: 7 },
-  "Merch":         { frameType: "merch",              color: "magenta",           max_stars: 7 },
-  "Technology":    { frameType: "technology",         color: "silver",            max_stars: 8 },
-  "Science":       { frameType: "science",            color: "blue",              max_stars: 8 },
-  "Health":        { frameType: "health",             color: "red-orange",        max_stars: 7 },
-  "Education":     { frameType: "education",          color: "sky-blue-light",    max_stars: 7 },
-  "Environment":   { frameType: "environment",        color: "forest-green",      max_stars: 7 },
-  "Sports":        { frameType: "sports",             color: "green",             max_stars: 8 },
-  "Entertainment": { frameType: "entertainment",      color: "orange",            max_stars: 6 },
-  "Lifestyle":     { frameType: "lifestyle",          color: "light-green",       max_stars: 6 },
-  "Travel":        { frameType: "travel",             color: "teal-blue",         max_stars: 6 },
-  "Opinion":       { frameType: "opinion",            color: "violet",            max_stars: 5 },
-  "Editorial":     { frameType: "editorial",          color: "dark-violet",       max_stars: 6 },
-  "Feature Story": { frameType: "feature_story",      color: "peach",             max_stars: 5 },
-  "Photojournalism":{frameType: "photojournalism",    color: "gray-gradient",     max_stars: 5 },
-  "Classifieds":   { frameType: "classifieds",        color: "beige",             max_stars: 4 },
-  "Comics & Puzzles":{frameType:"comics_puzzles",     color: "yellow-green",      max_stars: 4 },
-  "Obituaries":    { frameType: "obituaries",         color: "black",             max_stars: 5 },
-  "Weather":       { frameType: "weather",            color: "light-gray",        max_stars: 4 },
-  "Society":       { frameType: "society",            color: "rose",              max_stars: 5 },
-  "Infotainment":  { frameType: "infotainment",       color: "neon-yellow",       max_stars: 5 },
-  "Soft News":     { frameType: "soft_news",          color: "peach-light",       max_stars: 5 },
-  "Hard News":     { frameType: "hard_news",          color: "dark-red",          max_stars: 8 },
-  "Investigative": { frameType: "investigative",      color: "dark-blue",         max_stars: 9 },
-  "Government":    { frameType: "government",         color: "gray",              max_stars: 10 },
-  "Zetsumetsu":    { frameType: "zetsu",              color: "black-red-holo",    max_stars: 10, min_stars: 5 },
-  "Social":        { frameType: "social",             color: "pink",              max_stars: 5 },
-  "Crypto":        { frameType: "crypto",             color: "purple",            max_stars: 8 },
-  "Meme":          { frameType: "meme",               color: "neon-multicolor",   max_stars: 5 }
+/* ===== Frame color maps ===== */
+const colorPalette = {
+  "silver":"#C0C0C0","blue":"#0000FF","dark-blue":"#00008B","green":"#008000",
+  "gold":"#FFD700","maroon":"#800000","bright-red":"#FF4949","sky-blue":"#87CEEB",
+  "teal":"#008080","cyan":"#00FFFF","magenta":"#FF00FF","red-orange":"#FF4500",
+  "sky-blue-light":"#ADD8E6","forest-green":"#228B22","orange":"#FFA500",
+  "light-green":"#90EE90","violet":"#EE82EE","dark-violet":"#9400D3","peach":"#FFDAB9",
+  "gray-gradient":"#D3D3D3","beige":"#F5F5DC","yellow-green":"#9ACD32","black":"#000000",
+  "light-gray":"#D3D3D3","rose":"#FFC0CB","neon-yellow":"#FFFF00","peach-light":"#FFDAB9",
+  "dark-red":"#8B0000","gray":"#808080","black-red-holo":"#8B0000","purple":"#6A0DAD",
+  "neon-multicolor":"#FF00FF"
 };
-
-const EMOJI_MAP = {
-  "Breaking News":"🚨","Politics":"🏛️","National News":"📰","International News":"🌍","Local News":"🏘️",
-  "Economy":"💹","Business":"💼","Sales":"🛒","Merch":"👕","Technology":"🤖","Science":"🔬","Health":"🩺",
-  "Education":"🎓","Environment":"🌱","Sports":"🏅","Entertainment":"🎭","Lifestyle":"🌸","Travel":"✈️",
-  "Opinion":"💬","Editorial":"🖋️","Feature Story":"📖","Photojournalism":"📸","Classifieds":"📇",
-  "Comics & Puzzles":"🧩","Obituaries":"⚰️","Weather":"☀️","Society":"👥","Infotainment":"📺",
-  "Soft News":"🪶","Hard News":"🗞️","Investigative":"🔎","Government":"⚖️","Zetsumetsu":"🪬",
-  "Social":"📱","Crypto":"🪙","Meme":"😂","People":"🙇‍♂️"
+const card_type_map = {
+  technology:{ color:"silver" },
+  science:{ color:"blue" },
+  investigative:{ color:"dark-blue" },
+  sports:{ color:"green" },
+  business:{ color:"gold" }
+};
+const rarityBorder = {
+  Normal:{ color:"#aaa", iridescent:false },
+  Rare:{ color:"#ddd", iridescent:false },
+  SR:{ color:"#2d7bdc", iridescent:false },
+  UR:{ color:"#7c3aed", iridescent:false },
+  Quantum:{ color:"#f1c40f", iridescent:false },
+  ZEOE:{ color:null, iridescent:true }
 };
 
 /* ---------------- helpers ---------------- */
@@ -104,7 +83,6 @@ function stripTags(s=""){ return s.replace(/<[^>]*>/g,""); }
 function uniq(a){ const seen=Object.create(null), out=[]; for(const v of a){ const k=String(v).toLowerCase(); if(!seen[k]){ seen[k]=1; out.push(v);} } return out; }
 function truncate(s="", n=280){ return s.length>n ? s.slice(0,n-1)+"…" : s; }
 function shortHash(s=""){ let h=0; for(let i=0;i<s.length;i++){ h=(h*31+s.charCodeAt(i))|0; } h=Math.abs(h); return (h.toString(36).padStart(8,"0")+Date.now().toString(36)).slice(0,12); }
-function intHash(s=""){ let h=0; for(let i=0;i<s.length;i++){ h=(h*33 + s.charCodeAt(i))|0; } return Math.abs(h); }
 function absolutize(base, src){
   if (!src) return src;
   if (/^https?:\/\//i.test(src)) return src;
@@ -150,6 +128,7 @@ function collectImages(list){
 function firstCardImage(c){
   if (c && c.hero && c.hero.image) return String(c.hero.image);
   if (c && c.image) return String(c.image);
+  if (c && c.artwork && c.artwork.url) return String(c.artwork.url);
   if (!Array.isArray(c.card_images)) return "";
   const x = c.card_images.find(i => i && i.image_url);
   return x ? String(x.image_url) : "";
@@ -177,7 +156,6 @@ function cleanFooterString(s){
   out = out.trim().replace(/^\|\s*|\s*\|$/g, "");
   return out;
 }
-
 function footerToString(f){
   const BRAND = "Zetsumetsu Eoe™ | ZETSUMETSU CORPORATION | Artworqq Kevin Suber";
   try{
@@ -197,110 +175,29 @@ function footerToString(f){
   }
 }
 
-/* -------- type classification + stars/emoji/frame -------- */
-const TYPE_LIST = Object.keys(CARD_TYPE_MAP);
-
-function classifyType({ name="", tags=[], host="", site="", desc="" }){
-  const t = (tags || []).map(x => String(x).toLowerCase());
-  const nm = String(name).toLowerCase();
-  const ds = String(desc).toLowerCase();
-  const hs = String(host).toLowerCase();
-  const st = String(site).toLowerCase();
-
-  // explicit tag matches first
-  const direct = TYPE_LIST.find(tt => t.includes(tt.toLowerCase()));
-  if (direct) return direct;
-
-  // heuristics by host/tags/keywords/name
-  if (nm.includes("breaking") || t.includes("breaking")) return "Breaking News";
-
-  if (/(gov|\.gov)$/.test(hs) || t.includes("government") || nm.includes("government") || ds.includes("government"))
-    return "Government";
-
-  if (t.some(x => ["bitcoin","crypto","blockchain","defi","web3","ethereum"].includes(x)) ||
-      /(binance|coinbase|coindesk|cointelegraph|kraken|opensea)/.test(hs))
-    return "Crypto";
-
-  if (t.includes("meme") || nm.includes("meme") || /(9gag|knowyourmeme|imgflip)/.test(hs))
-    return "Meme";
-
-  if (/(espn|nba|nfl|mlb|nhl|fifa|uefa|motorsport)/.test(hs) || t.includes("sports"))
-    return "Sports";
-
-  if (/(techcrunch|theverge|wired|arstechnica|github|gitlab|npmjs|developer|dev)\b/.test(hs) || t.includes("technology") || t.includes("tech"))
-    return "Technology";
-
-  if (/(nature\.com|sciencemag|arxiv|nasa|nih\.gov)/.test(hs) || t.includes("science"))
-    return "Science";
-
-  if (/(who\.int|cdc\.gov|health|medical)/.test(hs) || t.includes("health") || t.includes("medical"))
-    return "Health";
-
-  if (/(amazon|ebay|etsy|gumroad|shopify|aliexpress)/.test(hs) || t.includes("sales") || t.includes("merch") || t.includes("shop"))
-    return t.includes("merch") ? "Merch" : "Sales";
-
-  if (t.includes("business") || t.includes("economy") || /(bloomberg|wsj|ft\.com|marketwatch|forbes)/.test(hs))
-    return t.includes("economy") ? "Economy" : "Business";
-
-  if (/(bbc|nytimes|reuters|apnews|guardian|cnn|foxnews)/.test(hs)) {
-    if (t.includes("international") || nm.includes("world") || ds.includes("world")) return "International News";
-    if (t.includes("national") || nm.includes("u.s.") || nm.includes("us ")) return "National News";
-    return "Hard News";
+/* -------- frame color / rarity meta -------- */
+function deriveFrameMeta(card){
+  let baseColor = "#e63946"; // default accent
+  const ft = String(card.frameType||"").toLowerCase().replace(/\s+/g,"_");
+  if (card_type_map[ft]) {
+    const key = card_type_map[ft].color;
+    if (colorPalette[key]) baseColor = colorPalette[key];
   }
-
-  if (/(weather\.com|accuweather)/.test(hs) || t.includes("weather")) return "Weather";
-
-  if (/(travel|tripadvisor|lonelyplanet)/.test(hs) || t.includes("travel")) return "Travel";
-
-  if (/(instagram|tiktok|twitter|x\.com|facebook|reddit)/.test(hs) || t.includes("social")) return "Social";
-
-  if (/(zetsu|zetsumetsu)/.test(hs) || t.includes("zetsu") || t.includes("zetsumetsu")) return "Zetsumetsu";
-
-  // fallback
-  if (t.includes("soft news")) return "Soft News";
-  if (t.includes("infotainment")) return "Infotainment";
-  if (t.includes("opinion")) return "Opinion";
-  if (t.includes("editorial")) return "Editorial";
-  if (t.includes("feature")) return "Feature Story";
-
-  return "Technology"; // sensible default
+  let useIri = false;
+  const r = card.rarity;
+  if (r && rarityBorder[r]) {
+    if (rarityBorder[r].iridescent) useIri = true;
+    else if (rarityBorder[r].color) baseColor = rarityBorder[r].color;
+  }
+  return { frameColor: baseColor, iridescent: useIri };
 }
 
-function stableStarsKey(card){
-  const base = (card.name || "") + "|" + (card._source_url || "");
-  return intHash(base);
-}
-function computeTributeStars(type, card){
-  const cfg = CARD_TYPE_MAP[type] || {};
-  const min = Math.max(1, cfg.min_stars || 1);
-  const max = Math.max(min, cfg.max_stars || 6);
-  const seed = stableStarsKey(card);
-  const span = (max - min + 1);
-  const val = (seed % span) + min;
-  return String(val);
-}
-
+/* -------- light finalization (no classification) -------- */
 function finalizeCard(card){
   const host = hostOf(card._source_url || "");
-  const type = classifyType({
-    name: card.name, tags: card.tags, host, site: card.card_sets?.[0] || "", desc: card.effects?.[0]?.text || ""
-  });
-
-  const map = CARD_TYPE_MAP[type] || {};
-  const mappedEmoji = EMOJI_MAP[type] || "";
-  const icon = firstNonEmpty([card.icon, mappedEmoji]) || fallbackIconByHost(host);
-
-  const frameType = firstNonEmpty([card.frameType, map.frameType]) || card.frameType || "";
-  const tribute   = card.tribute && String(card.tribute).trim() ? String(card.tribute) : computeTributeStars(type, card);
-
-  return {
-    ...card,
-    type,
-    icon,
-    frameType,
-    tribute,
-    // footer already cleaned earlier
-  };
+  const icon = firstNonEmpty([card.icon]) || fallbackIconByHost(host);
+  const { frameColor, iridescent } = deriveFrameMeta(card);
+  return { ...card, icon, frameColor, iridescent };
 }
 
 function fallbackIconByHost(host){
@@ -320,20 +217,24 @@ function normalizeCard(c={}, r=null){
   const efb   = c.effectBox || {};
   const foot  = c.footer || {};
 
-  // Name & Image
-  const name  = firstNonEmpty([c.name, hero.title, tb.title, r && r.title, hostOf(url), url]);
+  // Name & Image (prefer enriched header.name)
+  const name  = firstNonEmpty([c.name, c.header && c.header.name, hero.title, tb.title, r && r.title, hostOf(url), url]);
   const imgIn = firstNonEmpty([
     firstCardImage(c),
     r && r.image ? absolutize(r.url, r.image) : ""
   ]);
 
-  // Effects (prefer explicit, else effectBox, else r.desc/title)
+  // Effects (prefer explicit, else effectBox (objects allowed), else r.desc/title)
   let effects = asEffectArray(c.effects);
   if (!effects.length && (efb.description || (Array.isArray(efb.effects) && efb.effects.length))){
     const bundle = [];
     if (efb.description) bundle.push({ icons:"", emoji:"", text: text(efb.description) });
-    if (Array.isArray(efb.effects)) for (const t of efb.effects){
-      const m = text(String(t||"")); if (m) bundle.push({ icons:"", emoji:"", text: truncate(m,280) });
+    if (Array.isArray(efb.effects)) for (const e of efb.effects){
+      if (e && typeof e === "object" && text(e.text)) {
+        bundle.push({ icons: e.icons || "", emoji: e.emoji || "", text: text(e.text) });
+      } else {
+        const m = text(String(e||"")); if (m) bundle.push({ icons:"", emoji:"", text: truncate(m,280) });
+      }
     }
     effects = bundle;
   }
@@ -354,7 +255,7 @@ function normalizeCard(c={}, r=null){
     : (foot.set ? [text(foot.set)] : (r && r.site ? [r.site] : []));
 
   // Icon/About/Tribute/Rarity
-  const icon    = firstNonEmpty([c.icon, tb.emoji, hero.icon]);
+  const icon    = firstNonEmpty([c.icon, c.header && c.header.icon, tb.emoji, hero.icon]);
   const about   = firstNonEmpty([c.about, tb.about, tb.subtitle, hero.subtitle, hero.title]);
   const tribute = firstNonEmpty([c.tribute, String(tb.stars||"")]);
   const rarity  = firstNonEmpty([c.rarity, tb.rarity, foot.rarity]);
@@ -363,7 +264,7 @@ function normalizeCard(c={}, r=null){
   const imgs = collectImages([imgIn].concat((c.card_images||[]).map(i => i.image_url)));
 
   return {
-    id: c.id || shortHash(url || name || ""),
+    id: c.id || shortHash(url || name || ""), // preserve enrich IDs
     name: text(name),
     icon: icon || "",
     about: text(about || ""),
@@ -376,6 +277,7 @@ function normalizeCard(c={}, r=null){
     footer: footerToString(c.footer || foot),
     card_images: imgs.map(u => ({ image_url: u })),
     frameType: text(c.frameType || ""),
+    category: c.category || "",
     _source_url: url
   };
 }
@@ -395,7 +297,7 @@ function cardFromResult(r){
     name,
     icon,
     about: r.site || host,
-    tribute: "", // will be set in finalizeCard()
+    tribute: "",
     effects,
     rarity: "Normal",
     tags: r.keys || [],
@@ -404,6 +306,7 @@ function cardFromResult(r){
     footer: footerToString(""),
     card_images: r.image ? [{ image_url: absolutize(r.url, r.image) }] : [],
     frameType: "",
+    category: "",
     _source_url: r.url
   };
 }
@@ -416,10 +319,12 @@ function fuseCards(list){
   const withEff = list.find(c => (c.effects||[]).length);
   const primary = withImg || withEff || list[0];
 
-  const name    = firstNonEmpty([primary.name].concat(list.map(c=>c.name)));
-  const icon    = firstNonEmpty([primary.icon].concat(list.map(c=>c.icon)));
-  const about   = firstNonEmpty([primary.about].concat(list.map(c=>c.about)));
-  const tribute = firstNonEmpty([primary.tribute].concat(list.map(c=>c.tribute)));
+  const name      = firstNonEmpty([primary.name].concat(list.map(c=>c.name)));
+  const icon      = firstNonEmpty([primary.icon].concat(list.map(c=>c.icon)));
+  const about     = firstNonEmpty([primary.about].concat(list.map(c=>c.about)));
+  const tribute   = firstNonEmpty([primary.tribute].concat(list.map(c=>c.tribute)));
+  const frameType = firstNonEmpty([primary.frameType].concat(list.map(c=>c.frameType)));
+  const category  = firstNonEmpty([primary.category].concat(list.map(c=>c.category)));
 
   // merge effects (dedupe by text)
   const effMap = Object.create(null); const effects=[];
@@ -442,7 +347,8 @@ function fuseCards(list){
     timestamp: new Date().toISOString(),
     footer: footerToString(primary.footer || ""),
     card_images: imgs.map(u => ({ image_url: u })),
-    frameType: text(primary.frameType || ""),
+    frameType,
+    category,
     _source_url: primary._source_url || ""
   };
 }
