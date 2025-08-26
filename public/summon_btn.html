@@ -198,13 +198,43 @@ const card = {
 
 /* ===== Fixed category map (frameType + color + max_tribute) ===== */
 const CARD_TYPE_MAP = {
-  "Breaking News": { frameType:"breaking_news", color:"bright-red", max_tribute:6 },
-  "Politics":      { frameType:"politics",      color:"maroon",     max_tribute:9 },
-  "Technology":    { frameType:"technology",    color:"silver",     max_tribute:8 },
-  "Science":       { frameType:"science",       color:"blue",       max_tribute:8 },
-  "Sports":        { frameType:"sports",        color:"green",      max_tribute:8 },
-  "Business":      { frameType:"business",      color:"gold",       max_tribute:7 },
-  // … add all others from your full map …
+  "Breaking News":     { frameType:"breaking_news",      color:"bright-red",  max_tribute:6 },
+  "Politics":          { frameType:"politics",           color:"maroon",      max_tribute:9 },
+  "National News":     { frameType:"national_news",      color:"dark-blue",   max_tribute:8 },
+  "International News":{ frameType:"international_news", color:"blue",        max_tribute:8 },
+  "Local News":        { frameType:"local_news",         color:"sky-blue",    max_tribute:7 },
+  "Economy":           { frameType:"economy",            color:"teal",        max_tribute:8 },
+  "Business":          { frameType:"business",           color:"gold",        max_tribute:7 },
+  "Sales":             { frameType:"sales",              color:"cyan",        max_tribute:7 },
+  "Merch":             { frameType:"merch",              color:"magenta",     max_tribute:7 },
+  "Technology":        { frameType:"technology",         color:"silver",      max_tribute:8 },
+  "Science":           { frameType:"science",            color:"blue",        max_tribute:8 },
+  "Health":            { frameType:"health",             color:"red-orange",  max_tribute:7 },
+  "Education":         { frameType:"education",          color:"sky-blue-light", max_tribute:7 },
+  "Environment":       { frameType:"environment",        color:"forest-green",max_tribute:7 },
+  "Sports":            { frameType:"sports",             color:"green",       max_tribute:8 },
+  "Entertainment":     { frameType:"entertainment",      color:"orange",      max_tribute:6 },
+  "Lifestyle":         { frameType:"lifestyle",          color:"light-green", max_tribute:6 },
+  "Travel":            { frameType:"travel",             color:"teal",        max_tribute:7 }, /* teal-blue -> teal */
+  "Opinion":           { frameType:"opinion",            color:"violet",      max_tribute:5 },
+  "Editorial":         { frameType:"editorial",          color:"dark-violet", max_tribute:6 },
+  "Feature Story":     { frameType:"feature_story",      color:"peach",       max_tribute:5 },
+  "Photojournalism":   { frameType:"photojournalism",    color:"gray",        max_tribute:5 },
+  "Classifieds":       { frameType:"classifieds",        color:"beige",       max_tribute:4 },
+  "Comics & Puzzles":  { frameType:"comics_puzzles",     color:"yellow-green",max_tribute:4 },
+  "Obituaries":        { frameType:"obituaries",         color:"black",       max_tribute:5 },
+  "Weather":           { frameType:"weather",            color:"light-gray",  max_tribute:4 },
+  "Society":           { frameType:"society",            color:"rose",        max_tribute:5 },
+  "Infotainment":      { frameType:"infotainment",       color:"neon-yellow", max_tribute:5 },
+  "Soft News":         { frameType:"soft_news",          color:"peach-light", max_tribute:5 },
+  "Hard News":         { frameType:"hard_news",          color:"dark-red",    max_tribute:8 },
+  "Investigative":     { frameType:"investigative",      color:"dark-blue",   max_tribute:9 },
+  "Government":        { frameType:"government",         color:"gray",        max_tribute:10 },
+  "Zetsumetsu":        { frameType:"zetsu",              color:"black-red-holo", max_tribute:10 },
+  "Social":            { frameType:"social",             color:"rose",        max_tribute:5 },   /* pink -> rose */
+  "Crypto":            { frameType:"crypto",             color:"purple",      max_tribute:8 },
+  "Meme":              { frameType:"meme",               color:"neon-multicolor", max_tribute:5 },
+  "People":            { frameType:"people",             color:"light-gray",  max_tribute:5 }    /* white -> light-gray in palette */
 };
 
 /* ===== Palette (add missing colors you referenced) ===== */
@@ -222,28 +252,82 @@ const colorPalette = {
 
 /* ===== 1) Tribute setup (category-driven cap) ===== */
 function getTypeInfo(card){
+  // Category source: prefer explicit category, then About text, then frameType back-map
   const cat = (card.category || card.about || "").trim();
   if (CARD_TYPE_MAP[cat]) return CARD_TYPE_MAP[cat];
+
+  // If only frameType is provided, try to match by frameType
+  const byFrame = Object.values(CARD_TYPE_MAP).find(v => v.frameType === (card.frameType||"").toLowerCase());
+  if (byFrame) return byFrame;
+
+  // Default safe type
   return { frameType:"technology", color:"silver", max_tribute:6 };
 }
+
+function countKneel(str){ return (String(str||"").match(/🙇/gu) || []).length; }
+
+function resolveTributes(card){
+  const tinfo = getTypeInfo(card);
+  const cap = Math.max(0, Number(tinfo.max_tribute)||0);
+  // priority: numeric tributes → level → 🙇 string → 1
+  const n =
+    (typeof card.tributes === "number" && card.tributes >= 0) ? card.tributes :
+    (!Number.isNaN(Number(card.level)) ? Number(card.level) :
+     countKneel(card.tribute) || 1);
+  return Math.min(cap, Math.max(0, Math.floor(n)));
+}
+
 
 /* ===== 2) frameType & color from category map ===== */
 function applyFrame(card){
   const tinfo = getTypeInfo(card);
+  // stamp frameType if blank
   if (!card.frameType) card.frameType = tinfo.frameType;
+
   let baseColor = colorPalette[tinfo.color] || "#e63946";
+  // rarity may override with iridescence
+  const rarityBorder = {
+    Normal:{ color:"#aaa", iridescent:false }, Rare:{ color:"#ddd", iridescent:false },
+    SR:{ color:"#2d7bdc", iridescent:false }, UR:{ color:"#7c3aed", iridescent:false },
+    Quantum:{ color:"#f1c40f", iridescent:false }, ZEOE:{ color:null, iridescent:true }
+  };
+
+  const inner = document.getElementById("inner");
+  const r = card.rarity;
+  let iri = false;
+  if (r && rarityBorder[r]) {
+    iri = !!rarityBorder[r].iridescent;
+    baseColor = rarityBorder[r].color || baseColor;
+  }
   document.documentElement.style.setProperty("--frame-color", baseColor);
+  inner.classList.toggle("iridescent", iri);
 }
+
 
 /* ===== 3) Level → ATK/DEF using per-category cap ===== */
 function statsFromLevel(level, typeInfo){
   const maxStars = Math.max(1, Number(typeInfo.max_tribute)||1);
   const clamped  = Math.max(0, Math.min(Number(level)||0, maxStars));
   const minStat = 1000, maxStat = 5000;
-  const fraction = clamped / maxStars;
+  const fraction = clamped / maxStars;               // 0..1
   const atk = Math.round(minStat + fraction*(maxStat-minStat));
   const def = Math.max(minStat, Math.round(atk * 0.8));
   return { atk, def };
+}
+
+function computeStats(card){
+  const tinfo = getTypeInfo(card);
+  const trib = resolveTributes(card);    // category-capped
+  const level = trib > 0 ? trib : 1;     // level derives from tribute count
+  const withGivenAtk = Number(card.atk);
+  const withGivenDef = Number(card.def);
+  const calc = statsFromLevel(level, tinfo);
+  return {
+    level,
+    atk: Number.isFinite(withGivenAtk) && withGivenAtk > 0 ? withGivenAtk : calc.atk,
+    def: Number.isFinite(withGivenDef) && withGivenDef > 0 ? withGivenDef : calc.def,
+    tributeString: "🙇‍♂️".repeat(trib)
+  };
 }
 
 /* ===== Bind + render (existing flow) ===== */
