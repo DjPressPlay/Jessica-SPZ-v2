@@ -256,8 +256,10 @@
     } finally { button.disabled = false; }
   });
 
-  document.getElementById("summon-btn").addEventListener("click", () => {
-    window.open("summon_btn.html", "SummonCard", "width=520,height=820");
+   document.getElementById("summon-btn").addEventListener("click", () => {
+    const raw = localStorage.getItem("jessica_card") || "{}";
+    const url = "summon_btn.html?card=" + encodeURIComponent(raw);
+    window.open(url, "SummonCard", "width=520,height=820");
   });
 </script>
 </body>
