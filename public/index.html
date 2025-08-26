@@ -203,7 +203,7 @@
       const d2raw = (r.title || "").trim();
       const d2 = (d2raw && d2raw !== d1) ? d2raw : "";
       return {
-        id:       short6(r.url || r.title || ""),  // lets enrich build rank-based id
+        id:       short6(r.url || r.title || ""),
         url:      r.url,
         title:    r.title || site || r.url,
         desc1:    d1,
@@ -224,19 +224,7 @@
     });
     return fused.card || fused;
   }
- // Compute stats ONLY if missing (do not overwrite tribute/type decided by Fuse)
-  function computeStatsIfMissing(card){
-    const kneels = (String(card.tribute||"").match(/🙇/gu) || []).length;
-    const effectsCount = Array.isArray(card.effects) ? card.effects.length : 0;
-    const level = Number(card.level) || kneels || 1;
-    const atk   = Number(card.atk)   || (level * 1000 + effectsCount * 500);
-    const def   = Number(card.def)   || Math.floor(atk / 2);
-    card.level = String(level);
-    card.atk   = String(atk);
-    card.def   = String(def);
-    return card;
-  }
- 
+
   /* ===== Ritual → scrape → save card ===== */
   button?.addEventListener("click", async () => {
     const url = (input?.value || "").trim();
@@ -246,7 +234,6 @@
     showRitual(); button.disabled = true; output.textContent = "Scraping…";
     try {
       let card = await makeCardFromUrl(url);
-      card = computeStatsIfMissing(card); // keep Fuse tribute; just fill stats if blank
       card.footer = "Jessica AI • SPZ | Zetsumetsu Eoe™ | ZETSUMETSU CORPORATION | Artworqq Kevin Suber";
       output.textContent = JSON.stringify(card, null, 2);
       localStorage.setItem("jessica_card", JSON.stringify(card));
@@ -255,7 +242,7 @@
     } finally { button.disabled = false; }
   });
 
-   document.getElementById("summon-btn").addEventListener("click", () => {
+  document.getElementById("summon-btn").addEventListener("click", () => {
     const raw = localStorage.getItem("jessica_card") || "{}";
     const url = "summon_btn.html?card=" + encodeURIComponent(raw);
     window.open(url, "SummonCard", "width=520,height=820");
