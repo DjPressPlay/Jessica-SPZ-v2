@@ -187,9 +187,21 @@
 
   async function makeCardFromUrl(url) {
     const crawled = await postJSON(CRAWL_API, { links: [url], session: "web" });
+
+    // ⬇️ UPDATED: send STCG-friendly fields to enrich
     const items = (crawled.results || []).map(r => ({
-      url:   r.url, title: r.title, desc:  r.description, image: r.image
+      url:      r.url,
+      title:    r.title,
+      // effect lines
+      desc1:    r.description || "",
+      desc2:    (r.title && r.title !== r.description) ? r.title : "",
+      image:    r.image || "",
+      // brand/site + tags for sets/about
+      brand:    r.siteName || "",
+      siteName: r.siteName || "",
+      tags:     Array.isArray(r.keywords) ? r.keywords : []
     }));
+
     const enriched = await postJSON(ENRICH_API, { items, session: crawled.session });
     const fused = await postJSON(FUSE_API, {
       session: crawled.session, results: crawled.results || [], cards: enriched.cards || []
