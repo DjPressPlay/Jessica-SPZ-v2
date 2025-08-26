@@ -173,13 +173,13 @@
   </div>
 
 <script>
-/* ===== Sample card ===== */
+/* ===== Sample card (kept for fallback) ===== */
 const card = {
   id: "000001234567",
   name: "Falcon 9 Artworqq-PPLaunch [STAR-SHINE]",
   icon: "🚀",
   about: "Technology",
-  tribute: "🙇‍♂️🙇‍♂️🙇‍♂️", // ← real Tribute source
+  tribute: "🙇‍♂️🙇‍♂️🙇‍♂️",
   effects: [
     { icons:"⭐🌌", emoji:"🛰️", text:"Falcon 9 lifts payload to orbit, achieving a successful launch." },
     { icons:"🔧🚀", emoji:"⚙️", text:"First stage booster performs controlled descent and splash-down." }
@@ -196,101 +196,71 @@ const card = {
   frameType: "technology"
 };
 
-/* ===== Frame color maps ===== */
+/* ===== Fixed category map (frameType + color + max_tribute) ===== */
+const CARD_TYPE_MAP = {
+  "Breaking News": { frameType:"breaking_news", color:"bright-red", max_tribute:6 },
+  "Politics":      { frameType:"politics",      color:"maroon",     max_tribute:9 },
+  "Technology":    { frameType:"technology",    color:"silver",     max_tribute:8 },
+  "Science":       { frameType:"science",       color:"blue",       max_tribute:8 },
+  "Sports":        { frameType:"sports",        color:"green",      max_tribute:8 },
+  "Business":      { frameType:"business",      color:"gold",       max_tribute:7 },
+  // … add all others from your full map …
+};
+
+/* ===== Palette (add missing colors you referenced) ===== */
 const colorPalette = {
   "silver":"#C0C0C0","blue":"#0000FF","dark-blue":"#00008B","green":"#008000",
   "gold":"#FFD700","maroon":"#800000","bright-red":"#FF4949","sky-blue":"#87CEEB",
   "teal":"#008080","cyan":"#00FFFF","magenta":"#FF00FF","red-orange":"#FF4500",
   "sky-blue-light":"#ADD8E6","forest-green":"#228B22","orange":"#FFA500",
   "light-green":"#90EE90","violet":"#EE82EE","dark-violet":"#9400D3","peach":"#FFDAB9",
-  "gray-gradient":"#D3D3D3","beige":"#F5F5DC","yellow-green":"#9ACD32","black":"#000000",
-  "light-gray":"#D3D3D3","rose":"#FFC0CB","neon-yellow":"#FFFF00","peach-light":"#FFDAB9",
-  "dark-red":"#8B0000","gray":"#808080","black-red-holo":"#8B0000","purple":"#6A0DAD",
-  "neon-multicolor":"#FF00FF"
-};
-const card_type_map = {
-  technology:{ color:"silver" }, science:{ color:"blue" }, investigative:{ color:"dark-blue" },
-  sports:{ color:"green" }, business:{ color:"gold" }
-};
-const rarityBorder = {
-  Normal:{ color:"#aaa", iridescent:false }, Rare:{ color:"#ddd", iridescent:false },
-  SR:{ color:"#2d7bdc", iridescent:false }, UR:{ color:"#7c3aed", iridescent:false },
-  Quantum:{ color:"#f1c40f", iridescent:false }, ZEOE:{ color:null, iridescent:true }
+  "gray":"#808080","beige":"#F5F5DC","yellow-green":"#9ACD32","black":"#000000",
+  "light-gray":"#D3D3D3","rose":"#FFC0CB","neon-yellow":"#FFFF00",
+  "peach-light":"#FFDAB9","dark-red":"#8B0000","black-red-holo":"#8B0000",
+  "purple":"#6A0DAD","neon-multicolor":"#FF00FF"
 };
 
-/* ===== Apply frame color / rarity ===== */
-(function applyFrame(){
-  const inner = document.getElementById("inner");
-  let baseColor = "#e63946";
-  const ft = String(card.frameType||"").toLowerCase().replace(/\s+/g,"_");
-  if (card_type_map[ft]) {
-    const key = card_type_map[ft].color;
-    if (colorPalette[key]) baseColor = colorPalette[key];
-  }
-  let useIri = false; const r = card.rarity;
-  if (r && rarityBorder[r]) {
-    if (rarityBorder[r].iridescent) useIri = true;
-    else if (rarityBorder[r].color) baseColor = rarityBorder[r].color;
-  }
+/* ===== 1) Tribute setup (category-driven cap) ===== */
+function getTypeInfo(card){
+  const cat = (card.category || card.about || "").trim();
+  if (CARD_TYPE_MAP[cat]) return CARD_TYPE_MAP[cat];
+  return { frameType:"technology", color:"silver", max_tribute:6 };
+}
+
+/* ===== 2) frameType & color from category map ===== */
+function applyFrame(card){
+  const tinfo = getTypeInfo(card);
+  if (!card.frameType) card.frameType = tinfo.frameType;
+  let baseColor = colorPalette[tinfo.color] || "#e63946";
   document.documentElement.style.setProperty("--frame-color", baseColor);
-  inner.classList.toggle("iridescent", useIri);
-})();
+}
 
-/* ===== Bind fields (no fake defaults) ===== */
+/* ===== 3) Level → ATK/DEF using per-category cap ===== */
+function statsFromLevel(level, typeInfo){
+  const maxStars = Math.max(1, Number(typeInfo.max_tribute)||1);
+  const clamped  = Math.max(0, Math.min(Number(level)||0, maxStars));
+  const minStat = 1000, maxStat = 5000;
+  const fraction = clamped / maxStars;
+  const atk = Math.round(minStat + fraction*(maxStat-minStat));
+  const def = Math.max(minStat, Math.round(atk * 0.8));
+  return { atk, def };
+}
+
+/* ===== Bind + render (existing flow) ===== */
 const $ = id => document.getElementById(id);
 $("card-id").textContent   = card.id || "";
 $("card-name").textContent = card.name || "";
 $("card-icon").textContent = card.icon || "";
 
-/* image + alt */
 const img = $("card-image");
-img.src = (card.card_images && card.card_images[0] && card.card_images[0].image_url) ? card.card_images[0].image_url : "";
-img.alt = (card.name ? card.name + " — artwork" : "Card artwork");
+img.src = card.card_images?.[0]?.image_url || "";
+img.alt = card.name ? card.name+" — artwork" : "Card artwork";
 
-/* ===== GET TRIBUTE NUMBER (per spec) ===== */
-const typeInfo = { max_tributes: 10 }; // adjust if you have per-type limits
+applyFrame(card);
 
-// -- GET TRIBUTE NUMBER--
-const levelResolved = (typeof resolveLevel === "function")
-  ? resolveLevel(card, typeInfo)
-  : (Number(card.level) || 1);
-
-const maxTributes = (typeInfo?.max_tributes ?? 10);
-
-const tributesResolved = (typeof makeTributes === "function")
-  ? makeTributes(levelResolved, maxTributes)
-  : Math.min(levelResolved, maxTributes);
-
-card.level = levelResolved;        // store back so other code can read it
-card.tributes = tributesResolved;  // numeric tribute count
-
-/* ===== Auto Calculator (tribute-first) ===== */
-/* Counts 🙇 variants if no numeric tributes present (legacy support). */
-function countTributes(s){
-  if (!s) return 0;
-  const kneel = (s.match(/🙇/gu) || []).length;
-
-  return kneel || starsFallback;
-}
-
-function autoCalc(card) {
-  const tributeCount =
-    (typeof card.tributes === "number")
-      ? card.tributes
-      : countTributes(card.tribute);
-
-  const level = tributeCount || (Number(card.level) || 1);
-  const effectsCount = Array.isArray(card.effects) ? card.effects.length : 0;
-
-  const atk = (level * 1000) + (effectsCount * 500);
-  const def = Math.floor(atk / 2);
-
-  return { level, atk, def };
-}
-
-/* ===== Stats bind ===== */
-const stats = autoCalc(card);
-$("level").textContent = stats.level;
+const tinfo = getTypeInfo(card);
+const stats = statsFromLevel(card.level||1, tinfo);
+$("level").textContent = stats.atk ? card.level : 1;
 $("atk").textContent   = stats.atk;
 $("def").textContent   = stats.def;
 
@@ -299,25 +269,24 @@ $("tribute").textContent   = card.tribute || "";
 $("about").textContent     = card.about   || "";
 $("type-emoji").textContent= card.icon    || "";
 
-/* effects (node builder) */
+/* effects */
 const effBox = $("effect-box");
 effBox.replaceChildren();
 (card.effects||[]).forEach(e=>{
   const entry = document.createElement("div"); entry.className="effect-entry";
   const bar = document.createElement("div"); bar.className="effect-bar";
-  const icons = document.createElement("div"); icons.textContent = e.icons || "";
-  const emj   = document.createElement("div"); emj.textContent   = e.emoji || "";
-  bar.append(icons, emj);
+  bar.innerHTML = `<div>${e.icons||""}</div><div>${e.emoji||""}</div>`;
   const text = document.createElement("div"); text.className="effect-text"; text.textContent = e.text || "";
   entry.append(bar, text);
   effBox.append(entry);
 });
 
-/* meta lines */
-$("sets-line").textContent = (Array.isArray(card.card_sets)?card.card_sets:[]).join(" ");
-$("tags-line").textContent = (Array.isArray(card.tags)?card.tags:[]).join(" ");
-$("footer").textContent    = card.footer    || "";
+/* meta */
+$("sets-line").textContent = (card.card_sets||[]).join(" ");
+$("tags-line").textContent = (card.tags||[]).join(" ");
+$("footer").textContent    = card.footer || "";
 $("timestamp").textContent = card.timestamp || "";
+$("rarity").textContent    = card.rarity || "";
 
 /* rarity badge text + class (Quantum -> Q class) */
 const rb = $("rarity");
