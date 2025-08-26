@@ -225,19 +225,7 @@
     return fused.card || fused;
   }
 
-  // Compute stats ONLY if missing (do not overwrite tribute/type decided by Fuse)
-  function computeStatsIfMissing(card){
-    const kneels = (String(card.tribute||"").match(/🙇/gu) || []).length;
-    const effectsCount = Array.isArray(card.effects) ? card.effects.length : 0;
-    const level = Number(card.level) || kneels || 1;
-    const atk   = Number(card.atk)   || (level * 1000 + effectsCount * 500);
-    const def   = Number(card.def)   || Math.floor(atk / 2);
-    card.level = String(level);
-    card.atk   = String(atk);
-    card.def   = String(def);
-    return card;
-  }
-
+ 
   /* ===== Ritual → scrape → save card ===== */
   button?.addEventListener("click", async () => {
     const url = (input?.value || "").trim();
