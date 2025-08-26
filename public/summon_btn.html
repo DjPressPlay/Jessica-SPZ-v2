@@ -2,10 +2,131 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Summon — Zetsu Card</title>
+<title>Zetsu Card — Schema-Accurate Renderer</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="color-scheme" content="dark">
-<link rel="stylesheet" href="summon_style.css" />
+<style>
+  :root{
+    --frame-color:#e63946;
+    --frame-outer:#000;
+    --text:#fff;
+  }
+  body{
+    margin:0; background:#111; color:var(--text);
+    font-family:"Orbitron",system-ui,Segoe UI,Arial,Helvetica,sans-serif;
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:16px;
+  }
+
+  /* Frame */
+  .frameType{
+    position:relative; overflow:hidden;
+    border:12px solid var(--frame-outer); border-radius:14px;
+    width:clamp(360px, 92vw, 460px);
+  }
+  .frameType-inner{
+    position:relative; overflow:hidden; border:6px solid var(--frame-color); border-radius:10px;
+    background:#1a1a1a;
+  }
+  .frameType-inner::before{
+    content:""; position:absolute; inset:0;
+    background:radial-gradient(120% 100% at 50% 0%, #1e1e1e 0%, #0e0e0e 65%, #111 100%);
+    z-index:0;
+  }
+  .card-header, .card-art, .type-banner, .effect-box, .meta-block, .meta-bottom { position:relative; z-index:1; }
+
+  /* Header */
+  .card-header{
+    display:flex; justify-content:space-between; align-items:center;
+    background:#000; padding:6px 10px; font-size:.9rem; font-weight:800; text-transform:uppercase;
+    border-bottom:2px solid var(--frame-color); border-top-left-radius:8px; border-top-right-radius:8px;
+  }
+  .card-id{ background:#fff; color:#000; padding:2px 6px; border-radius:4px; font-size:.75rem; white-space:nowrap; }
+  .card-name{ flex:1; min-width:0; display:flex; justify-content:center; align-items:center; text-align:center; }
+  .card-name span{
+    display:inline-block; max-width:100%; white-space:nowrap;
+    overflow:visible; text-overflow:unset;
+    transform:scale(var(--scale,1)); transform-origin:center center; line-height:1;
+  }
+  .card-icon{ font-size:1.1rem; text-align:right; min-width:1.5em; }
+
+  /* Artwork */
+  .card-art{
+    position:relative; margin:10px; background:#222; aspect-ratio:4/3;
+    border:3px solid var(--frame-color); border-radius:8px; overflow:hidden;
+  }
+  .card-art img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+  /* Stat orbs */
+  .stat-orb{
+    position:absolute; width:54px; height:54px; border-radius:50%;
+    font-weight:800; font-size:1.02rem; display:flex; align-items:center; justify-content:center;
+    border:3px solid #fff; box-shadow:0 2px 8px rgba(0,0,0,.4);
+  }
+  .stat-blue  { background:#3498db; top:6px;  left:6px; }
+  .stat-red   { background:#e63946; bottom:6px; left:6px; }
+  .stat-green { background:#2ecc71; bottom:6px; right:6px; }
+
+  /* Type Banner (TRIBUTE | ABOUT | EMOJI) */
+  .type-banner{
+    background:#000; color:#fff; padding:6px 10px; font-weight:800;
+    border-top:2px solid var(--frame-color); border-bottom:2px solid var(--frame-color);
+    display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:8px;
+  }
+  .type-cell{ display:flex; justify-content:center; align-items:center; min-width:0; }
+  .type-about-wrap{ display:flex; justify-content:center; align-items:center; min-width:0; }
+  .type-about-box{
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:4px 12px; border:2px solid var(--frame-color); border-radius:6px;
+    background:#0b0b0b; box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
+    max-width:100%;
+  }
+  .type-about-text{ font-size:.95rem; letter-spacing:.02em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:280px; }
+  @media (max-width:480px){ .type-about-text{ max-width:200px; } }
+  .truncate{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+  .autoscale{ display:inline-block; transform:scale(var(--scale,1)); transform-origin:center center; line-height:1; }
+
+  /* Effects */
+  .effect-box{
+    background:#000; border-top:2px solid var(--frame-color); border-bottom:2px solid var(--frame-color);
+    padding:10px; display:flex; flex-direction:column; gap:8px;
+  }
+  .effect-entry{ border:1px solid #2a2a2a; background:#0f0f0f; border-radius:8px; padding:8px 10px; }
+  .effect-bar{ display:flex; justify-content:space-between; align-items:center; font-size:.92rem; margin-bottom:4px; }
+  .effect-text{ font-size:.84rem; line-height:1.32; }
+
+  /* Meta (Sets + Tags in one bracket) */
+  .meta-block{
+    border-top:2px solid var(--frame-color); border-bottom:2px solid var(--frame-color);
+    background:#000; padding:8px 10px; display:flex; flex-direction:column; gap:6px;
+  }
+  .meta-line{ display:flex; gap:8px; align-items:center; font-size:.78rem; color:#ccc; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .meta-label{ font-weight:800; text-transform:uppercase; color:#eee; letter-spacing:.02em; }
+  .meta-value{ flex:1; min-width:0; opacity:.95; }
+
+  /* Bottom bar */
+  .meta-bottom{
+    position:relative; border-top:2px solid var(--frame-color);
+    background:#111; padding:10px 12px 32px; text-align:center; color:#ccc;
+  }
+  .meta-footer-text{ font-size:.72rem; color:#cfcfcf; line-height:1.25; }
+  .meta-timestamp{ margin-top:4px; font-size:.66rem; color:#9f9f9f; }
+  .meta-bottom .rarity{
+    position:absolute; right:10px; bottom:6px;
+    font-weight:800; letter-spacing:.02em;
+    border:1px solid rgba(255,255,255,.2); padding:2px 8px; border-radius:4px;
+  }
+  .rarity.SR{ background:#2d7bdc; }
+  .rarity.UR{ background:#7c3aed; }
+  .rarity.Q { background:#f1c40f; color:#111; }
+  .rarity.ZEOE{
+    color:#fff;
+    background:conic-gradient(from 0deg, #ff0040, #ffd200, #00ffcc, #00a2ff, #ff4dff, #ff0040);
+    background-size:200% 200%; animation:holoShift 6s linear infinite;
+    border:1px solid rgba(255,255,255,.35); text-shadow:0 0 6px rgba(255,255,255,.35);
+  }
+  @keyframes holoShift{ 0%{background-position:0% 50%} 100%{background-position:200% 50%} }
+  @media (prefers-reduced-motion: reduce){ .rarity.ZEOE{ animation:none; } }
+</style>
 </head>
 <body>
 
@@ -14,9 +135,7 @@
       <!-- Header -->
       <div class="card-header" role="group" aria-label="Card header">
         <div class="card-id" id="card-id" aria-label="Card ID"></div>
-        <div class="card-name" aria-live="polite">
-          <span id="card-name" class="autoscale" dir="auto"></span>
-        </div>
+        <div class="card-name" aria-live="polite"><span id="card-name" class="autoscale" dir="auto"></span></div>
         <div class="card-icon" id="card-icon" aria-hidden="true"></div>
       </div>
 
@@ -31,11 +150,7 @@
       <!-- Type Banner -->
       <div class="type-banner">
         <div class="type-cell"><span id="tribute" class="autoscale truncate" dir="auto"></span></div>
-        <div class="type-about-wrap">
-          <div class="type-about-box">
-            <span id="about" class="type-about-text autoscale truncate" dir="auto"></span>
-          </div>
-        </div>
+        <div class="type-about-wrap"><div class="type-about-box"><span id="about" class="type-about-text autoscale truncate" dir="auto"></span></div></div>
         <div class="type-cell"><span id="type-emoji" class="autoscale truncate" dir="auto"></span></div>
       </div>
 
@@ -58,62 +173,39 @@
   </div>
 
 <script>
-/* ========= fetch exactly what index/preview saved ========= */
-const STORAGE_KEY = "jessica_card";
-function safeParse(s){ try { return JSON.parse(s); } catch { return null; } }
+/* ===== Sample card ===== */
+const card = {
+  id: "000001234567",
+  name: "Falcon 9 Artworqq-PPLaunch [STAR-SHINE]",
+  icon: "🚀",
+  about: "Technology",
+  tribute: "🙇‍♂️🙇‍♂️🙇‍♂️", // ← real Tribute source
+  effects: [
+    { icons:"⭐🌌", emoji:"🛰️", text:"Falcon 9 lifts payload to orbit, achieving a successful launch." },
+    { icons:"🔧🚀", emoji:"⚙️", text:"First stage booster performs controlled descent and splash-down." }
+  ],
+  atk: "3000",
+  def: "2200",
+  level: "4",
+  rarity: "SR",
+  tags: ["SpaceX","Rocketry","Launch"],
+  card_sets: ["Orbital Operations","2025 Milestones"],
+  timestamp: "2025-08-21T14:32:00Z",
+  footer: "Jessica AI | Zetsumetsu Eoe™ | ZETSUMETSU CORPORATION | Artworqq Kevin Suber",
+  card_images: [{ image_url:"https://i.ytimg.com/vi/KDR4dk9JydM/maxresdefault.jpg" }],
+  frameType: "technology"
+};
 
-function getSavedCard(){
-  // 1) same-window localStorage
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (raw) {
-    const obj = safeParse(raw);
-    if (obj) return obj;
-  }
-  // 2) opener localStorage (popup case)
-  try {
-    if (window.opener) {
-      const raw2 = window.opener.localStorage.getItem(STORAGE_KEY);
-      const obj2 = safeParse(raw2);
-      if (obj2) return obj2;
-    }
-  } catch {}
-  return null;
-}
-
-let card = getSavedCard();
-
-/* render an “empty card” if nothing saved — still only the card UI */
-if (!card) {
-  card = {
-    id: "-",
-    name: "No Card Found",
-    icon: "❌",
-    about: "",
-    tribute: "",
-    effects: [],
-    atk: "",
-    def: "",
-    level: "",
-    rarity: "Normal",
-    tags: [],
-    card_sets: [],
-    timestamp: "",
-    footer: "No saved card in localStorage",
-    card_images: [],
-    frameType: ""
-  };
-}
-
-/* ========= visual frame tint only (no mutation) ========= */
+/* ===== Frame color maps ===== */
 const colorPalette = {
-  silver:"#C0C0C0", blue:"#0000FF", "dark-blue":"#00008B", green:"#008000",
-  gold:"#FFD700", maroon:"#800000", "bright-red":"#FF4949", "sky-blue":"#87CEEB",
-  teal:"#008080", cyan:"#00FFFF", magenta:"#FF00FF", "red-orange":"#FF4500",
-  "sky-blue-light":"#ADD8E6", "forest-green":"#228B22", orange:"#FFA500",
-  "light-green":"#90EE90", violet:"#EE82EE", "dark-violet":"#9400D3", peach:"#FFDAB9",
-  "gray-gradient":"#D3D3D3", beige:"#F5F5DC", "yellow-green":"#9ACD32", black:"#000000",
-  "light-gray":"#D3D3D3", rose:"#FFC0CB", "neon-yellow":"#FFFF00", "peach-light":"#FFDAB9",
-  "dark-red":"#8B0000", gray:"#808080", "black-red-holo":"#8B0000", purple:"#6A0DAD",
+  "silver":"#C0C0C0","blue":"#0000FF","dark-blue":"#00008B","green":"#008000",
+  "gold":"#FFD700","maroon":"#800000","bright-red":"#FF4949","sky-blue":"#87CEEB",
+  "teal":"#008080","cyan":"#00FFFF","magenta":"#FF00FF","red-orange":"#FF4500",
+  "sky-blue-light":"#ADD8E6","forest-green":"#228B22","orange":"#FFA500",
+  "light-green":"#90EE90","violet":"#EE82EE","dark-violet":"#9400D3","peach":"#FFDAB9",
+  "gray-gradient":"#D3D3D3","beige":"#F5F5DC","yellow-green":"#9ACD32","black":"#000000",
+  "light-gray":"#D3D3D3","rose":"#FFC0CB","neon-yellow":"#FFFF00","peach-light":"#FFDAB9",
+  "dark-red":"#8B0000","gray":"#808080","black-red-holo":"#8B0000","purple":"#6A0DAD",
   "neon-multicolor":"#FF00FF"
 };
 const card_type_map = {
@@ -126,16 +218,16 @@ const rarityBorder = {
   Quantum:{ color:"#f1c40f", iridescent:false }, ZEOE:{ color:null, iridescent:true }
 };
 
+/* ===== Apply frame color / rarity ===== */
 (function applyFrame(){
   const inner = document.getElementById("inner");
   let baseColor = "#e63946";
-  const ft = String(card.frameType || "").toLowerCase().replace(/\s+/g, "_");
+  const ft = String(card.frameType||"").toLowerCase().replace(/\s+/g,"_");
   if (card_type_map[ft]) {
     const key = card_type_map[ft].color;
     if (colorPalette[key]) baseColor = colorPalette[key];
   }
-  let useIri = false;
-  const r = card.rarity;
+  let useIri = false; const r = card.rarity;
   if (r && rarityBorder[r]) {
     if (rarityBorder[r].iridescent) useIri = true;
     else if (rarityBorder[r].color) baseColor = rarityBorder[r].color;
@@ -144,66 +236,96 @@ const rarityBorder = {
   inner.classList.toggle("iridescent", useIri);
 })();
 
-/* ========= bind (render-only) ========= */
+/* ===== Bind fields (no fake defaults) ===== */
 const $ = id => document.getElementById(id);
-const set = (id, v) => { const el = $(id); if (el) el.textContent = (v ?? ""); };
+$("card-id").textContent   = card.id || "";
+$("card-name").textContent = card.name || "";
+$("card-icon").textContent = card.icon || "";
 
-/* header */
-set("card-id", card.id);
-set("card-name", card.name);
-set("card-icon", card.icon);
-
-/* artwork */
+/* image + alt */
 const img = $("card-image");
-if (img) {
-  const url = card.card_images?.[0]?.image_url || "";
-  img.src = url;
-  img.alt = card.name ? `${card.name} — artwork` : "Card artwork";
+img.src = (card.card_images && card.card_images[0] && card.card_images[0].image_url) ? card.card_images[0].image_url : "";
+img.alt = (card.name ? card.name + " — artwork" : "Card artwork");
+
+/* ===== GET TRIBUTE NUMBER (per spec) ===== */
+const typeInfo = { max_tributes: 10 }; // adjust if you have per-type limits
+
+// -- GET TRIBUTE NUMBER--
+const levelResolved = (typeof resolveLevel === "function")
+  ? resolveLevel(card, typeInfo)
+  : (Number(card.level) || 1);
+
+const maxTributes = (typeInfo?.max_tributes ?? 10);
+
+const tributesResolved = (typeof makeTributes === "function")
+  ? makeTributes(levelResolved, maxTributes)
+  : Math.min(levelResolved, maxTributes);
+
+card.level = levelResolved;        // store back so other code can read it
+card.tributes = tributesResolved;  // numeric tribute count
+
+/* ===== Auto Calculator (tribute-first) ===== */
+/* Counts 🙇 variants if no numeric tributes present (legacy support). */
+function countTributes(s){
+  if (!s) return 0;
+  const kneel = (s.match(/🙇/gu) || []).length;
+
+  return kneel || starsFallback;
 }
 
-/* stats — EXACT values from saved card */
-set("level", card.level);
-set("atk", card.atk);
-set("def", card.def);
+function autoCalc(card) {
+  const tributeCount =
+    (typeof card.tributes === "number")
+      ? card.tributes
+      : countTributes(card.tribute);
 
-/* banner — show tribute string exactly as saved */
-set("tribute", card.tribute);
-set("about", card.about);
-set("type-emoji", card.icon);
+  const level = tributeCount || (Number(card.level) || 1);
+  const effectsCount = Array.isArray(card.effects) ? card.effects.length : 0;
 
-/* effects */
+  const atk = (level * 1000) + (effectsCount * 500);
+  const def = Math.floor(atk / 2);
+
+  return { level, atk, def };
+}
+
+/* ===== Stats bind ===== */
+const stats = autoCalc(card);
+$("level").textContent = stats.level;
+$("atk").textContent   = stats.atk;
+$("def").textContent   = stats.def;
+
+/* banner */
+$("tribute").textContent   = card.tribute || "";
+$("about").textContent     = card.about   || "";
+$("type-emoji").textContent= card.icon    || "";
+
+/* effects (node builder) */
 const effBox = $("effect-box");
-if (effBox) {
-  effBox.replaceChildren();
-  (card.effects || []).forEach(e => {
-    const entry = document.createElement("div"); entry.className = "effect-entry";
-    const bar   = document.createElement("div"); bar.className   = "effect-bar";
-    const icons = document.createElement("div"); icons.textContent = e.icons || "";
-    const emj   = document.createElement("div"); emj.textContent   = e.emoji || "";
-    bar.append(icons, emj);
-    const text  = document.createElement("div"); text.className = "effect-text";
-    text.textContent = e.text || "";
-    entry.append(bar, text);
-    effBox.append(entry);
-  });
-}
+effBox.replaceChildren();
+(card.effects||[]).forEach(e=>{
+  const entry = document.createElement("div"); entry.className="effect-entry";
+  const bar = document.createElement("div"); bar.className="effect-bar";
+  const icons = document.createElement("div"); icons.textContent = e.icons || "";
+  const emj   = document.createElement("div"); emj.textContent   = e.emoji || "";
+  bar.append(icons, emj);
+  const text = document.createElement("div"); text.className="effect-text"; text.textContent = e.text || "";
+  entry.append(bar, text);
+  effBox.append(entry);
+});
 
-/* meta */
-set("sets-line", Array.isArray(card.card_sets) ? card.card_sets.join(" ") : "");
-set("tags-line", Array.isArray(card.tags) ? card.tags.join(" ") : "");
-set("footer", card.footer);
-set("timestamp", card.timestamp);
+/* meta lines */
+$("sets-line").textContent = (Array.isArray(card.card_sets)?card.card_sets:[]).join(" ");
+$("tags-line").textContent = (Array.isArray(card.tags)?card.tags:[]).join(" ");
+$("footer").textContent    = card.footer    || "";
+$("timestamp").textContent = card.timestamp || "";
 
-/* rarity */
+/* rarity badge text + class (Quantum -> Q class) */
 const rb = $("rarity");
-if (rb) {
-  rb.textContent = card.rarity || "";
-  rb.className = "rarity";
-  const rarityClassMap = { Normal:"Normal", Rare:"Rare", SR:"SR", UR:"UR", Quantum:"Q", ZEOE:"ZEOE" };
-  rb.classList.add(rarityClassMap[card.rarity] || (card.rarity || ""));
-}
+rb.textContent = card.rarity || "";
+const rarityClassMap = { Normal:"Normal", Rare:"Rare", SR:"SR", UR:"UR", Quantum:"Q", ZEOE:"ZEOE" };
+rb.classList.add(rarityClassMap[card.rarity] || (card.rarity || ""));
 
-/* autoscale (visual only) */
+/* ===== Autoscale ===== */
 function autoscaleToLength(el, maxChars, minScale = 0.6){
   if(!el) return; el.style.setProperty('--scale','1');
   const len = [...(el.textContent || '').trim()].length;
@@ -228,21 +350,16 @@ function applyAutoscaleAll(){
   autoscaleToLength($('type-emoji'), 8, 0.6);
   autoscaleToLength($('about'), 20, 0.75);
   const nameSpan = document.querySelector('.card-name span');
-  autoshrinkFontToFit(nameSpan, {
-    min:0.50, pad:4,
-    squeezeLeft:  document.querySelector('.card-id'),
-    squeezeRight: $('card-icon'),
-    squeezePx:6
-  });
+  autoshrinkFontToFit(nameSpan, { min:0.50, pad:4, squeezeLeft: document.querySelector('.card-id'), squeezeRight: $('card-icon'), squeezePx:6 });
 }
 applyAutoscaleAll();
-if (document.fonts && document.fonts.ready) {
-  document.fonts.ready.then(applyAutoscaleAll).catch(()=>{});
-}
-let rafId = null;
+if (document.fonts && document.fonts.ready) { document.fonts.ready.then(applyAutoscaleAll).catch(()=>{}); }
+
+/* Throttle resize */
+let rafId=null;
 addEventListener('resize', () => {
   if (rafId) cancelAnimationFrame(rafId);
-  rafId = requestAnimationFrame(() => { applyAutoscaleAll(); rafId = null; });
+  rafId = requestAnimationFrame(()=>{ applyAutoscaleAll(); rafId=null; });
 });
 </script>
 </body>
