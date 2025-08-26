@@ -173,28 +173,15 @@
   </div>
 
 <script>
-/* ===== Sample card (kept for fallback) ===== */
-const card = {
-  id: "000001234567",
-  name: "Falcon 9 Artworqq-PPLaunch [STAR-SHINE]",
-  icon: "🚀",
-  about: "Technology",
-  tribute: "🙇‍♂️🙇‍♂️🙇‍♂️",
-  effects: [
-    { icons:"⭐🌌", emoji:"🛰️", text:"Falcon 9 lifts payload to orbit, achieving a successful launch." },
-    { icons:"🔧🚀", emoji:"⚙️", text:"First stage booster performs controlled descent and splash-down." }
-  ],
-  atk: "3000",
-  def: "2200",
-  level: "4",
-  rarity: "SR",
-  tags: ["SpaceX","Rocketry","Launch"],
-  card_sets: ["Orbital Operations","2025 Milestones"],
-  timestamp: "2025-08-21T14:32:00Z",
-  footer: "Jessica AI | Zetsumetsu Eoe™ | ZETSUMETSU CORPORATION | Artworqq Kevin Suber",
-  card_images: [{ image_url:"https://i.ytimg.com/vi/KDR4dk9JydM/maxresdefault.jpg" }],
-  frameType: "technology"
-};
+/* ===== Ingress: read ?card= (JSON string) ===== */
+function safeParse(s){ try{ return JSON.parse(s) } catch { return null } }
+function getCardFromLink(){
+  const p = new URLSearchParams(location.search);
+  if (!p.has("card")) return null;
+  return safeParse(decodeURIComponent(p.get("card")));
+}
+const card = getCardFromLink();
+
 
 /* ===== Fixed category map (frameType + color + max_tribute) ===== */
 const CARD_TYPE_MAP = {
