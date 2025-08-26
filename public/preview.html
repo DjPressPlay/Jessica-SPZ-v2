@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Zetsu Card preview— Schema-Accurate Renderer</title>
+<title>Zetsu Card — Schema-Accurate Renderer</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="color-scheme" content="dark">
 <style>
@@ -101,7 +101,7 @@
   }
   .meta-line{ display:flex; gap:8px; align-items:center; font-size:.78rem; color:#ccc; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .meta-label{ font-weight:800; text-transform:uppercase; color:#eee; letter-spacing:.02em; }
-  .meta-value{ flex:1; min-width:0; opacity:.95; }
+  .meta-value{ flex:1; min-width:0; opacity:.95; white-space:normal; word-break:break-word; }
 
   /* Bottom bar */
   .meta-bottom{
@@ -126,6 +126,37 @@
   }
   @keyframes holoShift{ 0%{background-position:0% 50%} 100%{background-position:200% 50%} }
   @media (prefers-reduced-motion: reduce){ .rarity.ZEOE{ animation:none; } }
+
+  /* Iridescent shine when rarity triggers it */
+  .frameType-inner.iridescent::after{
+    content:"";
+    position:absolute; inset:-2px; pointer-events:none; z-index:2;
+    background:
+      conic-gradient(from 0deg,
+        rgba(255,0,64,.35),
+        rgba(255,210,0,.35),
+        rgba(0,255,204,.35),
+        rgba(0,162,255,.35),
+        rgba(255,77,255,.35),
+        rgba(255,0,64,.35)
+      );
+    -webkit-mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    padding:3px; border-radius:12px;
+    animation: holoSweep 8s linear infinite;
+  }
+  @keyframes holoSweep { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce){ .frameType-inner.iridescent::after{ animation:none; } }
+
+  /* Artwork fallback */
+  .card-art::before{
+    content:""; position:absolute; inset:0; z-index:0;
+    background:
+      radial-gradient(120% 100% at 50% 0%, #1e1e1e 0%, #0e0e0e 65%, #111 100%),
+      repeating-linear-gradient(135deg, rgba(255,255,255,.05) 0 2px, transparent 2px 6px);
+  }
+  .card-art img[src=""], .card-art img:not([src]){ opacity:0; }
 </style>
 </head>
 <body>
@@ -173,30 +204,6 @@
   </div>
 
 <script>
-/* ===== Sample card ===== */
-const card = {
-  id: "000001234567",
-  name: "Falcon 9 Artworqq-PPLaunch [STAR-SHINE]",
-  icon: "🚀",
-  about: "Technology",
-  tribute: "🙇‍♂️🙇‍♂️🙇‍♂️", // ← real Tribute source (🙇 only)
-  effects: [
-    { icons:"⭐🌌", emoji:"🛰️", text:"Falcon 9 lifts payload to orbit, achieving a successful launch." },
-    { icons:"🔧🚀", emoji:"⚙️", text:"First stage booster performs controlled descent and splash-down." }
-  ],
-  // ATK/DEF/level are computed from tributes in this preview — left here for visibility but ignored by the calculator below
-  atk: "",
-  def: "",
-  level: "",
-  rarity: "SR",
-  tags: ["SpaceX","Rocketry","Launch"],
-  card_sets: ["Orbital Operations","2025 Milestones"],
-  timestamp: "2025-08-21T14:32:00Z",
-  footer: "Jessica AI | Zetsumetsu Eoe™ | ZETSUMETSU CORPORATION | Artworqq Kevin Suber",
-  card_images: [{ image_url:"https://i.ytimg.com/vi/KDR4dk9JydM/maxresdefault.jpg" }],
-  frameType: "technology"
-};
-
 /* ===== Frame color maps ===== */
 const colorPalette = {
   "silver":"#C0C0C0","blue":"#0000FF","dark-blue":"#00008B","green":"#008000",
@@ -219,8 +226,42 @@ const rarityBorder = {
   Quantum:{ color:"#f1c40f", iridescent:false }, ZEOE:{ color:null, iridescent:true }
 };
 
-/* ===== Apply frame color / rarity ===== */
-(function applyFrame(){
+/* ===== Helpers ===== */
+const $ = id => document.getElementById(id);
+const STORAGE_KEY = "jessica_card";
+
+function safeParse(json){
+  try { return JSON.parse(json); } catch { return null; }
+}
+function getCardFromIndex(){
+  // 1) localStorage (set by index page)
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (raw) {
+    const obj = safeParse(raw);
+    if (obj && typeof obj === "object") return obj;
+  }
+  // 2) URL param ?card=<base64/json-encoded> (optional convenience)
+  const p = new URLSearchParams(location.search);
+  if (p.has("card")){
+    try {
+      const val = decodeURIComponent(p.get("card"));
+      const obj = safeParse(val);
+      if (obj) return obj;
+    } catch {}
+  }
+  // 3) opener’s storage (if allowed)
+  try {
+    if (window.opener) {
+      const raw2 = window.opener.localStorage.getItem(STORAGE_KEY);
+      const obj2 = safeParse(raw2);
+      if (obj2) return obj2;
+    }
+  } catch {}
+  return null;
+}
+
+/* ===== Frame color / rarity ===== */
+function applyFrame(card){
   const inner = document.getElementById("inner");
   let baseColor = "#e63946";
   const ft = String(card.frameType||"").toLowerCase().replace(/\s+/g,"_");
@@ -235,98 +276,85 @@ const rarityBorder = {
   }
   document.documentElement.style.setProperty("--frame-color", baseColor);
   inner.classList.toggle("iridescent", useIri);
-})();
+}
 
-/* ===== Bind fields ===== */
-const $ = id => document.getElementById(id);
-$("card-id").textContent   = card.id || "";
-$("card-name").textContent = card.name || "";
-$("card-icon").textContent = card.icon || "";
-
-/* image + alt */
-const img = $("card-image");
-img.src = (card.card_images && card.card_images[0] && card.card_images[0].image_url) ? card.card_images[0].image_url : "";
-img.alt = (card.name ? card.name + " — artwork" : "Card artwork");
-
-/* ===== Tribute/Stats (Preview calc) ===== */
+/* ===== Tribute/Stats ===== */
 const typeInfo = { max_tributes: 10 };
 
-/* 🙇 only — no star fallback */
-function countTributes(s){
+function countTributesFromString(s){
   if (!s) return 0;
-  return (s.match(/🙇/gu) || []).length;
+  return (String(s).match(/🙇/gu) || []).length;
 }
-
-/* Normalize tribute number for preview:
-   - numeric → use it
-   - else count 🙇 in string
-   - clamp to 0..10
-   - level = tributes
-   - ATK = level*1000 + effects*500
-   - DEF = floor(ATK/2)
-*/
-function normalizeTributeAndStats(card){
-  const MAX = typeInfo.max_tributes;
-  let n = 0;
-
-  if (card && card.tribute != null) {
-    const raw = card.tribute;
-    const num = typeof raw === "number"
-      ? raw
-      : (typeof raw === "string" && raw.trim() !== "" ? Number(raw) : NaN);
-    if (!Number.isNaN(num) && num >= 0) n = Math.floor(num);
-    else n = countTributes(raw);
-  }
-
-  n = Math.max(0, Math.min(MAX, n));
-  card.tributes = n;
-  card.tribute  = "🙇‍♂️".repeat(n);
-
+function resolveTributes(card){
+  // prefer numeric fields (tributes or level), else count 🙇
+  if (typeof card.tributes === "number") return Math.max(0, Math.min(typeInfo.max_tributes, Math.floor(card.tributes)));
+  const lvl = Number(card.level);
+  if (!Number.isNaN(lvl) && lvl >= 0) return Math.max(0, Math.min(typeInfo.max_tributes, Math.floor(lvl)));
+  return Math.max(0, Math.min(typeInfo.max_tributes, countTributesFromString(card.tribute)));
+}
+function computeStats(card){
+  const trib = resolveTributes(card);
   const effectsCount = Array.isArray(card.effects) ? card.effects.length : 0;
-  const level = n; // level derives ONLY from tributes in preview
+  const level = trib;
   const atk = (level * 1000) + (effectsCount * 500);
   const def = Math.floor(atk / 2);
-
-  return { level, atk, def };
+  return { level, atk, def, tributeString: "🙇‍♂️".repeat(trib) };
 }
 
-const stats = normalizeTributeAndStats(card);
+/* ===== Bind & Render ===== */
+function renderCard(card){
+  applyFrame(card);
 
-/* Bind stats to orbs */
-$("level").textContent = String(stats.level);
-$("atk").textContent   = String(stats.atk);
-$("def").textContent   = String(stats.def);
+  // header
+  $("card-id").textContent   = card.id || "";
+  $("card-name").textContent = card.name || "";
+  $("card-icon").textContent = card.icon || "";
 
-/* banner */
-$("tribute").textContent    = card.tribute || "";
-$("about").textContent      = card.about   || "";
-$("type-emoji").textContent = card.icon    || "";
+  // artwork
+  const img = $("card-image");
+  img.src = (card.card_images && card.card_images[0] && card.card_images[0].image_url) ? card.card_images[0].image_url : "";
+  img.alt = (card.name ? card.name + " — artwork" : "Card artwork");
 
-/* effects (node builder) */
-const effBox = $("effect-box");
-effBox.replaceChildren();
-(card.effects||[]).forEach(e=>{
-  const entry = document.createElement("div"); entry.className="effect-entry";
-  const bar = document.createElement("div"); bar.className="effect-bar";
-  const icons = document.createElement("div"); icons.textContent = e.icons || "";
-  const emj   = document.createElement("div"); emj.textContent   = e.emoji || "";
-  bar.append(icons, emj);
-  const text = document.createElement("div"); text.className="effect-text"; text.textContent = e.text || "";
-  entry.append(bar, text);
-  effBox.append(entry);
-});
+  // stats from tributes/effects
+  const stats = computeStats(card);
+  $("level").textContent = String(stats.level);
+  $("atk").textContent   = String(stats.atk);
+  $("def").textContent   = String(stats.def);
 
-/* meta lines */
-$("sets-line").textContent = (Array.isArray(card.card_sets)?card.card_sets:[]).join(" ");
-$("tags-line").textContent = (Array.isArray(card.tags)?card.tags:[]).join(" ");
-$("footer").textContent    = card.footer    || "";
-$("timestamp").textContent = card.timestamp || "";
+  // banner
+  $("tribute").textContent    = stats.tributeString || card.tribute || "";
+  $("about").textContent      = card.about   || "";
+  $("type-emoji").textContent = card.icon    || "";
 
-/* rarity badge text + class (Quantum -> Q class) */
-const rb = $("rarity");
-rb.textContent = card.rarity || "";
-const rarityClassMap = { Normal:"Normal", Rare:"Rare", SR:"SR", UR:"UR", Quantum:"Q", ZEOE:"ZEOE" };
-rb.classList.add(rarityClassMap[card.rarity] || (card.rarity || ""));
+  // effects
+  const effBox = $("effect-box");
+  effBox.replaceChildren();
+  (card.effects||[]).forEach(e=>{
+    const entry = document.createElement("div"); entry.className="effect-entry";
+    const bar = document.createElement("div"); bar.className="effect-bar";
+    const icons = document.createElement("div"); icons.textContent = e.icons || "";
+    const emj   = document.createElement("div"); emj.textContent   = e.emoji || "";
+    bar.append(icons, emj);
+    const text = document.createElement("div"); text.className="effect-text"; text.textContent = e.text || "";
+    entry.append(bar, text);
+    effBox.append(entry);
+  });
+
+  // meta
+  $("sets-line").textContent = (Array.isArray(card.card_sets)?card.card_sets:[]).join(" ");
+  $("tags-line").textContent = (Array.isArray(card.tags)?card.tags:[]).join(" ");
+  $("footer").textContent    = card.footer    || "";
+  $("timestamp").textContent = card.timestamp || "";
+
+  // rarity badge
+  const rb = $("rarity");
+  rb.textContent = card.rarity || "";
+  rb.className = "rarity"; // reset
+  const rarityClassMap = { Normal:"Normal", Rare:"Rare", SR:"SR", UR:"UR", Quantum:"Q", ZEOE:"ZEOE" };
+  rb.classList.add(rarityClassMap[card.rarity] || (card.rarity || ""));
+
+  applyAutoscaleAll();
+}
 
 /* ===== Autoscale ===== */
 function autoscaleToLength(el, maxChars, minScale = 0.6){
@@ -353,12 +381,33 @@ function applyAutoscaleAll(){
   autoscaleToLength(document.getElementById('type-emoji'), 8, 0.6);
   autoscaleToLength(document.getElementById('about'), 20, 0.75);
   const nameSpan = document.querySelector('.card-name span');
-  autoshrinkFontToFit(nameSpan, { min:0.50, pad:4, squeezeLeft: document.querySelector('.card-id'), squeezeRight: document.getElementById('card-icon'), squeezePx:6 });
+  autoshrinkFontToFit(nameSpan, {
+    min:0.50, pad:4,
+    squeezeLeft: document.querySelector('.card-id'),
+    squeezeRight: document.getElementById('card-icon'),
+    squeezePx:6
+  });
 }
-applyAutoscaleAll();
-if (document.fonts && document.fonts.ready) { document.fonts.ready.then(applyAutoscaleAll).catch(()=>{}); }
 
-/* Throttle resize */
+/* ===== Boot ===== */
+(function boot(){
+  const card = getCardFromIndex();
+  if (!card) {
+    // graceful empty-state
+    document.querySelector('.frameType-inner').innerHTML = `
+      <div style="padding:24px; text-align:center">
+        <div style="font-size:18px; font-weight:800; margin-bottom:8px;">No card found</div>
+        <div style="font-size:14px; color:#ccc;">
+          Go back to the Index and run the Creation Ritual. A card will be saved to <code>localStorage["jessica_card"]</code>.
+        </div>
+      </div>`;
+    return;
+  }
+  renderCard(card);
+})();
+
+/* Re-apply autoscale after fonts load and on resize */
+if (document.fonts && document.fonts.ready) { document.fonts.ready.then(applyAutoscaleAll).catch(()=>{}); }
 let rafId=null;
 addEventListener('resize', () => {
   if (rafId) cancelAnimationFrame(rafId);
