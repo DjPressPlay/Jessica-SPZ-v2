@@ -292,30 +292,7 @@ function applyFrame(card){
 
 
 /* ===== 3) Level → ATK/DEF using per-category cap ===== */
-function statsFromLevel(level, typeInfo){
-  const maxStars = Math.max(1, Number(typeInfo.max_tribute)||1);
-  const clamped  = Math.max(0, Math.min(Number(level)||0, maxStars));
-  const minStat = 1000, maxStat = 5000;
-  const fraction = clamped / maxStars;               // 0..1
-  const atk = Math.round(minStat + fraction*(maxStat-minStat));
-  const def = Math.max(minStat, Math.round(atk * 0.8));
-  return { atk, def };
-}
 
-function computeStats(card){
-  const tinfo = getTypeInfo(card);
-  const trib = resolveTributes(card);    // category-capped
-  const level = trib > 0 ? trib : 1;     // level derives from tribute count
-  const withGivenAtk = Number(card.atk);
-  const withGivenDef = Number(card.def);
-  const calc = statsFromLevel(level, tinfo);
-  return {
-    level,
-    atk: Number.isFinite(withGivenAtk) && withGivenAtk > 0 ? withGivenAtk : calc.atk,
-    def: Number.isFinite(withGivenDef) && withGivenDef > 0 ? withGivenDef : calc.def,
-    tributeString: "🙇‍♂️".repeat(trib)
-  };
-}
 
 /* ===== Bind + render (existing flow) ===== */
 const $ = id => document.getElementById(id);
