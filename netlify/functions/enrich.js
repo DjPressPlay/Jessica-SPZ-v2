@@ -104,13 +104,7 @@ const emojiMap = {
 
 function categoryMap(category) {
   switch (category) {
-    case "Breaking News": return { icon:"🚨🗞️", rarity:"UR", frameType:"breaking_news", tributes:6 };
-    case "Politics": return { icon:"🏛️🗳️", rarity:"SR", frameType:"politics", tributes:9 };
-    case "Technology": return { icon:"🔧🚀", rarity:"SR", frameType:"technology", tributes:8 };
-    case "Science": return { icon:"🔬🧪", rarity:"UR", frameType:"science", tributes:8 };
-    case "Crypto": return { icon:"🪙🔗", rarity:"SR", frameType:"crypto", tributes:8 };
-    case "Meme": return { icon:"😂🔥", rarity:"R", frameType:"meme", tributes:5 };
-    case "People": return { icon:"🙇‍♂️", rarity:"C", frameType:"people", tributes:5 };
+   
    case "Breaking News":     return { icon:"🚨🗞️", rarity:"UR", frameType:"breaking_news", color:"bright-red", max_tribute:6 };
     case "Politics":          return { icon:"🏛️🗳️", rarity:"SR", frameType:"politics",      color:"maroon",     max_tribute:9 };
     case "National News":     return { icon:"📰🧭", rarity:"R",   frameType:"national_news",      color:"dark-blue",         max_tribute:8 };
