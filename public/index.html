@@ -195,16 +195,16 @@
       const d2raw = (r.title || "").trim();
       const d2 = (d2raw && d2raw !== d1) ? d2raw : "";
       return {
-        url:   r.url,
-        title: r.title || site || r.url,
-        desc1: d1,
-        desc2: d2,
-        image: r.image || "",
-        brand: site,
-        siteName: site,
-        category: site, // enrich will normalize + map
-        keywords: Array.isArray(r.keywords) ? r.keywords : []
-      };
+  url: r.url,
+  title: r.title || site || r.url,
+  desc1: d1,
+  desc2: d2,
+  image: r.image || "",
+  brand: site,
+  siteName: site,
+  // ❌ don’t force category here → enrich decides
+  keywords: Array.isArray(r.keywords) ? r.keywords : []
+};
     });
 
     const enriched = await postJSON(ENRICH_API, { items, session: crawled.session });
