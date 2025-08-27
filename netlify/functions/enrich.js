@@ -142,8 +142,7 @@ function categoryMap(category) {
     case "Crypto":            return { icon:"🪙🔗", rarity:"SR",  frameType:"crypto",             color:"purple",            max_tribute:8 };
     case "Meme":              return { icon:"😂🔥", rarity:"R",   frameType:"meme",               color:"neon-multicolor",   max_tribute:5 };
     case "People":            return { icon:"🙇‍♂️", rarity:"C",   frameType:"people",             color:"light-gray",        max_tribute:5 }; 
-    // … include the rest of your category list here (Business, Sports, etc)
-    default: return { icon:"🙇‍♂️", rarity:"C", frameType:"people", tributes:5 };
+   
   }
 }
 
