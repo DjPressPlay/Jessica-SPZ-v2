@@ -109,8 +109,7 @@ function asEffectArray(effects){
         icons: e.icons || "", emoji: e.emoji || "", text: text(e.text)
       }));
     }
-    return effects.map(t => ({ icons:"", emoji:"", text: text(String(t||"")) }))
-                  .filter(e => e.text);
+    return effects.map(t => ({ icons:"", emoji:"", text: text(String(t||"")) })).filter(e => e.text);
   }
   if (typeof effects === "string") {
     const t = text(effects);
@@ -152,7 +151,7 @@ function normalizeResult(r={}){
 function cleanFooterString(s){
   if (!s) return "";
   let out = String(s);
-  out = out.replace(/\s*\|\s*\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z/g, ""); // remove ISO timestamp chunks
+  out = out.replace(/\s*\|\s*\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z/g, "");
   out = out.replace(/\s*\|\s*\|/g, " | ");
   out = out.trim().replace(/^\|\s*|\s*\|$/g, "");
   return out;
@@ -177,7 +176,7 @@ function footerToString(f){
 
 /* -------- frame color / rarity meta -------- */
 function deriveFrameMeta(card){
-  let baseColor = "#e63946"; // default accent
+  let baseColor = "#e63946";
   const ft = String(card.frameType||"").toLowerCase().replace(/\s+/g,"_");
   if (card_type_map[ft]) {
     const key = card_type_map[ft].color;
