@@ -45,49 +45,57 @@ function makeTimestamp(dateMaybe){
 }
 
 /* ---------------- category + emoji mapping ---------------- */
-
-function normalizeCategory(cat=""){
+function normalizeCategory(cat = "", keywords = []) {
   const s = String(cat || "").toLowerCase().trim();
-  if (["breaking","breaking news"].includes(s)) return "Breaking News";
-  if (["politics"].includes(s)) return "Politics";
-  if (["national","national news"].includes(s)) return "National News";
-  if (["international","world","world news","international news"].includes(s)) return "International News";
-  if (["local","local news"].includes(s)) return "Local News";
-  if (["economy","economics"].includes(s)) return "Economy";
-  if (["business","biz"].includes(s)) return "Business";
-  if (["sales"].includes(s)) return "Sales";
-  if (["merch","merchandise","store"].includes(s)) return "Merch";
-  if (["tech","technology"].includes(s)) return "Technology";
-  if (["science","sci"].includes(s)) return "Science";
-  if (["health"].includes(s)) return "Health";
-  if (["education","edu"].includes(s)) return "Education";
-  if (["environment","climate","green"].includes(s)) return "Environment";
-  if (["sports","sport"].includes(s)) return "Sports";
-  if (["entertainment","entertain","culture"].includes(s)) return "Entertainment";
-  if (["lifestyle","life"].includes(s)) return "Lifestyle";
-  if (["travel","trip","tourism"].includes(s)) return "Travel";
-  if (["opinion","op-ed","op ed"].includes(s)) return "Opinion";
-  if (["editorial"].includes(s)) return "Editorial";
-  if (["feature","feature story","longform"].includes(s)) return "Feature Story";
-  if (["photojournalism","photo","photography"].includes(s)) return "Photojournalism";
-  if (["classifieds","classified"].includes(s)) return "Classifieds";
-  if (["comics","puzzles","comics & puzzles","comic","puzzle"].includes(s)) return "Comics & Puzzles";
-  if (["obituaries","obituary","obits"].includes(s)) return "Obituaries";
-  if (["weather","forecast"].includes(s)) return "Weather";
-  if (["society","community"].includes(s)) return "Society";
-  if (["infotainment"].includes(s)) return "Infotainment";
-  if (["soft news","softnews"].includes(s)) return "Soft News";
-  if (["hard news","hardnews"].includes(s)) return "Hard News";
-  if (["investigative","investigation"].includes(s)) return "Investigative";
-  if (["government","gov"].includes(s)) return "Government";
-  if (["zetsumetsu"].includes(s)) return "Zetsumetsu";
-  if (["social","social media"].includes(s)) return "Social";
-  if (["crypto","cryptocurrency","defi","bitcoin","eth"].includes(s)) return "Crypto";
-  if (["meme","memes"].includes(s)) return "Meme";
-  if (["people","human interest"].includes(s)) return "People";
 
-  return "People"; // fallback = always valid category
+  // 1. Check keywords against the known group
+  for (const kw of keywords) {
+    const k = String(kw || "").toLowerCase().trim();
+    if (k.includes("breaking")) return "Breaking News";
+    if (k.includes("politic")) return "Politics";
+    if (k.includes("national")) return "National News";
+    if (k.includes("international") || k.includes("world")) return "International News";
+    if (k.includes("local")) return "Local News";
+    if (k.includes("economy")) return "Economy";
+    if (k.includes("business") || k.includes("biz")) return "Business";
+    if (k.includes("sales")) return "Sales";
+    if (k.includes("merch")) return "Merch";
+    if (k.includes("tech")) return "Technology";
+    if (k.includes("science")) return "Science";
+    if (k.includes("health") || k.includes("medical")) return "Health";
+    if (k.includes("edu")) return "Education";
+    if (k.includes("climate") || k.includes("environment") || k.includes("green")) return "Environment";
+    if (k.includes("sport")) return "Sports";
+    if (k.includes("entertain")) return "Entertainment";
+    if (k.includes("lifestyle")) return "Lifestyle";
+    if (k.includes("travel") || k.includes("tourism")) return "Travel";
+    if (k.includes("opinion")) return "Opinion";
+    if (k.includes("editorial")) return "Editorial";
+    if (k.includes("feature")) return "Feature Story";
+    if (k.includes("photo")) return "Photojournalism";
+    if (k.includes("classified")) return "Classifieds";
+    if (k.includes("comic") || k.includes("puzzle")) return "Comics & Puzzles";
+    if (k.includes("obitu")) return "Obituaries";
+    if (k.includes("weather") || k.includes("forecast")) return "Weather";
+    if (k.includes("society") || k.includes("community")) return "Society";
+    if (k.includes("infotainment")) return "Infotainment";
+    if (k.includes("soft news")) return "Soft News";
+    if (k.includes("hard news")) return "Hard News";
+    if (k.includes("investigat")) return "Investigative";
+    if (k.includes("gov")) return "Government";
+    if (k.includes("zetsu")) return "Zetsumetsu";
+    if (k.includes("social")) return "Social";
+    if (k.includes("crypto") || k.includes("bitcoin") || k.includes("eth") || k.includes("defi")) return "Crypto";
+    if (k.includes("meme")) return "Meme";
+    if (k.includes("people") || k.includes("human")) || k.includes("social media") return "People";
+  }
+
+  // 2. If no keyword match → force pick from existing group
+  const allCategories = Object.keys(emojiMap); // the group you defined
+  const idx = Math.floor(Math.random() * allCategories.length);
+  return allCategories[idx]; // always returns a valid one from your set
 }
+
 
 const emojiMap = {
  "Breaking News": "🚨", "Politics": "🏛️", "National News": "📰",
