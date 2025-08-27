@@ -166,10 +166,9 @@
     setTimeout(() => wrap.remove(), 4500);
   }
 
-  /* ===== SCRAPER endpoints ===== */
+  /* ===== APIs ===== */
   const CRAWL_API  = "/api/crawl";
   const ENRICH_API = "/api/enrich";
-  const FUSE_API   = "/api/fuse";
 
   const input  = document.querySelector(".search-bar input");
   const button = document.querySelector(".search-bar button");
@@ -186,52 +185,46 @@
     try { return JSON.parse(text); } catch { return text; }
   }
 
-  /* ===== helpers ===== */
   function hostOf(u){ try{ return new URL(u).hostname.replace(/^www\./i,''); }catch{ return ''; } }
 
   async function makeCardFromUrl(url) {
     const crawled = await postJSON(CRAWL_API, { links: [url], session: "web" });
-
     const items = (crawled.results || []).map(r => {
       const site = r.siteName || hostOf(r.url);
       const d1 = (r.description || "").trim();
       const d2raw = (r.title || "").trim();
       const d2 = (d2raw && d2raw !== d1) ? d2raw : "";
       return {
-        url:      r.url,
-        title:    r.title || site || r.url,
-        desc1:    d1,
-        desc2:    d2,
-        image:    r.image || "",
-        brand:    site,
+        url:   r.url,
+        title: r.title || site || r.url,
+        desc1: d1,
+        desc2: d2,
+        image: r.image || "",
+        brand: site,
         siteName: site,
-        category: site, // let enrich normalize → gives emoji/rarity/tributes
+        category: site, // enrich will normalize + map
         keywords: Array.isArray(r.keywords) ? r.keywords : []
       };
     });
 
     const enriched = await postJSON(ENRICH_API, { items, session: crawled.session });
-    const fused = await postJSON(FUSE_API, {
-      session: crawled.session,
-      results: crawled.results || [],
-      cards:   enriched.cards || []
-    });
-    return fused.card || fused;
+    return (enriched.cards && enriched.cards[0]) || null;
   }
 
-  /* ===== Ritual → scrape → save card ===== */
+  /* ===== Ritual → scrape → enrich → show ===== */
   button?.addEventListener("click", async () => {
     const url = (input?.value || "").trim();
     if (!url) { output.textContent = "Enter a URL."; return; }
-    if (!isLikelyUrl(url)) { output.textContent = "Enter a full link starting with http(s)://"; return; }
+    if (!isLikelyUrl(url)) { output.textContent = "Enter a full http(s):// link"; return; }
 
     showRitual(); button.disabled = true; output.textContent = "Scraping…";
     try {
       let card = await makeCardFromUrl(url);
+      if (!card) throw new Error("No card returned.");
       output.textContent = JSON.stringify(card, null, 2);
       localStorage.setItem("jessica_card", JSON.stringify(card));
     } catch (e) {
-      output.textContent = (e && e.message) ? e.message : "Scrape failed.";
+      output.textContent = (e && e.message) ? e.message : "Failed.";
     } finally { button.disabled = false; }
   });
 
