@@ -87,7 +87,7 @@ function normalizeCategory(cat = "", keywords = []) {
     if (k.includes("social")) return "Social";
     if (k.includes("crypto") || k.includes("bitcoin") || k.includes("eth") || k.includes("defi")) return "Crypto";
     if (k.includes("meme")) return "Meme";
-    if (k.includes("people") || k.includes("human")) || k.includes("social media") return "People";
+if (k.includes("people") || k.includes("human") || k.includes("social media")) return "People";
   }
 
   // 2. If no keyword match → force pick from existing group
