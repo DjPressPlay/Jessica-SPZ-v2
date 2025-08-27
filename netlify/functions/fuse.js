@@ -256,7 +256,7 @@ function normalizeCard(c={}, r=null){
   // Icon/About/Tribute/Rarity (tribute text from enrich may exist; stats ignore it)
   const icon    = firstNonEmpty([c.icon, c.header && c.header.icon, tb.emoji, hero.icon]);
   const about   = firstNonEmpty([c.about, tb.about, tb.subtitle, hero.subtitle, hero.title]);
-  const tribute = firstNonEmpty([c.tribute, String(tb.stars||"")]);
+  const tribute = firstNonEmpty([c.tribute, tb.tribute]);   // ← stars removed
   const rarity  = firstNonEmpty([c.rarity, tb.rarity, foot.rarity]);
 
   // Images
