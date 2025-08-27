@@ -44,11 +44,11 @@ function makeTimestamp(dateMaybe){
   }
 }
 
-/* ---------------- category mapping ---------------- */
+/* ---------------- category + emoji mapping ---------------- */
 
 function normalizeCategory(cat=""){
   const s = String(cat || "").toLowerCase().trim();
- if (["breaking","breaking news"].includes(s)) return "Breaking News";
+  if (["breaking","breaking news"].includes(s)) return "Breaking News";
   if (["politics"].includes(s)) return "Politics";
   if (["national","national news"].includes(s)) return "National News";
   if (["international","world","world news","international news"].includes(s)) return "International News";
@@ -88,10 +88,24 @@ function normalizeCategory(cat=""){
   return s[0].toUpperCase() + s.slice(1);
 }
 
+// Global emoji map (for ALL effect lines)
+const emojiMap = {
+  "Breaking News": "🚨", "Politics": "🏛️", "National News": "📰",
+  "International News": "🌍", "Local News": "🏘️", "Economy": "💹",
+  "Business": "💼", "Sales": "🛒", "Merch": "👕", "Technology": "🤖",
+  "Science": "🔬", "Health": "🩺", "Education": "🎓", "Environment": "🌱",
+  "Sports": "🏅", "Entertainment": "🎭", "Lifestyle": "🌸", "Travel": "✈️",
+  "Opinion": "💬", "Editorial": "🖋️", "Feature Story": "📖", "Photojournalism": "📸",
+  "Classifieds": "📇", "Comics & Puzzles": "🧩", "Obituaries": "⚰️",
+  "Weather": "☀️", "Society": "👥", "Infotainment": "📺", "Soft News": "🪶",
+  "Hard News": "🗞️", "Investigative": "🔎", "Government": "⚖️", "Zetsumetsu": "🪬",
+  "Social": "📱", "Crypto": "🪙", "Meme": "😂", "People": "🙇‍♂️"
+};
+
 function categoryMap(category) {
   switch (category) {
-    case "Breaking News":     return { icon:"🚨🗞️", rarity:"UR",  frameType:"breaking_news",      color:"bright-red",        max_tribute:6 };
-    case "Politics":          return { icon:"🏛️🗳️", rarity:"SR",  frameType:"politics",           color:"maroon",            max_tribute:9 };
+    case "Breaking News":     return { icon:"🚨🗞️", rarity:"UR", frameType:"breaking_news", color:"bright-red", max_tribute:6 };
+    case "Politics":          return { icon:"🏛️🗳️", rarity:"SR", frameType:"politics",      color:"maroon",     max_tribute:9 };
     case "National News":     return { icon:"📰🧭", rarity:"R",   frameType:"national_news",      color:"dark-blue",         max_tribute:8 };
     case "International News":return { icon:"🌍📰", rarity:"UR",  frameType:"international_news", color:"blue",              max_tribute:8 };
     case "Local News":        return { icon:"🏘️🗞️", rarity:"R",   frameType:"local_news",         color:"sky-blue",          max_tribute:7 };
@@ -129,12 +143,11 @@ function categoryMap(category) {
     case "People":            return { icon:"🙇‍♂️", rarity:"C",   frameType:"people",             color:"light-gray",        max_tribute:5 };
   }
 }
-
 /* ---------------- stat calculation ---------------- */
 
 function calcStats(tributes) {
-  const MIN_ATK = 1000, MAX_ATK = 4000;
-  const atk = Math.floor(MIN_ATK + (tributes/8) * (MAX_ATK - MIN_ATK));
+  const MIN_ATK = 1000, MAX_ATK = 5000;
+  const atk = Math.floor(MIN_ATK + (tributes / 10) * (MAX_ATK - MIN_ATK));
   const def = Math.max(800, Math.floor(atk * 0.8));
   return { atk, def, level: tributes };
 }
@@ -166,9 +179,8 @@ function toCard(it = {}) {
   const card_sets = [brand, `${yyyy} ${brand}`];
 
   const effects = [];
-  if (desc1) effects.push({ icons: icon, emoji: emojiFromDesc1(desc1), text: desc1 });
-if (desc2) effects.push({ icons: icon, emoji: emojiFromDesc1(desc2), text: desc2 });
-
+  if (desc1) effects.push({ icons: icon, emoji: emojiMap[category] || "🧩", text: desc1 });
+  if (desc2) effects.push({ icons: icon, emoji: emojiMap[category] || "🧩", text: desc2 });
 
   return {
     id: rank,
