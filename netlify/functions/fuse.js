@@ -1,6 +1,6 @@
 // netlify/functions/fuse.js
 // Fuse results + cards into ONE preview-ready card for preview.html (no deps).
-// Slimmed to trust enrich outputs. No classifier/maps here; adds frame color/rarity meta.
+// Builds a complete card and stamps tributes/level/ATK/DEF strictly from category.
 
 exports.handler = async (event) => {
   try {
@@ -21,7 +21,7 @@ exports.handler = async (event) => {
     const byUrl = Object.create(null);
     for (const r of normResults) if (r.url) byUrl[r.url] = r;
 
-    // Build preview-cards from incoming cards, filling blanks from matched crawl result
+    // Build preview-cards from incoming cards, merging with matched crawl result
     const builtCards = (cardsIn.length ? cardsIn : []).map(c => {
       const url = urlOfCard(c, null);
       const r   = byUrl[url] || null;
@@ -33,8 +33,9 @@ exports.handler = async (event) => {
       for (const r of normResults) builtCards.push(cardFromResult(r));
     }
 
-    // Fuse into one and finalize (keep enrich fields; add fallbacks + frame meta)
+    // Fuse → stamp core stats from CATEGORY ONLY → finalize frame meta
     let card = fuseCards(builtCards);
+    card = stampCoreStatsFromCategory(card);
     card = finalizeCard(card);
 
     return json(200, { session, card, sources: normResults.map(r => r.url).filter(Boolean) });
@@ -167,7 +168,6 @@ function footerToString(f){
     const parts = [];
     if (Array.isArray(f.tags) && f.tags.length) parts.push(f.tags.join(" | "));
     if (f.set) parts.push(String(f.set));
-    // ignore f.timestamp on purpose
     parts.push(BRAND);
     return cleanFooterString(parts.filter(Boolean).join(" | "));
   }catch{
@@ -192,7 +192,7 @@ function deriveFrameMeta(card){
   return { frameColor: baseColor, iridescent: useIri };
 }
 
-/* -------- light finalization (no classification) -------- */
+/* -------- light finalization -------- */
 function finalizeCard(card){
   const host = hostOf(card._source_url || "");
   const icon = firstNonEmpty([card.icon]) || fallbackIconByHost(host);
@@ -224,7 +224,7 @@ function normalizeCard(c={}, r=null){
     r && r.image ? absolutize(r.url, r.image) : ""
   ]);
 
-  // Effects (prefer explicit, else effectBox (objects allowed), else r.desc/title)
+  // Effects (prefer explicit, else effectBox, else r.desc/title)
   let effects = asEffectArray(c.effects);
   if (!effects.length && (efb.description || (Array.isArray(efb.effects) && efb.effects.length))){
     const bundle = [];
@@ -254,7 +254,7 @@ function normalizeCard(c={}, r=null){
     ? c.card_sets.map(text)
     : (foot.set ? [text(foot.set)] : (r && r.site ? [r.site] : []));
 
-  // Icon/About/Tribute/Rarity
+  // Icon/About/Tribute/Rarity (tribute text from enrich may exist; stats ignore it)
   const icon    = firstNonEmpty([c.icon, c.header && c.header.icon, tb.emoji, hero.icon]);
   const about   = firstNonEmpty([c.about, tb.about, tb.subtitle, hero.subtitle, hero.title]);
   const tribute = firstNonEmpty([c.tribute, String(tb.stars||"")]);
@@ -268,7 +268,7 @@ function normalizeCard(c={}, r=null){
     name: text(name),
     icon: icon || "",
     about: text(about || ""),
-    tribute: text(tribute || ""),
+    tribute: text(tribute || ""), // overwritten later with kneel string from category
     effects: effects.slice(0,4),
     rarity: text(rarity || ""),
     tags,
@@ -282,7 +282,7 @@ function normalizeCard(c={}, r=null){
   };
 }
 
-/* -------- build from result only (sane defaults) -------- */
+/* -------- build from result only -------- */
 function cardFromResult(r){
   const name = r.title || r.site || r.url;
   const effects = [];
@@ -350,5 +350,42 @@ function fuseCards(list){
     frameType,
     category,
     _source_url: primary._source_url || ""
+  };
+}
+
+/* ==================== CORE STATS: CATEGORY → TRIBUTES/LEVEL/ATK/DEF ==================== */
+/* Exact category → tribute cap mapping. No fallbacks, no conditions. */
+const CATEGORY_MAX_TRIBUTE = {
+  "Breaking News":6, "Politics":9, "National News":8, "International News":8, "Local News":7,
+  "Economy":8, "Business":7, "Sales":7, "Merch":7, "Technology":8, "Science":8, "Health":7,
+  "Education":7, "Environment":7, "Sports":8, "Entertainment":6, "Lifestyle":6, "Travel":7,
+  "Opinion":5, "Editorial":6, "Feature Story":5, "Photojournalism":5, "Classifieds":4,
+  "Comics & Puzzles":4, "Obituaries":5, "Weather":4, "Society":5, "Infotainment":5,
+  "Soft News":5, "Hard News":8, "Investigative":9, "Government":10, "Zetsumetsu":10,
+  "Social":5, "Crypto":8, "Meme":5, "People":5
+};
+
+const MIN_ATK = 1000, MAX_ATK = 5000;
+
+function statsFromTributes(trib, cap){
+  const fraction = trib / cap;                 // 0..1 (cap exists by contract)
+  const atk = Math.round(MIN_ATK + fraction * (MAX_ATK - MIN_ATK));
+  const def = Math.max(MIN_ATK, Math.round(atk * 0.8));
+  return { atk, def };
+}
+
+function stampCoreStatsFromCategory(card){
+  const cap   = CATEGORY_MAX_TRIBUTE[card.category]; // category is always valid per spec
+  const trib  = cap;                                  // tributes = cap
+  const level = trib;                                 // level = tributes
+  const { atk, def } = statsFromTributes(trib, cap);
+
+  return {
+    ...card,
+    tributes: trib,
+    level: level,
+    atk: atk,
+    def: def,
+    tribute: "🙇‍♂️".repeat(trib)
   };
 }
