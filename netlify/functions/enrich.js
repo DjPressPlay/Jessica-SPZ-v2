@@ -85,12 +85,12 @@ function normalizeCategory(cat=""){
   if (["crypto","cryptocurrency","defi","bitcoin","eth"].includes(s)) return "Crypto";
   if (["meme","memes"].includes(s)) return "Meme";
   if (["people","human interest"].includes(s)) return "People";
-  return s[0].toUpperCase() + s.slice(1);
+
+  return "People"; // fallback = always valid category
 }
 
-// Global emoji map (for ALL effect lines)
 const emojiMap = {
-  "Breaking News": "🚨", "Politics": "🏛️", "National News": "📰",
+ "Breaking News": "🚨", "Politics": "🏛️", "National News": "📰",
   "International News": "🌍", "Local News": "🏘️", "Economy": "💹",
   "Business": "💼", "Sales": "🛒", "Merch": "👕", "Technology": "🤖",
   "Science": "🔬", "Health": "🩺", "Education": "🎓", "Environment": "🌱",
@@ -104,7 +104,14 @@ const emojiMap = {
 
 function categoryMap(category) {
   switch (category) {
-    case "Breaking News":     return { icon:"🚨🗞️", rarity:"UR", frameType:"breaking_news", color:"bright-red", max_tribute:6 };
+    case "Breaking News": return { icon:"🚨🗞️", rarity:"UR", frameType:"breaking_news", tributes:6 };
+    case "Politics": return { icon:"🏛️🗳️", rarity:"SR", frameType:"politics", tributes:9 };
+    case "Technology": return { icon:"🔧🚀", rarity:"SR", frameType:"technology", tributes:8 };
+    case "Science": return { icon:"🔬🧪", rarity:"UR", frameType:"science", tributes:8 };
+    case "Crypto": return { icon:"🪙🔗", rarity:"SR", frameType:"crypto", tributes:8 };
+    case "Meme": return { icon:"😂🔥", rarity:"R", frameType:"meme", tributes:5 };
+    case "People": return { icon:"🙇‍♂️", rarity:"C", frameType:"people", tributes:5 };
+   case "Breaking News":     return { icon:"🚨🗞️", rarity:"UR", frameType:"breaking_news", color:"bright-red", max_tribute:6 };
     case "Politics":          return { icon:"🏛️🗳️", rarity:"SR", frameType:"politics",      color:"maroon",     max_tribute:9 };
     case "National News":     return { icon:"📰🧭", rarity:"R",   frameType:"national_news",      color:"dark-blue",         max_tribute:8 };
     case "International News":return { icon:"🌍📰", rarity:"UR",  frameType:"international_news", color:"blue",              max_tribute:8 };
@@ -140,9 +147,12 @@ function categoryMap(category) {
     case "Social":            return { icon:"📱💬", rarity:"R",   frameType:"social",             color:"rose",              max_tribute:5 };
     case "Crypto":            return { icon:"🪙🔗", rarity:"SR",  frameType:"crypto",             color:"purple",            max_tribute:8 };
     case "Meme":              return { icon:"😂🔥", rarity:"R",   frameType:"meme",               color:"neon-multicolor",   max_tribute:5 };
-    case "People":            return { icon:"🙇‍♂️", rarity:"C",   frameType:"people",             color:"light-gray",        max_tribute:5 };
+    case "People":            return { icon:"🙇‍♂️", rarity:"C",   frameType:"people",             color:"light-gray",        max_tribute:5 }; 
+    // … include the rest of your category list here (Business, Sports, etc)
+    default: return { icon:"🙇‍♂️", rarity:"C", frameType:"people", tributes:5 };
   }
 }
+
 /* ---------------- stat calculation ---------------- */
 
 function calcStats(tributes) {
@@ -153,6 +163,7 @@ function calcStats(tributes) {
 }
 
 /* ---------------- core transform ---------------- */
+
 function toCard(it = {}) {
   const url = it.url || it.link || "";
   if (!url) return null;
@@ -164,14 +175,12 @@ function toCard(it = {}) {
   const brand = (it.brand || it.siteName || hostFromUrl(url)).trim();
   const tags = (Array.isArray(it.keywords) ? it.keywords : []).map(t => String(t).trim());
 
-  // Rank = description length → padded 6
   const rank = String((desc1 + desc2).length).padStart(6,"0");
 
   // Category → mapped fields
   const category = normalizeCategory(it.category || brand);
   const { icon, rarity, frameType, tributes } = categoryMap(category);
 
-  // Tribute string + stats
   const tribute = "🙇".repeat(tributes);
   const { atk, def, level } = calcStats(tributes);
 
@@ -189,9 +198,7 @@ function toCard(it = {}) {
     about: brand,
     tribute,
     effects,
-    atk,
-    def,
-    level,
+    atk, def, level,
     rarity,
     tags,
     card_sets,
