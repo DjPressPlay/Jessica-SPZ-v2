@@ -178,16 +178,19 @@ function toCard(it = {}) {
 
   const rank = String((desc1 + desc2).length).padStart(6,"0");
 
-  // Category → mapped fields
-  const category = normalizeCategory(it.category || brand);
-  const { icon, rarity, frameType, tributes } = categoryMap(category);
+  // 🔑 Category → mapped fields
+  const category = normalizeCategory(it.category || brand, it.keywords || []);
+  const { icon, rarity, frameType, max_tribute } = categoryMap(category);
 
-  const tribute = "🙇".repeat(tributes);
+  // 🔑 Use max_tribute as tributes + level
+  const tributes = max_tribute;
+  const tribute = "🙇‍♂️".repeat(tributes);
   const { atk, def, level } = calcStats(tributes);
 
   const yyyy = (new Date()).getUTCFullYear();
   const card_sets = [brand, `${yyyy} ${brand}`];
 
+  // 🔑 Effects always tied to emojiMap
   const effects = [];
   if (desc1) effects.push({ icons: icon, emoji: emojiMap[category] || "🧩", text: desc1 });
   if (desc2) effects.push({ icons: icon, emoji: emojiMap[category] || "🧩", text: desc2 });
@@ -199,7 +202,10 @@ function toCard(it = {}) {
     about: brand,
     tribute,
     effects,
-    atk, def, level,
+    atk,
+    def,
+    level,
+    tributes,               // <- 🔑 keep numeric value
     rarity,
     tags,
     card_sets,
