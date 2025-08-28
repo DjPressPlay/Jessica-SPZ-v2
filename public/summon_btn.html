@@ -99,16 +99,15 @@
 </div>
 
 <script>
-/* === Pull JSON only from opener (main page textarea) === */
-function getCardFromOpener(){
-  if (window.opener && window.opener.__lastCard) {
-    return window.opener.__lastCard;
-  }
-  return {};
+function safeParse(s){ try{ return JSON.parse(s) } catch { return null } }
+function getCardFromLink(){
+  const p = new URLSearchParams(location.search);
+  if (!p.has("card")) return null;
+  return safeParse(decodeURIComponent(p.get("card")));
 }
-const card = getCardFromOpener();
+const card = getCardFromLink() || {};
 
-/* ===== Render JSON into card ===== */
+/* ===== Render directly from enrich JSON ===== */
 const $ = id => document.getElementById(id);
 $("card-id").textContent   = card.id || "";
 $("card-name").textContent = card.name || "";
