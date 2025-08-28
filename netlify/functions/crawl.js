@@ -1,6 +1,6 @@
 // netlify/functions/crawl.js
-// Safer scraping -> order-agnostic meta parsing + solid fallbacks.
-// Accepts: { links: [...], session? }  (also tolerates { url: "..." } )
+// Jessica AI Crawl — robust scraping with Google Custom Search fallback for images
+// Accepts: { links:[...], session? } or { url:"..." }
 // Returns: { session, results:[{ url,title,description,image,siteName,keywords,rawHTMLLength,enrich }] }
 
 exports.handler = async (event) => {
@@ -10,7 +10,7 @@ exports.handler = async (event) => {
     const body = safeJSON(event.body);
     if (!body) return resJSON(400, { error: "Invalid JSON body" });
 
-    // Accept {links:[...]} or {url:"..."}
+    // Normalize input
     let links = [];
     if (Array.isArray(body.links) && body.links.length) links = body.links;
     else if (typeof body.url === "string" && body.url.trim()) links = [body.url];
@@ -35,16 +35,41 @@ exports.handler = async (event) => {
         if (!r.ok) throw new Error(`Fetch ${r.status}`);
         const html = await r.text();
 
-        // --- robust extraction ---
-        const title = extractTitle(html) || firstHeadingText(html) || hostFromUrl(safeUrl);
-        const description = extractDescription(html) || firstMeaningfulText(html);
-        const image = extractHeroImage(html, safeUrl) || "";
+        // --- extract base fields ---
+        let title = extractTitle(html) || firstHeadingText(html) || hostFromUrl(safeUrl);
+        let description = extractDescription(html) || firstMeaningfulText(html);
+        let image = extractHeroImage(html, safeUrl) || "";
         const siteName = extractSiteName(html) || hostFromUrl(safeUrl);
         const keywords = extractKeywords(html);
 
         // 🧩 crypto aware
         const cryptoDesc = extractCryptoDescription(html);
         const cryptoName = extractCryptoName(html);
+
+        // --- fallback: Google Custom Search if image missing ---
+        if (!image && process.env.GCSE_ID && process.env.GCSE_KEY) {
+          try {
+            const params = new URLSearchParams({
+              q: safeUrl,
+              cx: process.env.GCSE_ID,
+              key: process.env.GCSE_KEY,
+              num: "1"
+            });
+            const apiUrl = `https://www.googleapis.com/customsearch/v1?${params.toString()}`;
+            const searchRes = await fetchJSON(apiUrl);
+            const item = searchRes.items?.[0];
+            if (item) {
+              image =
+                item.pagemap?.cse_image?.[0]?.src ||
+                item.pagemap?.metatags?.[0]?.["og:image"] ||
+                image;
+              if (!title) title = item.title || title;
+              if (!description) description = item.snippet || description;
+            }
+          } catch (err) {
+            console.error("Google Search fallback failed:", err.message);
+          }
+        }
 
         results.push({
           url: safeUrl,
@@ -54,27 +79,25 @@ exports.handler = async (event) => {
           siteName,
           keywords,
           rawHTMLLength: html.length,
-
           enrich: cryptoDesc || cryptoName ? {
-            name: cryptoName || "",          // card.name
+            name: cryptoName || "",
             effects: cryptoDesc
               ? [{ icons: "💹📊", emoji: "💰", text: cryptoDesc }]
               : []
           } : {}
         });
       } catch (err) {
-        results.push({ url: safeUrl, error: String(err && err.message || err) });
+        results.push({ url: safeUrl, error: String(err?.message || err) });
       }
     }
 
     return resJSON(200, { session, results });
   } catch (err) {
-    return resJSON(500, { error: String(err && err.message || err) });
+    return resJSON(500, { error: String(err?.message || err) });
   }
 };
 
 /* ---------------- helpers ---------------- */
-
 function resText(statusCode, body) { return { statusCode, body }; }
 function resJSON(statusCode, obj) {
   return { statusCode, headers: { "Content-Type": "application/json" }, body: JSON.stringify(obj) };
@@ -82,7 +105,7 @@ function resJSON(statusCode, obj) {
 function safeJSON(s) { try { return JSON.parse(s || "{}"); } catch { return null; } }
 function hostFromUrl(u=""){ try{ return new URL(u).hostname.replace(/^www\./i,""); }catch{ return ""; } }
 
-/* ----- attribute-order agnostic meta parsing ----- */
+/* ----- meta parsing ----- */
 function getAttrCI(tag, name) {
   const re = new RegExp(`\\b${name}\\s*=\\s*["']([^"']+)["']`, "i");
   const m = tag.match(re);
@@ -140,22 +163,15 @@ function looksLikeCookieBanner(t=""){ return /cookies|consent|privacy|subscribe|
 
 /* ----- field extractors ----- */
 function extractTitle(html="") {
-  return (
-    findMetaContent(html, ["og:title","twitter:title"]) ||
-    ""
-  );
+  return findMetaContent(html, ["og:title","twitter:title"]) || "";
 }
 function extractDescription(html="") {
-  return (
-    findMetaContent(html, ["description","og:description","twitter:description"]) ||
-    ""
-  );
+  return findMetaContent(html, ["description","og:description","twitter:description"]) || "";
 }
 function extractCryptoDescription(html="") {
   return findMetaContent(html, ["description"]) || "";
 }
 function extractCryptoName(html="") {
-  // from title or og:title (ex: "BEP-20 Token | Address: ... | BscScan")
   const raw = findMetaContent(html, ["og:title"]) || "";
   if (raw) return raw.split("|")[0].trim();
   const match = html.match(/<title[^>]*>(.*?)<\/title>/i);
@@ -233,4 +249,11 @@ function absolutize(base, src) {
   } catch {
     return src;
   }
+}
+
+/* ----- fetch helper ----- */
+async function fetchJSON(url){
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`FetchJSON ${r.status}`);
+  return r.json();
 }
