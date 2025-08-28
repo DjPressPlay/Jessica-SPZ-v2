@@ -16,15 +16,19 @@
     font-family:"Orbitron",system-ui,Segoe UI,Arial,Helvetica,sans-serif;
     min-height:100vh; display:flex; align-items:center; justify-content:center; padding:16px;
   }
-  .frameType{ position:relative; overflow:hidden;
+  .frameType{
+    position:relative; overflow:hidden;
     border:12px solid var(--frame-outer); border-radius:14px;
     width:clamp(360px, 92vw, 460px);
   }
-  .frameType-inner{ position:relative; overflow:hidden;
+  .frameType-inner{
+    position:relative; overflow:hidden;
     border:6px solid var(--frame-color); border-radius:10px;
     background:#1a1a1a;
   }
-  .card-header, .card-art, .type-banner, .effect-box, .meta-block, .meta-bottom { position:relative; z-index:1; }
+  .card-header, .card-art, .type-banner, .effect-box, .meta-block, .meta-bottom {
+    position:relative; z-index:1;
+  }
   .card-header{
     display:flex; justify-content:space-between; align-items:center;
     background:#000; padding:6px 10px; font-size:.9rem; font-weight:800;
@@ -33,37 +37,56 @@
   .card-id{ background:#fff; color:#000; padding:2px 6px; border-radius:4px; font-size:.75rem; white-space:nowrap; }
   .card-name{ flex:1; min-width:0; text-align:center; }
   .card-icon{ font-size:1.1rem; }
-  .card-art{ margin:10px; background:#222; aspect-ratio:4/3;
-    border:3px solid var(--frame-color); border-radius:8px; overflow:hidden; position:relative;
+
+  /* Artwork */
+  .card-art{
+    margin:10px; background:#000;
+    border:3px solid var(--frame-color); border-radius:8px;
+    overflow:hidden; position:relative;
+    display:flex; align-items:center; justify-content:center;
   }
-  .card-art img{ width:100%; height:100%; object-fit:cover; }
-  .stat-orb{ position:absolute; width:54px; height:54px; border-radius:50%;
+  .card-art img{
+    max-width:100%; max-height:100%;
+    object-fit:contain;   /* ensures full image fits, no cropping */
+    display:block;
+    background:#000;      /* letterbox fill */
+  }
+
+  .stat-orb{
+    position:absolute; width:54px; height:54px; border-radius:50%;
     font-weight:800; font-size:1rem; display:flex; align-items:center; justify-content:center;
     border:3px solid #fff; box-shadow:0 2px 8px rgba(0,0,0,.4);
   }
   .stat-blue{ top:6px; left:6px; background:#3498db; }
   .stat-red{ bottom:6px; left:6px; background:#e63946; }
   .stat-green{ bottom:6px; right:6px; background:#2ecc71; }
-  .type-banner{ background:#000; color:#fff; padding:6px 10px; font-weight:800;
+
+  .type-banner{
+    background:#000; color:#fff; padding:6px 10px; font-weight:800;
     border-top:2px solid var(--frame-color); border-bottom:2px solid var(--frame-color);
     display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:8px;
   }
-  .effect-box{ background:#000; border-top:2px solid var(--frame-color);
+
+  .effect-box{
+    background:#000; border-top:2px solid var(--frame-color);
     border-bottom:2px solid var(--frame-color); padding:10px; display:flex; flex-direction:column; gap:8px;
   }
   .effect-entry{ border:1px solid #2a2a2a; background:#0f0f0f; border-radius:8px; padding:8px 10px; }
   .effect-bar{ display:flex; justify-content:space-between; font-size:.9rem; margin-bottom:4px; }
-  .meta-block{ border-top:2px solid var(--frame-color); border-bottom:2px solid var(--frame-color);
+
+  .meta-block{
+    border-top:2px solid var(--frame-color); border-bottom:2px solid var(--frame-color);
     background:#000; padding:8px 10px; display:flex; flex-direction:column; gap:6px;
   }
   .meta-line{ display:flex; gap:8px; align-items:center; font-size:.78rem; color:#ccc; }
   .meta-label{ font-weight:800; text-transform:uppercase; }
-  .meta-bottom{ border-top:2px solid var(--frame-color); background:#111;
+
+  .meta-bottom{
+    border-top:2px solid var(--frame-color); background:#111;
     padding:10px 12px 32px; text-align:center; color:#ccc;
   }
   .meta-footer-text{ font-size:.72rem; }
-  .rarity{ position:absolute; right:10px; bottom:6px; font-weight:800;
-    padding:2px 8px; border-radius:4px; }
+  .rarity{ position:absolute; right:10px; bottom:6px; font-weight:800; padding:2px 8px; border-radius:4px; }
 </style>
 </head>
 <body>
