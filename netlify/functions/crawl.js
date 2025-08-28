@@ -1,7 +1,7 @@
 // netlify/functions/crawl.js
 // Safer scraping -> order-agnostic meta parsing + solid fallbacks.
 // Accepts: { links: [...], session? }  (also tolerates { url: "..." } )
-// Returns: { session, results:[{ url,title,description,image,siteName,keywords,rawHTMLLength,enrich }] }
+// Returns: { session, results:[{ url,title,description,image,siteName,profile,keywords,rawHTMLLength,enrich }] }
 
 exports.handler = async (event) => {
   try {
@@ -41,6 +41,7 @@ exports.handler = async (event) => {
         const image = extractHeroImage(html, safeUrl) || "";
         const siteName = extractSiteName(html) || hostFromUrl(safeUrl);
         const keywords = extractKeywords(html);
+        const profile = extractAuthor(html) || ""; // 🧩 NEW: profile/author name
 
         // 🧩 crypto aware
         const cryptoDesc = extractCryptoDescription(html);
@@ -52,11 +53,11 @@ exports.handler = async (event) => {
           description,
           image,
           siteName,
+          profile,
           keywords,
           rawHTMLLength: html.length,
-
           enrich: cryptoDesc || cryptoName ? {
-            name: cryptoName || "",          // card.name
+            name: cryptoName || "", // card.name
             effects: cryptoDesc
               ? [{ icons: "💹📊", emoji: "💰", text: cryptoDesc }]
               : []
@@ -151,11 +152,22 @@ function extractDescription(html="") {
     ""
   );
 }
+function extractAuthor(html="") {
+  // 🧩 NEW: Profile/author detection across share sites
+  return (
+    findMetaContent(html, [
+      "author",                // generic
+      "og:profile:username",   // Facebook/TikTok/IG
+      "twitter:creator",       // Twitter/X
+      "twitter:site"           // backup
+    ]) ||
+    ""
+  );
+}
 function extractCryptoDescription(html="") {
   return findMetaContent(html, ["description"]) || "";
 }
 function extractCryptoName(html="") {
-  // from title or og:title (ex: "BEP-20 Token | Address: ... | BscScan")
   const raw = findMetaContent(html, ["og:title"]) || "";
   if (raw) return raw.split("|")[0].trim();
   const match = html.match(/<title[^>]*>(.*?)<\/title>/i);
