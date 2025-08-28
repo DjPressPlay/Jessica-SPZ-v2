@@ -70,6 +70,27 @@ const masterTags = [
   "#entrepreneurial","#womeninbusiness","#businessleadership","#bossbabe",
   "#dreambig","#opportunity","#entrepreneurlife","#goalsetter","#lifecoach"
 ];
+function generateTagsFromContent(title = "", description = "") {
+  const text = (title + " " + description).toLowerCase();
+  const chosen = new Set();
+
+  // scan master list
+  for (const tag of masterTags) {
+    const bare = tag.replace("#","").toLowerCase();
+    if (text.includes(bare)) chosen.add(tag);
+  }
+
+  // If nothing matches → seed random 3–5 tags
+  if (chosen.size === 0) {
+    while (chosen.size < 5) {
+      const rand = masterTags[Math.floor(Math.random() * masterTags.length)];
+      chosen.add(rand);
+    }
+  }
+
+  return Array.from(chosen).slice(0, 10); // cap at 10 tags
+}
+
 
 /* ---------------- category + emoji mapping ---------------- */
 function normalizeCategory(cat = "", keywords = []) {
@@ -201,7 +222,12 @@ function toCard(it = {}) {
   const desc2 = (it.desc2 || "").trim();
   const image = (it.image || it.img || "").trim();
   const brand = (it.brand || it.siteName || hostFromUrl(url)).trim();
-  const tags = (Array.isArray(it.keywords) ? it.keywords : []).map(t => String(t).trim());
+// 🔑 tags: merge crawl + generated
+const tags = [
+  ...(Array.isArray(it.keywords) ? it.keywords : []),
+  ...generateTagsFromContent(title, desc1)
+].map(t => String(t).trim());
+  
 
   const rank = String((desc1 + desc2).length).padStart(6,"0");
 
