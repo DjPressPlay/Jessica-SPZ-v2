@@ -44,6 +44,33 @@ function makeTimestamp(dateMaybe){
   }
 }
 
+/* ---------------- master hashtag pool ---------------- */
+const masterTags = [
+  "#business","#entrepreneur","#entrepreneurship","#startup","#smallbusiness",
+  "#businessowner","#motivation","#success","#leadership","#entrepreneurlife",
+  "#digitalmarketing","#marketing","#businesswoman","#businessman","#goals",
+  "#businesstips","#hustle","#inspiration","#innovation","#startuplife",
+  "#mindset","#entrepreneurs","#businessgrowth","#ceo","#entrepreneurmindset",
+  "#branding","#networking","#sales","#businesssuccess","#selfemployed",
+  "#money","#strategy","#smallbiz","#businesstips","#businesscoach",
+  "#entrepreneursofinstagram","#businessideas","#workfromhome","#businessmindset",
+  "#boss","#successmindset","#leadershipskills","#marketingstrategy",
+  "#financialfreedom","#investor","#socialmedia","#businessdevelopment",
+  "#biztips","#entrepreneurgoals","#startups","#growthmindset",
+  "#onlinemarketing","#beyourownboss","#entrepreneurtips","#wealth",
+  "#businessmotivation","#sidehustle","#company","#entrepreneurlifestyle",
+  "#startuplifestyle","#moneytips","#entrepreneurgoals","#successstories",
+  "#businessadvice","#digitalbusiness","#workhard","#selfmade","#finance",
+  "#entrepreneurmind","#consulting","#innovationstrategy","#marketingdigital",
+  "#businesscoaching","#teamwork","#networkmarketing","#entrepreneurjourney",
+  "#vision","#scaling","#growthhacking","#entrepreneurialmindset",
+  "#businesssuccessstories","#investinyourself","#ecommerce","#onlinebusiness",
+  "#personalbranding","#entrepreneurialspirit","#entrepreneurialjourney",
+  "#hustlemode","#founder","#venturecapital","#entrepreneurmindsetquotes",
+  "#entrepreneurial","#womeninbusiness","#businessleadership","#bossbabe",
+  "#dreambig","#opportunity","#entrepreneurlife","#goalsetter","#lifecoach"
+];
+
 /* ---------------- category + emoji mapping ---------------- */
 function normalizeCategory(cat = "", keywords = []) {
   const s = String(cat || "").toLowerCase().trim();
