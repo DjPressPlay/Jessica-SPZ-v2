@@ -41,7 +41,10 @@ exports.handler = async (event) => {
         const image = extractHeroImage(html, safeUrl) || "";
         const siteName = extractSiteName(html) || hostFromUrl(safeUrl);
         const keywords = extractKeywords(html);
-        const cryptoDesc = extractCryptoDescription(html); // 🧩 new
+
+        // 🧩 crypto aware
+        const cryptoDesc = extractCryptoDescription(html);
+        const cryptoName = extractCryptoName(html);
 
         results.push({
           url: safeUrl,
@@ -52,12 +55,12 @@ exports.handler = async (event) => {
           keywords,
           rawHTMLLength: html.length,
 
-          // 🧩 enrichment hook — consistent with Jessica's card format
-          enrich: {
+          enrich: cryptoDesc || cryptoName ? {
+            name: cryptoName || "",          // card.name
             effects: cryptoDesc
               ? [{ icons: "💹📊", emoji: "💰", text: cryptoDesc }]
               : []
-          }
+          } : {}
         });
       } catch (err) {
         results.push({ url: safeUrl, error: String(err && err.message || err) });
@@ -85,7 +88,7 @@ function getAttrCI(tag, name) {
   const m = tag.match(re);
   return m ? m[1] : "";
 }
-function findMetaContent(html, keys /* array of lowercase keys for name/property */) {
+function findMetaContent(html, keys) {
   const re = /<meta\b[^>]*>/gi;
   let m;
   while ((m = re.exec(html))) {
@@ -116,7 +119,6 @@ function findLinkHref(html, relValue) {
 /* ----- text fallbacks ----- */
 function stripTags(s=""){ return s.replace(/<[^>]*>/g,""); }
 function firstMeaningfulText(html="") {
-  // First substantial <p> (skip cookie/subscribe junk), else first <h2>
   let t = matchText(html, /<p[^>]*>(.*?)<\/p>/gi, 80);
   if (t) return t;
   t = matchText(html, /<h2[^>]*>(.*?)<\/h2>/gi, 40);
@@ -136,7 +138,7 @@ function matchText(html, re, minLen){
 }
 function looksLikeCookieBanner(t=""){ return /cookies|consent|privacy|subscribe|newsletter|sign up|advert/i.test(t); }
 
-/* ----- field extractors (now robust) ----- */
+/* ----- field extractors ----- */
 function extractTitle(html="") {
   return (
     findMetaContent(html, ["og:title","twitter:title"]) ||
@@ -150,8 +152,14 @@ function extractDescription(html="") {
   );
 }
 function extractCryptoDescription(html="") {
-  // explicitly grab raw meta description for crypto/finance detail
   return findMetaContent(html, ["description"]) || "";
+}
+function extractCryptoName(html="") {
+  // from title or og:title (ex: "BEP-20 Token | Address: ... | BscScan")
+  const raw = findMetaContent(html, ["og:title"]) || "";
+  if (raw) return raw.split("|")[0].trim();
+  const match = html.match(/<title[^>]*>(.*?)<\/title>/i);
+  return match ? stripTags(match[1]).split("|")[0].trim() : "";
 }
 function extractSiteName(html="") {
   return findMetaContent(html, ["og:site_name"]) || "";
@@ -162,7 +170,6 @@ function extractKeywords(html="") {
   return s.split(",").map(x => x.trim()).filter(Boolean).slice(0, 20);
 }
 function extractHeroImage(html="", baseUrl="") {
-  // Prefer meta/link; then fall back to first non-tracker <img>
   const metaImg = (
     findMetaContent(html, ["og:image","twitter:image","twitter:image:src"]) ||
     findLinkHref(html, "image_src")
@@ -171,7 +178,6 @@ function extractHeroImage(html="", baseUrl="") {
     const u = absolutize(baseUrl, metaImg);
     if (isValidImage(u) && !isTrackerDomain(u)) return u;
   }
-
   const imgs = [];
   const reImg = /<img\b[^>]*>/gi;
   let m;
@@ -193,20 +199,15 @@ function extractHeroImage(html="", baseUrl="") {
   return "";
 }
 
-/* ----- URL helpers / filters ----- */
-function getAttr(tag, name) {
-  const re = new RegExp(name + `=["']([^"']+)["']`, "i");
-  const m = tag.match(re);
-  return m ? m[1] : "";
-}
+/* ----- URL helpers ----- */
 function isValidImage(u = "") {
   try {
     const x = new URL(u);
     if (!/^https?:$/i.test(x.protocol)) return false;
-    if (!/\.[a-z]{2,}$/i.test(x.hostname)) return false; // require real TLD host
+    if (!/\.[a-z]{2,}$/i.test(x.hostname)) return false;
     if (/^data:image\//i.test(u)) return true;
     if (/\.(png|jpe?g|webp|gif|avif)(\?|#|$)/i.test(u)) return true;
-    return true; // allow CDN images without extension
+    return true;
   } catch {
     return false;
   }
