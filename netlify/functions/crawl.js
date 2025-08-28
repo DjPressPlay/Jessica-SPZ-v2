@@ -1,5 +1,3 @@
-OK REWRITE IT 
-
 // netlify/functions/crawl.js
 // Safer scraping -> order-agnostic meta parsing + solid fallbacks.
 // Accepts: { links: [...], session? }  (also tolerates { url: "..." } )
