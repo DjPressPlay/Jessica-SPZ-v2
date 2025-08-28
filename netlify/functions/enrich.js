@@ -174,26 +174,13 @@ function toCard(it = {}) {
   const desc2 = (it.desc2 || "").trim();
   const image = (it.image || it.img || "").trim();
   const brand = (it.brand || it.siteName || hostFromUrl(url)).trim();
-
-  // 🔑 Tags: first use provided keywords, then fallback builder
-  let tags = (Array.isArray(it.keywords) ? it.keywords : []).map(t => String(t).trim());
-  if (!tags.length) {
-    tags = extractTags(title, desc1, url);
-  }
+  const tags = (Array.isArray(it.keywords) ? it.keywords : []).map(t => String(t).trim());
 
   const rank = String((desc1 + desc2).length).padStart(6,"0");
 
   // 🔑 Category → mapped fields
   const category = normalizeCategory(it.category || brand, it.keywords || []);
   const { icon, rarity, frameType, max_tribute } = categoryMap(category);
-
-  // 🔑 Force crypto tags if category is Crypto
-  if (category === "Crypto") {
-    const base = ["crypto", "token", "blockchain"];
-    for (const b of base) {
-      if (!tags.includes(b)) tags.push(b);
-    }
-  }
 
   // 🔑 Use max_tribute as tributes + level
   const tributes = max_tribute;
