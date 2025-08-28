@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Zetsu Card — Schema-Accurate Renderer</title>
+<title>Zetsu Card — Summon</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="color-scheme" content="dark">
 <style>
@@ -16,393 +16,126 @@
     font-family:"Orbitron",system-ui,Segoe UI,Arial,Helvetica,sans-serif;
     min-height:100vh; display:flex; align-items:center; justify-content:center; padding:16px;
   }
-
-  /* Frame */
-  .frameType{
-    position:relative; overflow:hidden;
+  .frameType{ position:relative; overflow:hidden;
     border:12px solid var(--frame-outer); border-radius:14px;
     width:clamp(360px, 92vw, 460px);
   }
-  .frameType-inner{
-    position:relative; overflow:hidden; border:6px solid var(--frame-color); border-radius:10px;
+  .frameType-inner{ position:relative; overflow:hidden;
+    border:6px solid var(--frame-color); border-radius:10px;
     background:#1a1a1a;
   }
-  .frameType-inner::before{
-    content:""; position:absolute; inset:0;
-    background:radial-gradient(120% 100% at 50% 0%, #1e1e1e 0%, #0e0e0e 65%, #111 100%);
-    z-index:0;
-  }
   .card-header, .card-art, .type-banner, .effect-box, .meta-block, .meta-bottom { position:relative; z-index:1; }
-
-  /* Header */
   .card-header{
     display:flex; justify-content:space-between; align-items:center;
-    background:#000; padding:6px 10px; font-size:.9rem; font-weight:800; text-transform:uppercase;
+    background:#000; padding:6px 10px; font-size:.9rem; font-weight:800;
     border-bottom:2px solid var(--frame-color); border-top-left-radius:8px; border-top-right-radius:8px;
   }
   .card-id{ background:#fff; color:#000; padding:2px 6px; border-radius:4px; font-size:.75rem; white-space:nowrap; }
-  .card-name{ flex:1; min-width:0; display:flex; justify-content:center; align-items:center; text-align:center; }
-  .card-name span{
-    display:inline-block; max-width:100%; white-space:nowrap;
-    overflow:visible; text-overflow:unset;
-    transform:scale(var(--scale,1)); transform-origin:center center; line-height:1;
+  .card-name{ flex:1; min-width:0; text-align:center; }
+  .card-icon{ font-size:1.1rem; }
+  .card-art{ margin:10px; background:#222; aspect-ratio:4/3;
+    border:3px solid var(--frame-color); border-radius:8px; overflow:hidden; position:relative;
   }
-  .card-icon{ font-size:1.1rem; text-align:right; min-width:1.5em; }
-
-  /* Artwork */
-  .card-art{
-    position:relative; margin:10px; background:#222; aspect-ratio:4/3;
-    border:3px solid var(--frame-color); border-radius:8px; overflow:hidden;
-  }
-  .card-art img{ width:100%; height:100%; object-fit:cover; display:block; }
-
-  /* Stat orbs */
-  .stat-orb{
-    position:absolute; width:54px; height:54px; border-radius:50%;
-    font-weight:800; font-size:1.02rem; display:flex; align-items:center; justify-content:center;
+  .card-art img{ width:100%; height:100%; object-fit:cover; }
+  .stat-orb{ position:absolute; width:54px; height:54px; border-radius:50%;
+    font-weight:800; font-size:1rem; display:flex; align-items:center; justify-content:center;
     border:3px solid #fff; box-shadow:0 2px 8px rgba(0,0,0,.4);
   }
-  .stat-blue  { background:#3498db; top:6px;  left:6px; }
-  .stat-red   { background:#e63946; bottom:6px; left:6px; }
-  .stat-green { background:#2ecc71; bottom:6px; right:6px; }
-
-  /* Type Banner (TRIBUTE | ABOUT | EMOJI) */
-  .type-banner{
-    background:#000; color:#fff; padding:6px 10px; font-weight:800;
+  .stat-blue{ top:6px; left:6px; background:#3498db; }
+  .stat-red{ bottom:6px; left:6px; background:#e63946; }
+  .stat-green{ bottom:6px; right:6px; background:#2ecc71; }
+  .type-banner{ background:#000; color:#fff; padding:6px 10px; font-weight:800;
     border-top:2px solid var(--frame-color); border-bottom:2px solid var(--frame-color);
     display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:8px;
   }
-  .type-cell{ display:flex; justify-content:center; align-items:center; min-width:0; }
-  .type-about-wrap{ display:flex; justify-content:center; align-items:center; min-width:0; }
-  .type-about-box{
-    display:inline-flex; align-items:center; justify-content:center;
-    padding:4px 12px; border:2px solid var(--frame-color); border-radius:6px;
-    background:#0b0b0b; box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
-    max-width:100%;
-  }
-  .type-about-text{ font-size:.95rem; letter-spacing:.02em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:280px; }
-  @media (max-width:480px){ .type-about-text{ max-width:200px; } }
-  .truncate{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
-  .autoscale{ display:inline-block; transform:scale(var(--scale,1)); transform-origin:center center; line-height:1; }
-
-  /* Effects */
-  .effect-box{
-    background:#000; border-top:2px solid var(--frame-color); border-bottom:2px solid var(--frame-color);
-    padding:10px; display:flex; flex-direction:column; gap:8px;
+  .effect-box{ background:#000; border-top:2px solid var(--frame-color);
+    border-bottom:2px solid var(--frame-color); padding:10px; display:flex; flex-direction:column; gap:8px;
   }
   .effect-entry{ border:1px solid #2a2a2a; background:#0f0f0f; border-radius:8px; padding:8px 10px; }
-  .effect-bar{ display:flex; justify-content:space-between; align-items:center; font-size:.92rem; margin-bottom:4px; }
-  .effect-text{ font-size:.84rem; line-height:1.32; }
-
-  /* Meta (Sets + Tags in one bracket) */
-  .meta-block{
-    border-top:2px solid var(--frame-color); border-bottom:2px solid var(--frame-color);
+  .effect-bar{ display:flex; justify-content:space-between; font-size:.9rem; margin-bottom:4px; }
+  .meta-block{ border-top:2px solid var(--frame-color); border-bottom:2px solid var(--frame-color);
     background:#000; padding:8px 10px; display:flex; flex-direction:column; gap:6px;
   }
-  .meta-line{ display:flex; gap:8px; align-items:center; font-size:.78rem; color:#ccc; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .meta-label{ font-weight:800; text-transform:uppercase; color:#eee; letter-spacing:.02em; }
-  .meta-value{ flex:1; min-width:0; opacity:.95; }
-
-  /* Bottom bar */
-  .meta-bottom{
-    position:relative; border-top:2px solid var(--frame-color);
-    background:#111; padding:10px 12px 32px; text-align:center; color:#ccc;
+  .meta-line{ display:flex; gap:8px; align-items:center; font-size:.78rem; color:#ccc; }
+  .meta-label{ font-weight:800; text-transform:uppercase; }
+  .meta-bottom{ border-top:2px solid var(--frame-color); background:#111;
+    padding:10px 12px 32px; text-align:center; color:#ccc;
   }
-  .meta-footer-text{ font-size:.72rem; color:#cfcfcf; line-height:1.25; }
-  .meta-timestamp{ margin-top:4px; font-size:.66rem; color:#9f9f9f; }
-  .meta-bottom .rarity{
-    position:absolute; right:10px; bottom:6px;
-    font-weight:800; letter-spacing:.02em;
-    border:1px solid rgba(255,255,255,.2); padding:2px 8px; border-radius:4px;
-  }
-  .rarity.SR{ background:#2d7bdc; }
-  .rarity.UR{ background:#7c3aed; }
-  .rarity.Q { background:#f1c40f; color:#111; }
-  .rarity.ZEOE{
-    color:#fff;
-    background:conic-gradient(from 0deg, #ff0040, #ffd200, #00ffcc, #00a2ff, #ff4dff, #ff0040);
-    background-size:200% 200%; animation:holoShift 6s linear infinite;
-    border:1px solid rgba(255,255,255,.35); text-shadow:0 0 6px rgba(255,255,255,.35);
-  }
-  @keyframes holoShift{ 0%{background-position:0% 50%} 100%{background-position:200% 50%} }
-  @media (prefers-reduced-motion: reduce){ .rarity.ZEOE{ animation:none; } }
+  .meta-footer-text{ font-size:.72rem; }
+  .rarity{ position:absolute; right:10px; bottom:6px; font-weight:800;
+    padding:2px 8px; border-radius:4px; }
 </style>
 </head>
 <body>
 
-  <div class="frameType">
-    <div id="inner" class="frameType-inner">
-      <!-- Header -->
-      <div class="card-header" role="group" aria-label="Card header">
-        <div class="card-id" id="card-id" aria-label="Card ID"></div>
-        <div class="card-name" aria-live="polite"><span id="card-name" class="autoscale" dir="auto"></span></div>
-        <div class="card-icon" id="card-icon" aria-hidden="true"></div>
-      </div>
-
-      <!-- Artwork -->
-      <div class="card-art">
-        <img id="card-image" alt="" loading="lazy" decoding="async">
-        <div class="stat-orb stat-blue"  id="level"></div>
-        <div class="stat-orb stat-red"   id="atk"></div>
-        <div class="stat-orb stat-green" id="def"></div>
-      </div>
-
-      <!-- Type Banner -->
-      <div class="type-banner">
-        <div class="type-cell"><span id="tribute" class="autoscale truncate" dir="auto"></span></div>
-        <div class="type-about-wrap"><div class="type-about-box"><span id="about" class="type-about-text autoscale truncate" dir="auto"></span></div></div>
-        <div class="type-cell"><span id="type-emoji" class="autoscale truncate" dir="auto"></span></div>
-      </div>
-
-      <!-- Effects -->
-      <div class="effect-box" id="effect-box"></div>
-
-      <!-- Sets + Tags -->
-      <div class="meta-block">
-        <div class="meta-line"><div class="meta-label">Sets -</div><div id="sets-line" class="meta-value"></div></div>
-        <div class="meta-line"><div class="meta-label">Tags -</div><div id="tags-line" class="meta-value"></div></div>
-      </div>
-
-      <!-- Footer / Timestamp / Rarity -->
-      <div class="meta-bottom">
-        <div class="meta-footer-text" id="footer"></div>
-        <div class="meta-timestamp" id="timestamp"></div>
-        <div class="rarity" id="rarity"></div>
-      </div>
+<div class="frameType">
+  <div id="inner" class="frameType-inner">
+    <div class="card-header">
+      <div class="card-id" id="card-id"></div>
+      <div class="card-name"><span id="card-name"></span></div>
+      <div class="card-icon" id="card-icon"></div>
+    </div>
+    <div class="card-art">
+      <img id="card-image" alt="">
+      <div class="stat-orb stat-blue"  id="level"></div>
+      <div class="stat-orb stat-red"   id="atk"></div>
+      <div class="stat-orb stat-green" id="def"></div>
+    </div>
+    <div class="type-banner">
+      <div><span id="tribute"></span></div>
+      <div><span id="about"></span></div>
+      <div><span id="type-emoji"></span></div>
+    </div>
+    <div class="effect-box" id="effect-box"></div>
+    <div class="meta-block">
+      <div class="meta-line"><div class="meta-label">Sets -</div><div id="sets-line"></div></div>
+      <div class="meta-line"><div class="meta-label">Tags -</div><div id="tags-line"></div></div>
+    </div>
+    <div class="meta-bottom">
+      <div class="meta-footer-text" id="footer"></div>
+      <div class="rarity" id="rarity"></div>
     </div>
   </div>
+</div>
 
 <script>
-/* ===== Ingress: read ?card= (JSON string) ===== */
 function safeParse(s){ try{ return JSON.parse(s) } catch { return null } }
 function getCardFromLink(){
   const p = new URLSearchParams(location.search);
   if (!p.has("card")) return null;
   return safeParse(decodeURIComponent(p.get("card")));
 }
-const card = getCardFromLink();
+const card = getCardFromLink() || {};
 
-
-/* ===== Fixed category map (frameType + color + max_tribute) ===== */
-const CARD_TYPE_MAP = {
-  "Breaking News":     { frameType:"breaking_news",      color:"bright-red",  max_tribute:6 },
-  "Politics":          { frameType:"politics",           color:"maroon",      max_tribute:9 },
-  "National News":     { frameType:"national_news",      color:"dark-blue",   max_tribute:8 },
-  "International News":{ frameType:"international_news", color:"blue",        max_tribute:8 },
-  "Local News":        { frameType:"local_news",         color:"sky-blue",    max_tribute:7 },
-  "Economy":           { frameType:"economy",            color:"teal",        max_tribute:8 },
-  "Business":          { frameType:"business",           color:"gold",        max_tribute:7 },
-  "Sales":             { frameType:"sales",              color:"cyan",        max_tribute:7 },
-  "Merch":             { frameType:"merch",              color:"magenta",     max_tribute:7 },
-  "Technology":        { frameType:"technology",         color:"silver",      max_tribute:8 },
-  "Science":           { frameType:"science",            color:"blue",        max_tribute:8 },
-  "Health":            { frameType:"health",             color:"red-orange",  max_tribute:7 },
-  "Education":         { frameType:"education",          color:"sky-blue-light", max_tribute:7 },
-  "Environment":       { frameType:"environment",        color:"forest-green",max_tribute:7 },
-  "Sports":            { frameType:"sports",             color:"green",       max_tribute:8 },
-  "Entertainment":     { frameType:"entertainment",      color:"orange",      max_tribute:6 },
-  "Lifestyle":         { frameType:"lifestyle",          color:"light-green", max_tribute:6 },
-  "Travel":            { frameType:"travel",             color:"teal",        max_tribute:7 }, /* teal-blue -> teal */
-  "Opinion":           { frameType:"opinion",            color:"violet",      max_tribute:5 },
-  "Editorial":         { frameType:"editorial",          color:"dark-violet", max_tribute:6 },
-  "Feature Story":     { frameType:"feature_story",      color:"peach",       max_tribute:5 },
-  "Photojournalism":   { frameType:"photojournalism",    color:"gray",        max_tribute:5 },
-  "Classifieds":       { frameType:"classifieds",        color:"beige",       max_tribute:4 },
-  "Comics & Puzzles":  { frameType:"comics_puzzles",     color:"yellow-green",max_tribute:4 },
-  "Obituaries":        { frameType:"obituaries",         color:"black",       max_tribute:5 },
-  "Weather":           { frameType:"weather",            color:"light-gray",  max_tribute:4 },
-  "Society":           { frameType:"society",            color:"rose",        max_tribute:5 },
-  "Infotainment":      { frameType:"infotainment",       color:"neon-yellow", max_tribute:5 },
-  "Soft News":         { frameType:"soft_news",          color:"peach-light", max_tribute:5 },
-  "Hard News":         { frameType:"hard_news",          color:"dark-red",    max_tribute:8 },
-  "Investigative":     { frameType:"investigative",      color:"dark-blue",   max_tribute:9 },
-  "Government":        { frameType:"government",         color:"gray",        max_tribute:10 },
-  "Zetsumetsu":        { frameType:"zetsu",              color:"black-red-holo", max_tribute:10 },
-  "Social":            { frameType:"social",             color:"rose",        max_tribute:5 },   /* pink -> rose */
-  "Crypto":            { frameType:"crypto",             color:"purple",      max_tribute:8 },
-  "Meme":              { frameType:"meme",               color:"neon-multicolor", max_tribute:5 },
-  "People":            { frameType:"people",             color:"light-gray",  max_tribute:5 }    /* white -> light-gray in palette */
-};
-
-/* ===== Palette (add missing colors you referenced) ===== */
-const colorPalette = {
-  "silver":"#C0C0C0","blue":"#0000FF","dark-blue":"#00008B","green":"#008000",
-  "gold":"#FFD700","maroon":"#800000","bright-red":"#FF4949","sky-blue":"#87CEEB",
-  "teal":"#008080","cyan":"#00FFFF","magenta":"#FF00FF","red-orange":"#FF4500",
-  "sky-blue-light":"#ADD8E6","forest-green":"#228B22","orange":"#FFA500",
-  "light-green":"#90EE90","violet":"#EE82EE","dark-violet":"#9400D3","peach":"#FFDAB9",
-  "gray":"#808080","beige":"#F5F5DC","yellow-green":"#9ACD32","black":"#000000",
-  "light-gray":"#D3D3D3","rose":"#FFC0CB","neon-yellow":"#FFFF00",
-  "peach-light":"#FFDAB9","dark-red":"#8B0000","black-red-holo":"#8B0000",
-  "purple":"#6A0DAD","neon-multicolor":"#FF00FF"
-};
-
-/* ===== 1) Tribute setup (category-driven cap) ===== */
-function getTypeInfo(card){
-  // Category source: prefer explicit category, then About text, then frameType back-map
-  const cat = (card.category || card.about || "").trim();
-  if (CARD_TYPE_MAP[cat]) return CARD_TYPE_MAP[cat];
-
-  // If only frameType is provided, try to match by frameType
-  const byFrame = Object.values(CARD_TYPE_MAP).find(v => v.frameType === (card.frameType||"").toLowerCase());
-  if (byFrame) return byFrame;
-
-  // Default safe type
-  return { frameType:"technology", color:"silver", max_tribute:6 };
-}
-
-function countKneel(str){ return (String(str||"").match(/🙇/gu) || []).length; }
-
-function resolveTributes(card){
-  const tinfo = getTypeInfo(card);
-  const cap = Math.max(0, Number(tinfo.max_tribute)||0);
-  // priority: numeric tributes → level → 🙇 string → 1
-  const n =
-    (typeof card.tributes === "number" && card.tributes >= 0) ? card.tributes :
-    (!Number.isNaN(Number(card.level)) ? Number(card.level) :
-     countKneel(card.tribute) || 1);
-  return Math.min(cap, Math.max(0, Math.floor(n)));
-}
-
-
-/* ===== 2) frameType & color from category map ===== */
-function applyFrame(card){
-  const tinfo = getTypeInfo(card);
-  // stamp frameType if blank
-  if (!card.frameType) card.frameType = tinfo.frameType;
-
-  let baseColor = colorPalette[tinfo.color] || "#e63946";
-  // rarity may override with iridescence
-  const rarityBorder = {
-    Normal:{ color:"#aaa", iridescent:false }, Rare:{ color:"#ddd", iridescent:false },
-    SR:{ color:"#2d7bdc", iridescent:false }, UR:{ color:"#7c3aed", iridescent:false },
-    Quantum:{ color:"#f1c40f", iridescent:false }, ZEOE:{ color:null, iridescent:true }
-  };
-
-  const inner = document.getElementById("inner");
-  const r = card.rarity;
-  let iri = false;
-  if (r && rarityBorder[r]) {
-    iri = !!rarityBorder[r].iridescent;
-    baseColor = rarityBorder[r].color || baseColor;
-  }
-  document.documentElement.style.setProperty("--frame-color", baseColor);
-  inner.classList.toggle("iridescent", iri);
-}
-
-
-/* ===== 3) Level → ATK/DEF using per-category cap ===== */
-function statsFromLevel(level, typeInfo){
-  const maxStars = Math.max(1, Number(typeInfo.max_tribute)||1);
-  const clamped  = Math.max(0, Math.min(Number(level)||0, maxStars));
-  const minStat = 1000, maxStat = 5000;
-  const fraction = clamped / maxStars;               // 0..1
-  const atk = Math.round(minStat + fraction*(maxStat-minStat));
-  const def = Math.max(minStat, Math.round(atk * 0.8));
-  return { atk, def };
-}
-
-function computeStats(card){
-  const tinfo = getTypeInfo(card);
-  const trib = resolveTributes(card);    // category-capped
-  const level = trib > 0 ? trib : 1;     // level derives from tribute count
-  const withGivenAtk = Number(card.atk);
-  const withGivenDef = Number(card.def);
-  const calc = statsFromLevel(level, tinfo);
-  return {
-    level,
-    atk: Number.isFinite(withGivenAtk) && withGivenAtk > 0 ? withGivenAtk : calc.atk,
-    def: Number.isFinite(withGivenDef) && withGivenDef > 0 ? withGivenDef : calc.def,
-    tributeString: "🙇‍♂️".repeat(trib)
-  };
-}
-
-/* ===== Bind + render (existing flow) ===== */
+/* ===== Render directly from enrich JSON ===== */
 const $ = id => document.getElementById(id);
 $("card-id").textContent   = card.id || "";
 $("card-name").textContent = card.name || "";
 $("card-icon").textContent = card.icon || "";
 
-const img = $("card-image");
-img.src = card.card_images?.[0]?.image_url || "";
-img.alt = card.name ? card.name+" — artwork" : "Card artwork";
+$("card-image").src = card.card_images?.[0]?.image_url || "";
+$("card-image").alt = card.name || "";
 
-applyFrame(card);
+$("level").textContent = card.level || "";
+$("atk").textContent   = card.atk   || "";
+$("def").textContent   = card.def   || "";
 
-const tinfo = getTypeInfo(card);
-
-// Use enrich values directly for stats
-$("level").textContent = card.level || resolveTributes(card) || 1;
-$("atk").textContent   = Number(card.atk) || 0;
-$("def").textContent   = Number(card.def) || 0;
-
-
-/* banner */
 $("tribute").textContent   = card.tribute || "";
 $("about").textContent     = card.about   || "";
 $("type-emoji").textContent= card.icon    || "";
 
-/* effects */
 const effBox = $("effect-box");
-effBox.replaceChildren();
 (card.effects||[]).forEach(e=>{
   const entry = document.createElement("div"); entry.className="effect-entry";
-  const bar = document.createElement("div"); bar.className="effect-bar";
-  bar.innerHTML = `<div>${e.icons||""}</div><div>${e.emoji||""}</div>`;
-  const text = document.createElement("div"); text.className="effect-text"; text.textContent = e.text || "";
-  entry.append(bar, text);
+  entry.innerHTML = `<div class="effect-bar"><div>${e.icons||""}</div><div>${e.emoji||""}</div></div>
+                     <div class="effect-text">${e.text||""}</div>`;
   effBox.append(entry);
 });
 
-/* meta */
 $("sets-line").textContent = (card.card_sets||[]).join(" ");
 $("tags-line").textContent = (card.tags||[]).join(" ");
 $("footer").textContent    = card.footer || "";
-$("timestamp").textContent = card.timestamp || "";
 $("rarity").textContent    = card.rarity || "";
-
-/* rarity badge text + class (Quantum -> Q class) */
-const rb = $("rarity");
-rb.textContent = card.rarity || "";
-const rarityClassMap = { Normal:"Normal", Rare:"Rare", SR:"SR", UR:"UR", Quantum:"Q", ZEOE:"ZEOE" };
-rb.classList.add(rarityClassMap[card.rarity] || (card.rarity || ""));
-
-/* ===== Autoscale ===== */
-function autoscaleToLength(el, maxChars, minScale = 0.6){
-  if(!el) return; el.style.setProperty('--scale','1');
-  const len = [...(el.textContent || '').trim()].length;
-  el.style.setProperty('--scale', String(len > maxChars ? Math.max(minScale, maxChars / len) : 1));
-}
-function autoshrinkFontToFit(el, { min=0.50, pad=4, squeezeLeft=null, squeezeRight=null, squeezePx=6 } = {}){
-  if (!el || !el.parentElement) return;
-  const base = parseFloat(el.dataset.baseFs || getComputedStyle(el).fontSize) || 14;
-  el.dataset.baseFs = base; el.style.fontSize = base + 'px';
-  if (squeezeLeft)  squeezeLeft.style.marginRight  = '';
-  if (squeezeRight) squeezeRight.style.marginLeft  = '';
-  let avail = Math.max(1, el.parentElement.clientWidth - pad);
-  if (el.scrollWidth <= avail) return;
-  if (squeezeLeft)  squeezeLeft.style.marginRight  = `-${squeezePx}px`;
-  if (squeezeRight) squeezeRight.style.marginLeft  = `-${squeezePx}px`;
-  avail = Math.max(1, el.parentElement.clientWidth - pad);
-  const scale = Math.max(min, avail / el.scrollWidth);
-  el.style.fontSize = (base * scale) + 'px';
-}
-function applyAutoscaleAll(){
-  autoscaleToLength($('tribute'), 10, 0.6);
-  autoscaleToLength($('type-emoji'), 8, 0.6);
-  autoscaleToLength($('about'), 20, 0.75);
-  const nameSpan = document.querySelector('.card-name span');
-  autoshrinkFontToFit(nameSpan, { min:0.50, pad:4, squeezeLeft: document.querySelector('.card-id'), squeezeRight: $('card-icon'), squeezePx:6 });
-}
-applyAutoscaleAll();
-if (document.fonts && document.fonts.ready) { document.fonts.ready.then(applyAutoscaleAll).catch(()=>{}); }
-
-/* Throttle resize */
-let rafId=null;
-addEventListener('resize', () => {
-  if (rafId) cancelAnimationFrame(rafId);
-  rafId = requestAnimationFrame(()=>{ applyAutoscaleAll(); rafId=null; });
-});
 </script>
 </body>
 </html>
