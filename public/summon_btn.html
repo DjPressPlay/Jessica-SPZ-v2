@@ -99,26 +99,17 @@
 </div>
 
 <script>
-function safeParse(s){ try{ return JSON.parse(s) } catch { return null } }
-
-function getCard(){
-  // 1. Try ?card= param
-  const p = new URLSearchParams(location.search);
-  if (p.has("card")) return safeParse(decodeURIComponent(p.get("card")));
-
-  // 2. Try opener global
-  if (window.opener && window.opener.__lastCard) return window.opener.__lastCard;
-
-  // 3. Try same-window global
-  if (window.__lastCard) return window.__lastCard;
-
+/* === Pull JSON only from opener (main page textarea) === */
+function getCardFromOpener(){
+  if (window.opener && window.opener.__lastCard) {
+    return window.opener.__lastCard;
+  }
   return {};
 }
+const card = getCardFromOpener();
 
-const card = getCard() || {};
+/* ===== Render JSON into card ===== */
 const $ = id => document.getElementById(id);
-
-/* ===== Render directly from enrich JSON ===== */
 $("card-id").textContent   = card.id || "";
 $("card-name").textContent = card.name || "";
 $("card-icon").textContent = card.icon || "";
@@ -136,8 +127,7 @@ $("type-emoji").textContent= card.icon    || "";
 
 const effBox = $("effect-box");
 (card.effects||[]).forEach(e=>{
-  const entry = document.createElement("div");
-  entry.className="effect-entry";
+  const entry = document.createElement("div"); entry.className="effect-entry";
   entry.innerHTML = `<div class="effect-bar"><div>${e.icons||""}</div><div>${e.emoji||""}</div></div>
                      <div class="effect-text">${e.text||""}</div>`;
   effBox.append(entry);
