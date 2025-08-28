@@ -10,7 +10,6 @@ exports.handler = async (event) => {
     const body = safeJSON(event.body);
     if (!body) return resJSON(400, { error: "Invalid JSON body" });
 
-    // Accept {links:[...]} or {url:"..."}
     let links = [];
     if (Array.isArray(body.links) && body.links.length) links = body.links;
     else if (typeof body.url === "string" && body.url.trim()) links = [body.url];
@@ -35,14 +34,14 @@ exports.handler = async (event) => {
         if (!r.ok) throw new Error(`Fetch ${r.status}`);
         const html = await r.text();
 
-        // --- robust extraction ---
+        // --- generic extraction ---
         const title = extractTitle(html) || firstHeadingText(html) || hostFromUrl(safeUrl);
         const description = extractDescription(html) || firstMeaningfulText(html);
         const image = extractHeroImage(html, safeUrl) || "";
         const siteName = extractSiteName(html) || hostFromUrl(safeUrl);
         const keywords = extractKeywords(html);
 
-        // 🧩 crypto aware
+        // --- crypto-aware additions ---
         const cryptoDesc = extractCryptoDescription(html);
         const cryptoName = extractCryptoName(html);
 
@@ -55,8 +54,9 @@ exports.handler = async (event) => {
           keywords,
           rawHTMLLength: html.length,
 
-          enrich: cryptoDesc || cryptoName ? {
-            name: cryptoName || "",          // card.name
+          // follows Jessica’s card format, only populated if crypto detected
+          enrich: (cryptoDesc || cryptoName) ? {
+            name: cryptoName || "",
             effects: cryptoDesc
               ? [{ icons: "💹📊", emoji: "💰", text: cryptoDesc }]
               : []
@@ -151,16 +151,23 @@ function extractDescription(html="") {
     ""
   );
 }
+
+// crypto-specific: meta[description] often carries token stats
 function extractCryptoDescription(html="") {
-  return findMetaContent(html, ["description"]) || "";
+  const meta = findMetaContent(html, ["description"]);
+  if (meta && /Token Rep:|Holders:|Price:|Market Cap:/i.test(meta)) {
+    return meta;
+  }
+  return "";
 }
 function extractCryptoName(html="") {
-  // from title or og:title (ex: "BEP-20 Token | Address: ... | BscScan")
   const raw = findMetaContent(html, ["og:title"]) || "";
-  if (raw) return raw.split("|")[0].trim();
+  if (raw && /Token|Address/i.test(raw)) return raw.split("|")[0].trim();
   const match = html.match(/<title[^>]*>(.*?)<\/title>/i);
-  return match ? stripTags(match[1]).split("|")[0].trim() : "";
+  if (match && /Token|Address/i.test(match[1])) return stripTags(match[1]).split("|")[0].trim();
+  return "";
 }
+
 function extractSiteName(html="") {
   return findMetaContent(html, ["og:site_name"]) || "";
 }
