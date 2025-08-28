@@ -330,10 +330,12 @@ img.alt = card.name ? card.name+" — artwork" : "Card artwork";
 applyFrame(card);
 
 const tinfo = getTypeInfo(card);
-const stats = statsFromLevel(card.level||1, tinfo);
-$("level").textContent = stats.atk ? card.level : 1;
-$("atk").textContent   = stats.atk;
-$("def").textContent   = stats.def;
+
+// Use enrich values directly for stats
+$("level").textContent = card.level || resolveTributes(card) || 1;
+$("atk").textContent   = Number(card.atk) || 0;
+$("def").textContent   = Number(card.def) || 0;
+
 
 /* banner */
 $("tribute").textContent   = card.tribute || "";
