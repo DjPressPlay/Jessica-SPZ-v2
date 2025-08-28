@@ -10,6 +10,7 @@ exports.handler = async (event) => {
     const body = safeJSON(event.body);
     if (!body) return resJSON(400, { error: "Invalid JSON body" });
 
+    // Accept {links:[...]} or {url:"..."}
     let links = [];
     if (Array.isArray(body.links) && body.links.length) links = body.links;
     else if (typeof body.url === "string" && body.url.trim()) links = [body.url];
@@ -26,29 +27,17 @@ exports.handler = async (event) => {
         const r = await fetch(safeUrl, {
           redirect: "follow",
           headers: {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0 Safari/537.36",
+            "User-Agent": "Mozilla/5.0 (compatible; Jessica-SPZ/1.0; +https://sporez.netlify.app)",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Cache-Control": "no-cache"
+            "Accept-Language": "en-US,en;q=0.9"
           }
         });
         if (!r.ok) throw new Error(`Fetch ${r.status}`);
         const html = await r.text();
 
         // --- robust extraction ---
-        const strongChunks = extractStrongText(html);
-
-        const title = extractTitle(html)
-          || firstHeadingText(html)
-          || strongChunks[0]
-          || hostFromUrl(safeUrl);
-
-        const description = extractDescription(html)
-          || strongChunks[1]
-          || firstMeaningfulText(html)
-          || strongChunks.join(" ")
-          || "No description found.";
-
+        const title = extractTitle(html) || firstHeadingText(html) || hostFromUrl(safeUrl);
+        const description = extractDescription(html) || firstMeaningfulText(html);
         const image = extractHeroImage(html, safeUrl) || "";
         const siteName = extractSiteName(html) || hostFromUrl(safeUrl);
         const keywords = extractKeywords(html);
@@ -59,15 +48,15 @@ exports.handler = async (event) => {
 
         results.push({
           url: safeUrl,
-          title: (title || "").trim(),
-          description: (description || "").trim(),
+          title,
+          description,
           image,
           siteName,
           keywords,
           rawHTMLLength: html.length,
 
           enrich: cryptoDesc || cryptoName ? {
-            name: cryptoName || "",
+            name: cryptoName || "",          // card.name
             effects: cryptoDesc
               ? [{ icons: "💹📊", emoji: "💰", text: cryptoDesc }]
               : []
@@ -149,35 +138,6 @@ function matchText(html, re, minLen){
 }
 function looksLikeCookieBanner(t=""){ return /cookies|consent|privacy|subscribe|newsletter|sign up|advert/i.test(t); }
 
-/* ----- stronger fallback text chunks ----- */
-function extractStrongText(html="") {
-  const texts = [];
-
-  // h1/h2
-  texts.push(matchText(html, /<h1[^>]*>(.*?)<\/h1>/gi, 8));
-  texts.push(matchText(html, /<h2[^>]*>(.*?)<\/h2>/gi, 8));
-
-  // paragraphs
-  texts.push(matchText(html, /<p[^>]*>(.*?)<\/p>/gi, 40));
-
-  // image alts
-  const reImg = /<img\b[^>]*alt=["']([^"']+)["']/gi;
-  let m;
-  while ((m = reImg.exec(html))) {
-    const alt = m[1].trim();
-    if (alt.length > 15) texts.push(alt);
-  }
-
-  // anchor text
-  const reA = /<a\b[^>]*>(.*?)<\/a>/gi;
-  while ((m = reA.exec(html))) {
-    const txt = stripTags(m[1]).trim();
-    if (txt.length > 15 && !/home|about|login|signup/i.test(txt)) texts.push(txt);
-  }
-
-  return texts.filter(Boolean).slice(0, 5);
-}
-
 /* ----- field extractors ----- */
 function extractTitle(html="") {
   return (
@@ -195,6 +155,7 @@ function extractCryptoDescription(html="") {
   return findMetaContent(html, ["description"]) || "";
 }
 function extractCryptoName(html="") {
+  // from title or og:title (ex: "BEP-20 Token | Address: ... | BscScan")
   const raw = findMetaContent(html, ["og:title"]) || "";
   if (raw) return raw.split("|")[0].trim();
   const match = html.match(/<title[^>]*>(.*?)<\/title>/i);
