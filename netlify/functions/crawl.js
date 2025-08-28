@@ -1,7 +1,7 @@
 // netlify/functions/crawl.js
 // Safer scraping -> order-agnostic meta parsing + solid fallbacks.
 // Accepts: { links: [...], session? }  (also tolerates { url: "..." } )
-// Returns: { session, results:[{ url,title,description,image,siteName,keywords,rawHTMLLength }] }
+// Returns: { session, results:[{ url,title,description,image,siteName,keywords,rawHTMLLength,enrich }] }
 
 exports.handler = async (event) => {
   try {
@@ -41,6 +41,7 @@ exports.handler = async (event) => {
         const image = extractHeroImage(html, safeUrl) || "";
         const siteName = extractSiteName(html) || hostFromUrl(safeUrl);
         const keywords = extractKeywords(html);
+        const cryptoDesc = extractCryptoDescription(html); // 🧩 new
 
         results.push({
           url: safeUrl,
@@ -49,7 +50,14 @@ exports.handler = async (event) => {
           image,
           siteName,
           keywords,
-          rawHTMLLength: html.length
+          rawHTMLLength: html.length,
+
+          // 🧩 enrichment hook — consistent with Jessica's card format
+          enrich: {
+            effects: cryptoDesc
+              ? [{ icons: "💹📊", emoji: "💰", text: cryptoDesc }]
+              : []
+          }
         });
       } catch (err) {
         results.push({ url: safeUrl, error: String(err && err.message || err) });
@@ -140,6 +148,10 @@ function extractDescription(html="") {
     findMetaContent(html, ["description","og:description","twitter:description"]) ||
     ""
   );
+}
+function extractCryptoDescription(html="") {
+  // explicitly grab raw meta description for crypto/finance detail
+  return findMetaContent(html, ["description"]) || "";
 }
 function extractSiteName(html="") {
   return findMetaContent(html, ["og:site_name"]) || "";
