@@ -290,6 +290,8 @@ const { icon, rarity, frameType, max_tribute, color } = categoryMap(category);
     card_images: [{ image_url: image }],
     frameType,
     category,
+      color,   // 🔥 now included
     _source_url: url
+    
   };
 }
