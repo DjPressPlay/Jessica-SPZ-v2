@@ -50,11 +50,11 @@
   .card-name {
     flex:1; min-width:0; text-align:center;
     overflow:hidden; position:relative;
-    height: 1.5em; /* lock to single-line viewport */
+    height: 1.5em;
   }
   .card-name span {
     display:block;
-    white-space:normal;   /* allow wrapping */
+    white-space:normal;
     line-height:1.5em;
   }
   .card-name span.scroll-vertical {
@@ -184,6 +184,14 @@ $("sets-line").textContent = (card.card_sets||[]).join(" ");
 $("tags-line").textContent = (card.tags||[]).join(" ");
 $("footer").textContent    = card.footer || "";
 $("rarity").textContent    = card.rarity || "";
+
+/* 🔥 Apply frame type & color */
+if (card.frameType) {
+  summonCard.setAttribute("data-frame", card.frameType);
+}
+if (card.color) {
+  document.documentElement.style.setProperty("--frame-color", card.color);
+}
 
 /* Tilt effect for whole card */
 const summonCard = document.getElementById("summon-card");
