@@ -195,16 +195,15 @@
       const d2raw = (r.title || "").trim();
       const d2 = (d2raw && d2raw !== d1) ? d2raw : "";
       return {
-  url: r.url,
-  title: r.title || site || r.url,
-  desc1: d1,
-  desc2: d2,
-  image: r.image || "",
-  brand: site,
-  siteName: site,
-  // ❌ don’t force category here → enrich decides
-  keywords: Array.isArray(r.keywords) ? r.keywords : []
-};
+        url: r.url,
+        title: r.title || site || r.url,
+        desc1: d1,
+        desc2: d2,
+        image: r.image || "",
+        brand: site,
+        siteName: site,
+        keywords: Array.isArray(r.keywords) ? r.keywords : []
+      };
     });
 
     const enriched = await postJSON(ENRICH_API, { items, session: crawled.session });
@@ -228,8 +227,14 @@
     } finally { button.disabled = false; }
   });
 
+  /* ===== Summon button → always use freshest card ===== */
   document.getElementById("summon-btn").addEventListener("click", () => {
-    const raw = localStorage.getItem("jessica_card") || "{}";
+    let raw = output.textContent.trim();
+    try {
+      JSON.parse(raw); // validate if it's valid JSON
+    } catch {
+      raw = localStorage.getItem("jessica_card") || "{}";
+    }
     const url = "summon_btn.html?card=" + encodeURIComponent(raw);
     window.open(url, "SummonCard", "width=520,height=820");
   });
