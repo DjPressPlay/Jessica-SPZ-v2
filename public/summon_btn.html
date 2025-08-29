@@ -11,6 +11,49 @@
     --frame-outer:#000;
     --text:#fff;
   }
+  /* =========================
+   FrameType → Color Mapping
+   ========================= */
+[data-frame="breaking_news"]     { --frame-color: #ff2b2b; }      /* bright-red */
+[data-frame="politics"]          { --frame-color: #800000; }      /* maroon */
+[data-frame="national_news"]     { --frame-color: #001f5c; }      /* dark-blue */
+[data-frame="international_news"]{ --frame-color: #0057e7; }      /* blue */
+[data-frame="local_news"]        { --frame-color: #66ccff; }      /* sky-blue */
+[data-frame="economy"]           { --frame-color: #008080; }      /* teal */
+[data-frame="business"]          { --frame-color: #ffd700; }      /* gold */
+[data-frame="sales"]             { --frame-color: #00ffff; }      /* cyan */
+[data-frame="merch"]             { --frame-color: #ff00ff; }      /* magenta */
+[data-frame="technology"]        { --frame-color: #c0c0c0; }      /* silver */
+[data-frame="science"]           { --frame-color: #0074d9; }      /* science-blue */
+[data-frame="health"]            { --frame-color: #ff4500; }      /* red-orange */
+[data-frame="education"]         { --frame-color: #87cefa; }      /* sky-blue-light */
+[data-frame="environment"]       { --frame-color: #228b22; }      /* forest-green */
+[data-frame="sports"]            { --frame-color: #008000; }      /* green */
+[data-frame="entertainment"]     { --frame-color: #ffa500; }      /* orange */
+[data-frame="lifestyle"]         { --frame-color: #90ee90; }      /* light-green */
+[data-frame="travel"]            { --frame-color: #008080; }      /* teal */
+[data-frame="opinion"]           { --frame-color: #8a2be2; }      /* violet */
+[data-frame="editorial"]         { --frame-color: #4b0082; }      /* dark-violet/indigo */
+[data-frame="feature_story"]     { --frame-color: #ffdab9; }      /* peach */
+[data-frame="photojournalism"]   { --frame-color: #808080; }      /* gray */
+[data-frame="classifieds"]       { --frame-color: #f5f5dc; }      /* beige */
+[data-frame="comics_puzzles"]    { --frame-color: #9acd32; }      /* yellow-green */
+[data-frame="obituaries"]        { --frame-color: #000000; }      /* black */
+[data-frame="weather"]           { --frame-color: #d3d3d3; }      /* light-gray */
+[data-frame="society"]           { --frame-color: #e32636; }      /* rose */
+[data-frame="infotainment"]      { --frame-color: #ffff33; }      /* neon-yellow */
+[data-frame="soft_news"]         { --frame-color: #ffefd5; }      /* peach-light */
+[data-frame="hard_news"]         { --frame-color: #8b0000; }      /* dark-red */
+[data-frame="investigative"]     { --frame-color: #00008b; }      /* deep dark-blue */
+[data-frame="government"] { --frame-color: linear-gradient(90deg,#dcdcdc 0%,#a9a9a9 25%,#808080 50%,#a9a9a9 75%,#dcdcdc 100%); } /* metallic */
+[data-frame="zetsu"]             { --frame-color: linear-gradient(135deg,#e63946,#6f42c1,#00e6e6); } /* iridescent */
+[data-frame="social"]            { --frame-color: #e32636; }      /* rose */
+[data-frame="crypto"]            { --frame-color: #800080; }      /* purple */
+[data-frame="meme"]              { --frame-color: linear-gradient(90deg,#ff00ff,#ffff00,#00ffff); } /* neon-multicolor */
+[data-frame="people"]            { --frame-color: #d3d3d3; }      /* light-gray */
+
+    );
+  }
   body{
     margin:0; background:#111; color:var(--text);
     font-family:"Orbitron",system-ui,Segoe UI,Arial,Helvetica,sans-serif;
