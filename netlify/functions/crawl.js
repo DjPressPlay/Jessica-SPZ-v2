@@ -134,19 +134,16 @@ function extractDescription(html="") {
 function extractAuthor(html="") {
   return (
     findMetaContent(html, [
-      "author",
-      "og:profile:username",
-      "twitter:creator",
-      "twitter:site"
+      "author", "og:profile:username", "twitter:creator", "twitter:site"
     ]) || ""
   );
 }
 function extractFromOgTitle(html="") {
   const t = findMetaContent(html, ["og:title"]) || "";
   if (/^@/.test(t)) return t.split(" ")[0]; // IG/TikTok style
-  if (t.includes(" on Instagram:")) return t.split(" on Instagram:")[0];
-  if (t.includes(" on TikTok:")) return t.split(" on TikTok:")[0];
-  if (t.includes("shared a post")) return t.split(" shared a post")[0].trim();
+  if (t.includes("on Instagram:")) return t.split(" on Instagram:")[0];
+  if (t.includes("on TikTok:")) return t.split(" on TikTok:")[0];
+  if (t.includes("shared a post")) return t.replace("shared a post","").trim();
   return "";
 }
 function extractVideo(html="") {
