@@ -134,16 +134,19 @@ function extractDescription(html="") {
 function extractAuthor(html="") {
   return (
     findMetaContent(html, [
-      "author", "og:profile:username", "twitter:creator", "twitter:site"
+      "author",
+      "og:profile:username",
+      "twitter:creator",
+      "twitter:site"
     ]) || ""
   );
 }
 function extractFromOgTitle(html="") {
   const t = findMetaContent(html, ["og:title"]) || "";
-  if (/^@/.test(t)) return t.split(" ")[0]; // handles IG/TikTok style
-  if (t.includes("on Instagram:")) return t.split(" on Instagram:")[0];
-  if (t.includes("on TikTok:")) return t.split(" on TikTok:")[0];
-  if (t.includes("shared a post")) return t.replace("shared a post","").trim();
+  if (/^@/.test(t)) return t.split(" ")[0]; // IG/TikTok style
+  if (t.includes(" on Instagram:")) return t.split(" on Instagram:")[0];
+  if (t.includes(" on TikTok:")) return t.split(" on TikTok:")[0];
+  if (t.includes("shared a post")) return t.split(" shared a post")[0].trim();
   return "";
 }
 function extractVideo(html="") {
@@ -185,7 +188,6 @@ function isValidImage(u = "") {
     return false;
   }
 }
-function looksLikeCookieBanner(t=""){ return /cookies|consent|privacy/i.test(t); }
 function isTrackerDomain(u = "") {
   return /(doubleclick\.net|googletagmanager|google-analytics|stats\.|segment\.io|mixpanel|adservice\.)/i.test(u);
 }
