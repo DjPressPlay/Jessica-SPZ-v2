@@ -46,25 +46,24 @@
   }
   .card-id{ background:#fff; color:#000; padding:2px 6px; border-radius:4px; font-size:.75rem; white-space:nowrap; }
 
-  /* 🔥 vertical scroll name fix */
+  /* 🔥 fixed multi-line + vertical scroll name */
   .card-name {
     flex:1; min-width:0; text-align:center;
     overflow:hidden; position:relative;
-    height: 1.5em; /* lock height */
+    height: 1.5em; /* lock to single-line viewport */
   }
   .card-name span {
-    display:inline-block;
-    white-space:nowrap;
-    padding:0 10px;
+    display:block;
+    white-space:normal;   /* allow wrapping */
+    line-height:1.5em;
   }
   .card-name span.scroll-vertical {
-    display:block;
-    animation: scrollNameVertical 6s linear infinite;
+    animation: scrollLines 6s linear infinite;
   }
-  @keyframes scrollNameVertical {
-    0%, 10%   { transform: translateY(0%); }      /* stay visible */
-    90%       { transform: translateY(-100%); }   /* scroll upward */
-    100%      { transform: translateY(0%); }      /* reset instantly */
+  @keyframes scrollLines {
+    0%, 10%   { transform: translateY(0%); }
+    90%       { transform: translateY(-100%); }
+    100%      { transform: translateY(0%); }
   }
 
   .card-icon{ font-size:1.1rem; }
@@ -202,11 +201,11 @@ summonCard.addEventListener("mouseleave", () => {
   summonCard.style.boxShadow = "0 0 20px rgba(0,0,0,0.7)";
 });
 
-/* ===== Enable vertical scroll for long name ===== */
+/* ===== Enable vertical scroll if multi-line ===== */
 const nameSpan = document.getElementById("card-name");
 function enableVerticalScrollIfNeeded(el) {
   const parent = el.parentElement;
-  if (el.scrollWidth > parent.clientWidth) {
+  if (el.scrollHeight > parent.clientHeight) {
     el.classList.add("scroll-vertical");
   }
 }
