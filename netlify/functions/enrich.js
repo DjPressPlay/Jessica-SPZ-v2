@@ -91,15 +91,14 @@ function generateTagsFromContent(title = "", description = "") {
   return Array.from(chosen).slice(0, 10); // cap at 10 tags
 }
 
-
 /* ---------------- category + emoji mapping ---------------- */
 function normalizeCategory(cat = "", keywords = [], title = "", desc1 = "", desc2 = "", brand = "") {
   const s = String(cat || "").toLowerCase().trim();
 
-  // 🔑 Combine everything into one array so Zetsumetsu always gets seen
+  // 🔑 Pool WITHOUT prioritizing brand
   const pool = []
     .concat(keywords || [])
-    .concat([s, title, desc1, desc2, brand]);
+    .concat([s, title, desc1, desc2]); // brand excluded from primary scan
 
   for (const kw of pool) {
     const k = String(kw || "").toLowerCase().trim();
@@ -158,6 +157,7 @@ function normalizeCategory(cat = "", keywords = [], title = "", desc1 = "", desc
   const idx = Math.floor(Math.random() * allCategories.length);
   return allCategories[idx];
 }
+
 
 
 
