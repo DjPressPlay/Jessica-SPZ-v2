@@ -2,8 +2,10 @@
 // Safer scraping -> order-agnostic meta parsing + solid fallbacks.
 // Accepts: { links: [...], session? }  (also tolerates { url:"..." } )
 // Returns: { session, results:[{ url,title,description,image,siteName,profile,keywords,rawHTMLLength,enrich }] }
-
 // netlify/functions/crawl.js
+// A robust, maintainable web scraper built with cheerio.
+// Accepts: { links: [...], session? } (also tolerates { url:"..." } )
+// Returns: { session, results:[{ url, title, description, image, siteName, profile, keywords, rawHTMLLength, enrich }] }
 
 const cheerio = require("cheerio");
 
@@ -13,7 +15,7 @@ const PLACEHOLDER_IMG =
 /**
  * Main handler for the Netlify function.
  * @param {object} event - The function event object.
- * @returns {Promise<object>} - The HTTP response.
+ * @returns {Promise<object>} - The HTTP response object.
  */
 exports.handler = async (event) => {
   try {
@@ -46,16 +48,16 @@ exports.handler = async (event) => {
       }
 
       try {
-        // --- Try oEmbed first ---
+        // First, check for an oEmbed endpoint for social media.
         const oembedData = await tryOEmbed(safeUrl);
         if (oembedData) {
           results.push(oembedData);
           continue;
         }
 
-        // --- Fetch HTML with timeout ---
+        // Fetch HTML with a 10-second timeout to prevent hangs.
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
         const r = await fetch(safeUrl, {
           redirect: "follow",
           signal: controller.signal,
@@ -71,8 +73,10 @@ exports.handler = async (event) => {
         }
         const html = await r.text();
 
-        // --- Robust extraction using cheerio ---
+        // Use Cheerio to parse the HTML.
         const $ = cheerio.load(html);
+
+        // Extract metadata with robust fallbacks.
         const title = extractTitle($) || firstHeadingText($) || hostFromUrl(safeUrl);
         const description = extractDescription($) || "No description available";
         const image = extractHeroImage($, safeUrl) || PLACEHOLDER_IMG;
@@ -111,11 +115,14 @@ exports.handler = async (event) => {
   }
 };
 
-/* -------------------------------- helpers -------------------------------- */
+/* ------------------- Helper Functions ------------------- */
 
+/** @param {number} statusCode */
 function resText(statusCode, body) {
   return { statusCode, body };
 }
+
+/** @param {number} statusCode */
 function resJSON(statusCode, obj) {
   return {
     statusCode,
@@ -123,6 +130,8 @@ function resJSON(statusCode, obj) {
     body: JSON.stringify(obj),
   };
 }
+
+/** @param {string} s */
 function safeJSON(s) {
   try {
     return JSON.parse(s || "{}");
@@ -130,6 +139,8 @@ function safeJSON(s) {
     return null;
   }
 }
+
+/** @param {string} u */
 function hostFromUrl(u = "") {
   try {
     return new URL(u).hostname.replace(/^www\./i, "");
@@ -139,6 +150,7 @@ function hostFromUrl(u = "") {
 }
 
 /* ------------------- oEmbed support for socials ------------------- */
+/** @param {string} url */
 async function tryOEmbed(url) {
   const endpoints = [
     { match: /twitter\.com|x\.com/i, api: "https://publish.twitter.com/oembed?url=" },
@@ -171,8 +183,7 @@ async function tryOEmbed(url) {
   return null;
 }
 
-/* ------------------- Field Extractors using cheerio ------------------- */
-
+/* ------------------- Extractors using cheerio ------------------- */
 /** @param {cheerio.CheerioAPI} $ */
 function extractTitle($) {
   return (
@@ -228,13 +239,17 @@ function extractKeywords($) {
   return s.split(",").map(x => x.trim()).filter(Boolean).slice(0, 20);
 }
 
-/** @param {cheerio.CheerioAPI} $ */
+/**
+ * Finds the first meaningful paragraph or heading text.
+ * @param {cheerio.CheerioAPI} $
+ * @returns {string}
+ */
 function firstMeaningfulText($) {
-  const p = $("p, h2")
+  const meaningfulText = $("p, h2")
     .map((i, el) => $(el).text().trim())
     .get()
     .filter(t => t.length > 50 && !looksLikeCookieBanner(t));
-  return p[0] || "";
+  return meaningfulText[0] || "";
 }
 
 /** @param {cheerio.CheerioAPI} $ */
@@ -243,8 +258,14 @@ function firstHeadingText($) {
   return h1.length > 10 ? h1 : "";
 }
 
-/** @param {cheerio.CheerioAPI} $ */
+/**
+ * Extracts the best possible hero image URL from the HTML.
+ * @param {cheerio.CheerioAPI} $
+ * @param {string} baseUrl
+ * @returns {string}
+ */
 function extractHeroImage($, baseUrl) {
+  // First, check for common meta tags.
   const metaImg =
     $('meta[property="og:image"]').attr("content") ||
     $('meta[name="twitter:image"]').attr("content") ||
@@ -258,6 +279,7 @@ function extractHeroImage($, baseUrl) {
     }
   }
 
+  // As a fallback, find the largest non-pixel image on the page.
   const images = $("img")
     .map((i, el) => {
       const img = $(el);
@@ -268,8 +290,7 @@ function extractHeroImage($, baseUrl) {
       return { url, w, h };
     })
     .get()
-    .filter(
-      (im) =>
+    .filter(im =>
         im.url &&
         !looksLikePixel(im) &&
         !isTrackerDomain(im.url) &&
@@ -282,10 +303,17 @@ function extractHeroImage($, baseUrl) {
 
 /* ------------------- URL & General Helpers ------------------- */
 
+/** @param {string} t */
 function looksLikeCookieBanner(t = "") {
   return /cookies|consent|privacy|subscribe|newsletter|sign up|advert|policy|terms/i.test(t);
 }
 
+/**
+ * Converts a relative URL to an absolute URL.
+ * @param {string} base - The base URL.
+ * @param {string} src - The URL to resolve.
+ * @returns {string}
+ */
 function absolutize(base, src) {
   if (!src) return src;
   try {
@@ -295,6 +323,7 @@ function absolutize(base, src) {
   }
 }
 
+/** @param {string} u */
 function isValidImage(u = "") {
   try {
     const x = new URL(u);
@@ -306,13 +335,14 @@ function isValidImage(u = "") {
     ) {
       return true;
     }
-    // Final check for a domain with an extension to filter out random paths
+    // Final check for a domain with an extension to filter out random paths.
     return /\.[a-z]{2,}(\?|#|$)/i.test(x.hostname);
   } catch {
     return false;
   }
 }
 
+/** @param {object} im */
 function looksLikePixel(im) {
   const u = String(im.url || "").toLowerCase();
   if (/1x1|pixel|spacer|transparent/.test(u)) return true;
@@ -321,6 +351,7 @@ function looksLikePixel(im) {
   return false;
 }
 
+/** @param {string} u */
 function isTrackerDomain(u = "") {
   return /(fls-na\.amazon|amazon-adsystem|doubleclick\.net|googletagmanager|google-analytics|stats\.|segment\.io|mixpanel|adservice\.|adobedtm|criteo\.com|demdex\.net|scorecardresearch|adsrvr\.org)/i.test(u);
 }
