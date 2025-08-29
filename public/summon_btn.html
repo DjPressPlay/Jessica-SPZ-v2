@@ -16,6 +16,14 @@
     font-family:"Orbitron",system-ui,Segoe UI,Arial,Helvetica,sans-serif;
     min-height:100vh; display:flex; align-items:center; justify-content:center; padding:16px;
   }
+
+  /* 🔥 New outer container */
+  .summon-container {
+    display:flex; align-items:center; justify-content:center;
+    padding:20px; background:#000;
+    border-radius:16px; box-shadow:0 0 20px rgba(0,0,0,0.7);
+  }
+
   .frameType{ position:relative; overflow:hidden;
     border:12px solid var(--frame-outer); border-radius:14px;
     width:clamp(360px, 92vw, 460px);
@@ -68,32 +76,35 @@
 </head>
 <body>
 
-<div class="frameType">
-  <div id="inner" class="frameType-inner">
-    <div class="card-header">
-      <div class="card-id" id="card-id"></div>
-      <div class="card-name"><span id="card-name"></span></div>
-      <div class="card-icon" id="card-icon"></div>
-    </div>
-    <div class="card-art">
-      <img id="card-image" alt="">
-      <div class="stat-orb stat-blue"  id="level"></div>
-      <div class="stat-orb stat-red"   id="atk"></div>
-      <div class="stat-orb stat-green" id="def"></div>
-    </div>
-    <div class="type-banner">
-      <div><span id="tribute"></span></div>
-      <div><span id="about"></span></div>
-      <div><span id="type-emoji"></span></div>
-    </div>
-    <div class="effect-box" id="effect-box"></div>
-    <div class="meta-block">
-      <div class="meta-line"><div class="meta-label">Sets -</div><div id="sets-line"></div></div>
-      <div class="meta-line"><div class="meta-label">Tags -</div><div id="tags-line"></div></div>
-    </div>
-    <div class="meta-bottom">
-      <div class="meta-footer-text" id="footer"></div>
-      <div class="rarity" id="rarity"></div>
+<!-- 🔥 New Container -->
+<div class="summon-container">
+  <div class="frameType">
+    <div id="inner" class="frameType-inner">
+      <div class="card-header">
+        <div class="card-id" id="card-id"></div>
+        <div class="card-name"><span id="card-name"></span></div>
+        <div class="card-icon" id="card-icon"></div>
+      </div>
+      <div class="card-art">
+        <img id="card-image" alt="">
+        <div class="stat-orb stat-blue"  id="level"></div>
+        <div class="stat-orb stat-red"   id="atk"></div>
+        <div class="stat-orb stat-green" id="def"></div>
+      </div>
+      <div class="type-banner">
+        <div><span id="tribute"></span></div>
+        <div><span id="about"></span></div>
+        <div><span id="type-emoji"></span></div>
+      </div>
+      <div class="effect-box" id="effect-box"></div>
+      <div class="meta-block">
+        <div class="meta-line"><div class="meta-label">Sets -</div><div id="sets-line"></div></div>
+        <div class="meta-line"><div class="meta-label">Tags -</div><div id="tags-line"></div></div>
+      </div>
+      <div class="meta-bottom">
+        <div class="meta-footer-text" id="footer"></div>
+        <div class="rarity" id="rarity"></div>
+      </div>
     </div>
   </div>
 </div>
