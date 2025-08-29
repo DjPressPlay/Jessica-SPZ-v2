@@ -93,11 +93,15 @@ function generateTagsFromContent(title = "", description = "") {
 
 
 /* ---------------- category + emoji mapping ---------------- */
-function normalizeCategory(cat = "", keywords = []) {
+function normalizeCategory(cat = "", keywords = [], title = "", desc1 = "", desc2 = "", brand = "") {
   const s = String(cat || "").toLowerCase().trim();
 
-  // 1. Check keywords against the known group
-  for (const kw of keywords.concat(s)) {
+  // 🔑 Combine everything into one array so Zetsumetsu always gets seen
+  const pool = []
+    .concat(keywords || [])
+    .concat([s, title, desc1, desc2, brand]);
+
+  for (const kw of pool) {
     const k = String(kw || "").toLowerCase().trim();
 
     if (k.includes("breaking")) return "Breaking News";
@@ -154,6 +158,7 @@ function normalizeCategory(cat = "", keywords = []) {
   const idx = Math.floor(Math.random() * allCategories.length);
   return allCategories[idx];
 }
+
 
 
 const emojiMap = {
