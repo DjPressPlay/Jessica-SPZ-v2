@@ -17,20 +17,28 @@
     min-height:100vh; display:flex; align-items:center; justify-content:center; padding:16px;
   }
 
+  /* 🔥 The whole card container */
   .summon-container {
     display:flex; align-items:center; justify-content:center;
     padding:20px; background:#000;
     border-radius:16px; box-shadow:0 0 20px rgba(0,0,0,0.7);
+    perspective: 1200px;   /* allow 3D */
   }
 
-  .frameType{ position:relative; overflow:hidden;
+  /* 🔥 Tilt target = whole card */
+  .frameType {
+    position:relative; overflow:hidden;
     border:12px solid var(--frame-outer); border-radius:14px;
     width:clamp(360px, 92vw, 460px);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transform-style: preserve-3d;
   }
+
   .frameType-inner{ position:relative; overflow:hidden;
     border:6px solid var(--frame-color); border-radius:10px;
     background:#1a1a1a;
   }
+
   .card-header, .card-art, .type-banner, .effect-box, .meta-block, .meta-bottom { position:relative; z-index:1; }
   .card-header{
     display:flex; justify-content:space-between; align-items:center;
@@ -40,22 +48,10 @@
   .card-id{ background:#fff; color:#000; padding:2px 6px; border-radius:4px; font-size:.75rem; white-space:nowrap; }
   .card-name{ flex:1; min-width:0; text-align:center; }
   .card-icon{ font-size:1.1rem; }
-
-  /* 🔥 Card Art With Visual Effect */
   .card-art{ margin:10px; background:#222; aspect-ratio:4/3;
     border:3px solid var(--frame-color); border-radius:8px; overflow:hidden; position:relative;
-    perspective: 800px;   /* allow 3D rotation */
   }
-  .card-art img{
-    width:100%; height:100%; object-fit:cover;
-    transform-style: preserve-3d;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    border-radius:8px;
-  }
-  .card-art:hover img{
-    box-shadow:0 0 25px rgba(230,57,70,.8);
-  }
-
+  .card-art img{ width:100%; height:100%; object-fit:cover; }
   .stat-orb{ position:absolute; width:54px; height:54px; border-radius:50%;
     font-weight:800; font-size:1rem; display:flex; align-items:center; justify-content:center;
     border:3px solid #fff; box-shadow:0 2px 8px rgba(0,0,0,.4);
@@ -88,14 +84,14 @@
 <body>
 
 <div class="summon-container">
-  <div class="frameType">
+  <div class="frameType" id="summon-card">
     <div id="inner" class="frameType-inner">
       <div class="card-header">
         <div class="card-id" id="card-id"></div>
         <div class="card-name"><span id="card-name"></span></div>
         <div class="card-icon" id="card-icon"></div>
       </div>
-      <div class="card-art" id="card-art">
+      <div class="card-art">
         <img id="card-image" alt="">
         <div class="stat-orb stat-blue"  id="level"></div>
         <div class="stat-orb stat-red"   id="atk"></div>
@@ -158,21 +154,22 @@ $("tags-line").textContent = (card.tags||[]).join(" ");
 $("footer").textContent    = card.footer || "";
 $("rarity").textContent    = card.rarity || "";
 
-/* ===== Parallax Visuals on Hover ===== */
-const cardArt = document.getElementById("card-art");
-const cardImg = document.getElementById("card-image");
+/* ===== Parallax Tilt for Whole Card ===== */
+const summonCard = document.getElementById("summon-card");
 
-cardArt.addEventListener("mousemove", (e) => {
-  const rect = cardArt.getBoundingClientRect();
+summonCard.addEventListener("mousemove", (e) => {
+  const rect = summonCard.getBoundingClientRect();
   const x = e.clientX - rect.left;
   const y = e.clientY - rect.top;
   const rotateY = ((x / rect.width) - 0.5) * 20;
   const rotateX = ((y / rect.height) - 0.5) * -20;
-  cardImg.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
+  summonCard.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
+  summonCard.style.boxShadow = "0 20px 40px rgba(230,57,70,.6)";
 });
 
-cardArt.addEventListener("mouseleave", () => {
-  cardImg.style.transform = "rotateX(0deg) rotateY(0deg) scale(1)";
+summonCard.addEventListener("mouseleave", () => {
+  summonCard.style.transform = "rotateX(0deg) rotateY(0deg) scale(1)";
+  summonCard.style.boxShadow = "0 0 20px rgba(0,0,0,0.7)";
 });
 </script>
 </body>
