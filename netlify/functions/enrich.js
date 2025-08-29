@@ -93,8 +93,18 @@ function generateTagsFromContent(title = "", description = "") {
 
 
 /* ---------------- category + emoji mapping ---------------- */
-function normalizeCategory(cat = "", keywords = []) {
-  const s = String(cat || "").toLowerCase().trim();
+const category = normalizeCategory(
+  it.category || brand,
+  [
+    ...(it.keywords || []),
+    it.title || "",
+    it.description || "",
+    it.desc1 || "",
+    it.desc2 || "",
+    brand
+  ]
+);
+
 
   // 1. Check keywords against the known group
   for (const kw of keywords) {
