@@ -3,355 +3,579 @@
 // Accepts: { links: [...], session? }  (also tolerates { url:"..." } )
 // Returns: { session, results:[{ url,title,description,image,siteName,profile,keywords,rawHTMLLength,enrich }] }
 // netlify/functions/crawl.js
-// A robust, maintainable web scraper built with cheerio.
-// Accepts: { links: [...], session? } (also tolerates { url:"..." } )
-// Returns: { session, results:[{ url, title, description, image, siteName, profile, keywords, rawHTMLLength, enrich }] }
 
-const cheerio = require("cheerio");
+// Safer scraping -> order-agnostic meta parsing + solid fallbacks.
 
-const PLACEHOLDER_IMG =
-  "https://miro.medium.com/v2/resize:fit:786/format:webp/1*l0k-78eTSOaUPijHdWIhkQ.png";
+// Accepts: { links: [...], session? }  (also tolerates { url:"..." } )
 
-/**
- * Main handler for the Netlify function.
- * @param {object} event - The function event object.
- * @returns {Promise<object>} - The HTTP response object.
- */
+// Returns: { session, results:[{ url,title,description,image,siteName,profile,keywords,rawHTMLLength,enrich }] }
+
+
+
+const PLACEHOLDER_IMG = "https://miro.medium.com/v2/resize:fit:786/format:webp/1*l0k-78eTSOaUPijHdWIhkQ.png";
+
+
+
 exports.handler = async (event) => {
-  try {
-    if (event.httpMethod !== "POST") {
-      return resText(405, "Method Not Allowed");
-    }
 
-    const body = safeJSON(event.body);
-    if (!body) {
-      return resJSON(400, { error: "Invalid JSON body" });
-    }
+  try {
 
-    let links = [];
-    if (Array.isArray(body.links) && body.links.length) {
-      links = body.links;
-    } else if (typeof body.url === "string" && body.url.trim()) {
-      links = [body.url];
-    }
+    if (event.httpMethod !== "POST") return resText(405, "Method Not Allowed");
 
-    const session = body.session || "";
-    if (!links.length) {
-      return resJSON(400, { error: "No links provided" });
-    }
 
-    const results = [];
-    for (let rawUrl of links) {
-      let safeUrl = (rawUrl || "").trim();
-      if (!/^https?:\/\//i.test(safeUrl)) {
-        safeUrl = "https://" + safeUrl;
-      }
 
-      try {
-        // First, check for an oEmbed endpoint for social media.
-        const oembedData = await tryOEmbed(safeUrl);
-        if (oembedData) {
-          results.push(oembedData);
-          continue;
-        }
+    const body = safeJSON(event.body);
 
-        // Fetch HTML with a 10-second timeout to prevent hangs.
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
-        const r = await fetch(safeUrl, {
-          redirect: "follow",
-          signal: controller.signal,
-          headers: {
-            "User-Agent": "Mozilla/5.0 (compatible; Jessica-SPZ/1.0; +https://sporez.netlify.app)",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.9",
-          },
-        });
-        clearTimeout(timeoutId);
-        if (!r.ok) {
-          throw new Error(`Fetch failed with status: ${r.status}`);
-        }
-        const html = await r.text();
+    if (!body) return resJSON(400, { error: "Invalid JSON body" });
 
-        // Use Cheerio to parse the HTML.
-        const $ = cheerio.load(html);
 
-        // Extract metadata with robust fallbacks.
-        const title = extractTitle($) || firstHeadingText($) || hostFromUrl(safeUrl);
-        const description = extractDescription($) || "No description available";
-        const image = extractHeroImage($, safeUrl) || PLACEHOLDER_IMG;
-        const siteName = extractSiteName($) || hostFromUrl(safeUrl);
-        const keywords = extractKeywords($);
-        const profile = extractAuthor($) || "";
-        const cryptoDesc = extractCryptoDescription($);
-        const cryptoName = extractCryptoName($);
 
-        results.push({
-          url: safeUrl,
-          title,
-          description,
-          image,
-          siteName,
-          profile,
-          keywords,
-          rawHTMLLength: html.length,
-          enrich: cryptoDesc || cryptoName
-            ? {
-                name: cryptoName || "",
-                effects: cryptoDesc
-                  ? [{ icons: "💹📊", emoji: "💰", text: cryptoDesc }]
-                  : [],
-              }
-            : {},
-        });
-      } catch (err) {
-        results.push({ url: safeUrl, error: String(err && err.message || err) });
-      }
-    }
+    // Accept {links:[...]} or {url:"..."}
 
-    return resJSON(200, { session, results });
-  } catch (err) {
-    return resJSON(500, { error: String(err && err.message || err) });
-  }
+    let links = [];
+
+    if (Array.isArray(body.links) && body.links.length) links = body.links;
+
+    else if (typeof body.url === "string" && body.url.trim()) links = [body.url];
+
+
+
+    const session = body.session || "";
+
+    if (!links.length) return resJSON(400, { error: "No links provided" });
+
+
+
+    const results = [];
+
+    for (let rawUrl of links) {
+
+      let safeUrl = (rawUrl || "").trim();
+
+      if (!/^https?:\/\//i.test(safeUrl)) safeUrl = "https://" + safeUrl;
+
+
+
+      try {
+
+        // --- try oEmbed first ---
+
+        const oembedData = await tryOEmbed(safeUrl);
+
+        if (oembedData) {
+
+          results.push(oembedData);
+
+          continue;
+
+        }
+
+
+
+        // --- fetch HTML ---
+
+        const r = await fetch(safeUrl, {
+
+          redirect: "follow",
+
+          headers: {
+
+            "User-Agent": "Mozilla/5.0 (compatible; Jessica-SPZ/1.0; +https://sporez.netlify.app)",
+
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+
+            "Accept-Language": "en-US,en;q=0.9"
+
+          }
+
+        });
+
+        if (!r.ok) throw new Error(`Fetch ${r.status}`);
+
+        const html = await r.text();
+
+
+
+        // --- robust extraction ---
+
+        const title = extractTitle(html) || firstHeadingText(html) || hostFromUrl(safeUrl);
+
+        const description = extractDescription(html) || "No description available";
+
+        const image = extractHeroImage(html, safeUrl) || PLACEHOLDER_IMG;
+
+        const siteName = extractSiteName(html) || hostFromUrl(safeUrl);
+
+        const keywords = extractKeywords(html);
+
+        const profile = extractAuthor(html) || "";
+
+
+
+        // crypto enrichment
+
+        const cryptoDesc = extractCryptoDescription(html);
+
+        const cryptoName = extractCryptoName(html);
+
+
+
+        results.push({
+
+          url: safeUrl,
+
+          title,
+
+          description,
+
+          image,
+
+          siteName,
+
+          profile,
+
+          keywords,
+
+          rawHTMLLength: html.length,
+
+          enrich: cryptoDesc || cryptoName ? {
+
+            name: cryptoName || "",
+
+            effects: cryptoDesc
+
+              ? [{ icons: "💹📊", emoji: "💰", text: cryptoDesc }]
+
+              : []
+
+          } : {}
+
+        });
+
+      } catch (err) {
+
+        results.push({ url: safeUrl, error: String(err && err.message || err) });
+
+      }
+
+    }
+
+
+
+    return resJSON(200, { session, results });
+
+  } catch (err) {
+
+    return resJSON(500, { error: String(err && err.message || err) });
+
+  }
+
 };
 
-/* ------------------- Helper Functions ------------------- */
 
-/** @param {number} statusCode */
-function resText(statusCode, body) {
-  return { statusCode, body };
-}
 
-/** @param {number} statusCode */
+/* ---------------- helpers ---------------- */
+
+
+
+function resText(statusCode, body) { return { statusCode, body }; }
+
 function resJSON(statusCode, obj) {
-  return {
-    statusCode,
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(obj),
-  };
+
+  return { statusCode, headers: { "Content-Type": "application/json" }, body: JSON.stringify(obj) };
+
 }
 
-/** @param {string} s */
-function safeJSON(s) {
-  try {
-    return JSON.parse(s || "{}");
-  } catch {
-    return null;
-  }
-}
+function safeJSON(s) { try { return JSON.parse(s || "{}"); } catch { return null; } }
 
-/** @param {string} u */
-function hostFromUrl(u = "") {
-  try {
-    return new URL(u).hostname.replace(/^www\./i, "");
-  } catch {
-    return "";
-  }
-}
+function hostFromUrl(u=""){ try{ return new URL(u).hostname.replace(/^www\./i,""); }catch{ return ""; } }
 
-/* ------------------- oEmbed support for socials ------------------- */
-/** @param {string} url */
+
+
+/* ----- oEmbed support for socials ----- */
+
 async function tryOEmbed(url) {
-  const endpoints = [
-    { match: /twitter\.com|x\.com/i, api: "https://publish.twitter.com/oembed?url=" },
-    { match: /reddit\.com/i, api: "https://www.reddit.com/oembed?url=" },
-    { match: /youtube\.com|youtu\.be/i, api: "https://www.youtube.com/oembed?url=" },
-    { match: /tiktok\.com/i, api: "https://www.tiktok.com/oembed?url=" },
-  ];
-  for (const ep of endpoints) {
-    if (ep.match.test(url)) {
-      try {
-        const r = await fetch(ep.api + encodeURIComponent(url));
-        if (!r.ok) throw new Error("oEmbed fail");
-        const data = await r.json();
-        return {
-          url,
-          title: data.title || hostFromUrl(url),
-          description: data.author_name ? `By ${data.author_name}` : "No description available",
-          image: data.thumbnail_url || PLACEHOLDER_IMG,
-          siteName: data.provider_name || hostFromUrl(url),
-          profile: data.author_name || "",
-          keywords: [],
-          rawHTMLLength: 0,
-          enrich: {},
-        };
-      } catch {
-        return null;
-      }
-    }
-  }
-  return null;
+
+  const endpoints = [
+
+    { match:/twitter\.com|x\.com/i, api:"https://publish.twitter.com/oembed?url=" },
+
+    { match:/reddit\.com/i, api:"https://www.reddit.com/oembed?url=" },
+
+    { match:/youtube\.com|youtu\.be/i, api:"https://www.youtube.com/oembed?url=" },
+
+    { match:/tiktok\.com/i, api:"https://www.tiktok.com/oembed?url=" }
+
+  ];
+
+  for (const ep of endpoints) {
+
+    if (ep.match.test(url)) {
+
+      try {
+
+        const r = await fetch(ep.api + encodeURIComponent(url));
+
+        if (!r.ok) throw new Error("oEmbed fail");
+
+        const data = await r.json();
+
+        return {
+
+          url,
+
+          title: data.title || hostFromUrl(url),
+
+          description: data.author_name ? `By ${data.author_name}` : "No description available",
+
+          image: data.thumbnail_url || PLACEHOLDER_IMG,
+
+          siteName: data.provider_name || hostFromUrl(url),
+
+          profile: data.author_name || "",
+
+          keywords: [],
+
+          rawHTMLLength: 0,
+
+          enrich: {}
+
+        };
+
+      } catch {
+
+        return null;
+
+      }
+
+    }
+
+  }
+
+  return null;
+
 }
 
-/* ------------------- Extractors using cheerio ------------------- */
-/** @param {cheerio.CheerioAPI} $ */
-function extractTitle($) {
-  return (
-    $('meta[property="og:title"]').attr("content") ||
-    $('meta[name="twitter:title"]').attr("content") ||
-    $("title").text().trim()
-  );
+
+
+/* ----- attribute-order agnostic meta parsing ----- */
+
+function getAttrCI(tag, name) {
+
+  const re = new RegExp(`\\b${name}\\s*=\\s*["']([^"']+)["']`, "i");
+
+  const m = tag.match(re);
+
+  return m ? m[1] : "";
+
 }
 
-/** @param {cheerio.CheerioAPI} $ */
-function extractDescription($) {
-  return (
-    $('meta[name="description"]').attr("content") ||
-    $('meta[property="og:description"]').attr("content") ||
-    $('meta[name="twitter:description"]').attr("content") ||
-    firstMeaningfulText($)
-  );
+function findMetaContent(html, keys) {
+
+  const re = /<meta\b[^>]*>/gi;
+
+  let m;
+
+  while ((m = re.exec(html))) {
+
+    const tag = m[0];
+
+    const prop = (getAttrCI(tag, "property") || "").toLowerCase();
+
+    const name = (getAttrCI(tag, "name") || "").toLowerCase();
+
+    if (keys.includes(prop) || keys.includes(name)) {
+
+      const content = getAttrCI(tag, "content");
+
+      if (content) return content.trim();
+
+    }
+
+  }
+
+  return "";
+
 }
 
-/** @param {cheerio.CheerioAPI} $ */
-function extractAuthor($) {
-  return (
-    $('meta[name="author"]').attr("content") ||
-    $('meta[property="og:profile:username"]').attr("content") ||
-    $('meta[name="twitter:creator"]').attr("content") ||
-    $('meta[name="twitter:site"]').attr("content") ||
-    ""
-  );
+function findLinkHref(html, relValue) {
+
+  const re = /<link\b[^>]*>/gi;
+
+  let m;
+
+  while ((m = re.exec(html))) {
+
+    const tag = m[0];
+
+    const rel = (getAttrCI(tag, "rel") || "").toLowerCase();
+
+    if (rel.split(/\s+/).includes(relValue.toLowerCase())) {
+
+      const href = getAttrCI(tag, "href");
+
+      if (href) return href.trim();
+
+    }
+
+  }
+
+  return "";
+
 }
 
-/** @param {cheerio.CheerioAPI} $ */
-function extractCryptoDescription($) {
-  return $('meta[name="description"]').attr("content") || "";
+
+
+/* ----- text fallbacks ----- */
+
+function stripTags(s=""){ return s.replace(/<[^>]*>/g,""); }
+
+function firstMeaningfulText(html="") {
+
+  let t = matchText(html, /<p[^>]*>(.*?)<\/p>/gi, 80);
+
+  if (t) return t;
+
+  t = matchText(html, /<h2[^>]*>(.*?)<\/h2>/gi, 40);
+
+  return t || "";
+
 }
 
-/** @param {cheerio.CheerioAPI} $ */
-function extractCryptoName($) {
-  const ogTitle = $('meta[property="og:title"]').attr("content");
-  if (ogTitle) return ogTitle.split("|")[0].trim();
-  const title = $("title").text().trim();
-  return title.split("|")[0].trim();
+function firstHeadingText(html="") {
+
+  const t = matchText(html, /<h1[^>]*>(.*?)<\/h1>/gi, 10);
+
+  return t || "";
+
 }
 
-/** @param {cheerio.CheerioAPI} $ */
-function extractSiteName($) {
-  return $('meta[property="og:site_name"]').attr("content") || "";
+function matchText(html, re, minLen){
+
+  let m;
+
+  while ((m = re.exec(html))) {
+
+    const t = stripTags(m[1]).replace(/\s+/g, " ").trim();
+
+    if (t.length >= (minLen || 1) && !looksLikeCookieBanner(t)) return t;
+
+  }
+
+  return "";
+
 }
 
-/** @param {cheerio.CheerioAPI} $ */
-function extractKeywords($) {
-  const s = $('meta[name="keywords"]').attr("content");
-  if (!s) return [];
-  return s.split(",").map(x => x.trim()).filter(Boolean).slice(0, 20);
+function looksLikeCookieBanner(t=""){ return /cookies|consent|privacy|subscribe|newsletter|sign up|advert/i.test(t); }
+
+
+
+/* ----- field extractors ----- */
+
+function extractTitle(html="") {
+
+  return (
+
+    findMetaContent(html, ["og:title","twitter:title"]) ||
+
+    (html.match(/<title[^>]*>(.*?)<\/title>/i)?.[1] || "").trim()
+
+  );
+
 }
 
-/**
- * Finds the first meaningful paragraph or heading text.
- * @param {cheerio.CheerioAPI} $
- * @returns {string}
- */
-function firstMeaningfulText($) {
-  const meaningfulText = $("p, h2")
-    .map((i, el) => $(el).text().trim())
-    .get()
-    .filter(t => t.length > 50 && !looksLikeCookieBanner(t));
-  return meaningfulText[0] || "";
+function extractDescription(html="") {
+
+  return (
+
+    findMetaContent(html, ["description","og:description","twitter:description"]) ||
+
+    firstMeaningfulText(html)
+
+  );
+
 }
 
-/** @param {cheerio.CheerioAPI} $ */
-function firstHeadingText($) {
-  const h1 = $("h1").first().text().trim();
-  return h1.length > 10 ? h1 : "";
+function extractAuthor(html="") {
+
+  return (
+
+    findMetaContent(html, [
+
+      "author",
+
+      "og:profile:username",
+
+      "twitter:creator",
+
+      "twitter:site"
+
+    ]) || ""
+
+  );
+
 }
 
-/**
- * Extracts the best possible hero image URL from the HTML.
- * @param {cheerio.CheerioAPI} $
- * @param {string} baseUrl
- * @returns {string}
- */
-function extractHeroImage($, baseUrl) {
-  // First, check for common meta tags.
-  const metaImg =
-    $('meta[property="og:image"]').attr("content") ||
-    $('meta[name="twitter:image"]').attr("content") ||
-    $('meta[name="twitter:image:src"]').attr("content") ||
-    $('link[rel="image_src"]').attr("href");
+function extractCryptoDescription(html="") {
 
-  if (metaImg) {
-    const u = absolutize(baseUrl, metaImg);
-    if (isValidImage(u) && !isTrackerDomain(u)) {
-      return u;
-    }
-  }
+  return findMetaContent(html, ["description"]) || "";
 
-  // As a fallback, find the largest non-pixel image on the page.
-  const images = $("img")
-    .map((i, el) => {
-      const img = $(el);
-      const src = img.attr("src") || img.attr("data-src");
-      const url = src ? absolutize(baseUrl, src) : null;
-      const w = parseInt(img.attr("width") || "0", 10);
-      const h = parseInt(img.attr("height") || "0", 10);
-      return { url, w, h };
-    })
-    .get()
-    .filter(im =>
-        im.url &&
-        !looksLikePixel(im) &&
-        !isTrackerDomain(im.url) &&
-        isValidImage(im.url)
-    )
-    .sort((a, b) => (b.w * b.h) - (a.w * a.h)); // Sort by area
-
-  return images.length > 0 ? images[0].url : "";
 }
 
-/* ------------------- URL & General Helpers ------------------- */
+function extractCryptoName(html="") {
 
-/** @param {string} t */
-function looksLikeCookieBanner(t = "") {
-  return /cookies|consent|privacy|subscribe|newsletter|sign up|advert|policy|terms/i.test(t);
+  const raw = findMetaContent(html, ["og:title"]) || "";
+
+  if (raw) return raw.split("|")[0].trim();
+
+  const match = html.match(/<title[^>]*>(.*?)<\/title>/i);
+
+  return match ? stripTags(match[1]).split("|")[0].trim() : "";
+
 }
 
-/**
- * Converts a relative URL to an absolute URL.
- * @param {string} base - The base URL.
- * @param {string} src - The URL to resolve.
- * @returns {string}
- */
-function absolutize(base, src) {
-  if (!src) return src;
-  try {
-    return new URL(src, base).href;
-  } catch {
-    return src;
-  }
+function extractSiteName(html="") {
+
+  return findMetaContent(html, ["og:site_name"]) || "";
+
 }
 
-/** @param {string} u */
+function extractKeywords(html="") {
+
+  const s = findMetaContent(html, ["keywords"]);
+
+  if (!s) return [];
+
+  return s.split(",").map(x => x.trim()).filter(Boolean).slice(0, 20);
+
+}
+
+function extractHeroImage(html="", baseUrl="") {
+
+  const metaImg = (
+
+    findMetaContent(html, ["og:image","twitter:image","twitter:image:src"]) ||
+
+    findLinkHref(html, "image_src")
+
+  );
+
+  if (metaImg) {
+
+    const u = absolutize(baseUrl, metaImg);
+
+    if (isValidImage(u) && !isTrackerDomain(u)) return u;
+
+  }
+
+  const imgs = [];
+
+  const reImg = /<img\b[^>]*>/gi;
+
+  let m;
+
+  while ((m = reImg.exec(html))) {
+
+    const tag = m[0];
+
+    const src = getAttrCI(tag, "src") || getAttrCI(tag, "data-src") || "";
+
+    if (!src) continue;
+
+    const w = parseInt(getAttrCI(tag, "width") || "0", 10);
+
+    const h = parseInt(getAttrCI(tag, "height") || "0", 10);
+
+    const url = absolutize(baseUrl, src.trim());
+
+    imgs.push({ url, w, h, tag });
+
+  }
+
+  for (const im of imgs) {
+
+    if (!isValidImage(im.url)) continue;
+
+    if (looksLikePixel(im)) continue;
+
+    if (isTrackerDomain(im.url)) continue;
+
+    return im.url;
+
+  }
+
+  return "";
+
+}
+
+
+
+/* ----- URL helpers ----- */
+
 function isValidImage(u = "") {
-  try {
-    const x = new URL(u);
-    if (!/^https?:$/i.test(x.protocol)) return false;
-    if (isTrackerDomain(u)) return false;
-    if (
-      /^data:image\//i.test(u) ||
-      /\.(png|jpe?g|webp|gif|avif)(\?|#|$)/i.test(u)
-    ) {
-      return true;
-    }
-    // Final check for a domain with an extension to filter out random paths.
-    return /\.[a-z]{2,}(\?|#|$)/i.test(x.hostname);
-  } catch {
-    return false;
-  }
+
+  try {
+
+    const x = new URL(u);
+
+    if (!/^https?:$/i.test(x.protocol)) return false;
+
+    if (!/\.[a-z]{2,}$/i.test(x.hostname)) return false;
+
+    if (/^data:image\//i.test(u)) return true;
+
+    if (/\.(png|jpe?g|webp|gif|avif)(\?|#|$)/i.test(u)) return true;
+
+    return true;
+
+  } catch {
+
+    return false;
+
+  }
+
 }
 
-/** @param {object} im */
 function looksLikePixel(im) {
-  const u = String(im.url || "").toLowerCase();
-  if (/1x1|pixel|spacer|transparent/.test(u)) return true;
-  if (im.w && im.h && (im.w <= 2 || im.h <= 2)) return true;
-  if (/[?&](width|height)=1\b/.test(u)) return true;
-  return false;
+
+  const u = String(im.url || "").toLowerCase();
+
+  if (/1x1|pixel|spacer|transparent/.test(u)) return true;
+
+  if (im.w && im.h && im.w <= 2 && im.h <= 2) return true;
+
+  if (/[?&](width|height)=1\b/.test(u)) return true;
+
+  return false;
+
 }
 
-/** @param {string} u */
 function isTrackerDomain(u = "") {
-  return /(fls-na\.amazon|amazon-adsystem|doubleclick\.net|googletagmanager|google-analytics|stats\.|segment\.io|mixpanel|adservice\.|adobedtm|criteo\.com|demdex\.net|scorecardresearch|adsrvr\.org)/i.test(u);
+
+  return /(fls-na\.amazon|amazon-adsystem|doubleclick\.net|googletagmanager|google-analytics|stats\.|segment\.io|mixpanel|adservice\.)/i.test(u);
+
+}
+
+function absolutize(base, src) {
+
+  if (!src) return src;
+
+  if (/^https?:\/\//i.test(src)) return src;
+
+  if (src.startsWith("//")) return "https:" + src;
+
+  try {
+
+    const b = new URL(base);
+
+    if (src.startsWith("/")) return b.origin + src;
+
+    return new URL(src, b.origin + b.pathname).toString();
+
+  } catch {
+
+    return src;
+
+  }
+
 }
