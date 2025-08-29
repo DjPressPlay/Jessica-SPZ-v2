@@ -17,7 +17,6 @@
     min-height:100vh; display:flex; align-items:center; justify-content:center; padding:16px;
   }
 
-  /* 🔥 New outer container */
   .summon-container {
     display:flex; align-items:center; justify-content:center;
     padding:20px; background:#000;
@@ -41,10 +40,22 @@
   .card-id{ background:#fff; color:#000; padding:2px 6px; border-radius:4px; font-size:.75rem; white-space:nowrap; }
   .card-name{ flex:1; min-width:0; text-align:center; }
   .card-icon{ font-size:1.1rem; }
+
+  /* 🔥 Card Art With Visual Effect */
   .card-art{ margin:10px; background:#222; aspect-ratio:4/3;
     border:3px solid var(--frame-color); border-radius:8px; overflow:hidden; position:relative;
+    perspective: 800px;   /* allow 3D rotation */
   }
-  .card-art img{ width:100%; height:100%; object-fit:cover; }
+  .card-art img{
+    width:100%; height:100%; object-fit:cover;
+    transform-style: preserve-3d;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius:8px;
+  }
+  .card-art:hover img{
+    box-shadow:0 0 25px rgba(230,57,70,.8);
+  }
+
   .stat-orb{ position:absolute; width:54px; height:54px; border-radius:50%;
     font-weight:800; font-size:1rem; display:flex; align-items:center; justify-content:center;
     border:3px solid #fff; box-shadow:0 2px 8px rgba(0,0,0,.4);
@@ -76,7 +87,6 @@
 </head>
 <body>
 
-<!-- 🔥 New Container -->
 <div class="summon-container">
   <div class="frameType">
     <div id="inner" class="frameType-inner">
@@ -85,7 +95,7 @@
         <div class="card-name"><span id="card-name"></span></div>
         <div class="card-icon" id="card-icon"></div>
       </div>
-      <div class="card-art">
+      <div class="card-art" id="card-art">
         <img id="card-image" alt="">
         <div class="stat-orb stat-blue"  id="level"></div>
         <div class="stat-orb stat-red"   id="atk"></div>
@@ -118,7 +128,7 @@ function getCardFromLink(){
 }
 const card = getCardFromLink() || {};
 
-/* ===== Render directly from enrich JSON ===== */
+/* ===== Render JSON ===== */
 const $ = id => document.getElementById(id);
 $("card-id").textContent   = card.id || "";
 $("card-name").textContent = card.name || "";
@@ -147,6 +157,23 @@ $("sets-line").textContent = (card.card_sets||[]).join(" ");
 $("tags-line").textContent = (card.tags||[]).join(" ");
 $("footer").textContent    = card.footer || "";
 $("rarity").textContent    = card.rarity || "";
+
+/* ===== Parallax Visuals on Hover ===== */
+const cardArt = document.getElementById("card-art");
+const cardImg = document.getElementById("card-image");
+
+cardArt.addEventListener("mousemove", (e) => {
+  const rect = cardArt.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  const rotateY = ((x / rect.width) - 0.5) * 20;
+  const rotateX = ((y / rect.height) - 0.5) * -20;
+  cardImg.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
+});
+
+cardArt.addEventListener("mouseleave", () => {
+  cardImg.style.transform = "rotateX(0deg) rotateY(0deg) scale(1)";
+});
 </script>
 </body>
 </html>
