@@ -17,15 +17,13 @@
     min-height:100vh; display:flex; align-items:center; justify-content:center; padding:16px;
   }
 
-  /* 🔥 The whole card container */
   .summon-container {
     display:flex; align-items:center; justify-content:center;
     padding:20px; background:#000;
     border-radius:16px; box-shadow:0 0 20px rgba(0,0,0,0.7);
-    perspective: 1200px;   /* allow 3D */
+    perspective: 1200px;
   }
 
-  /* 🔥 Tilt target = whole card */
   .frameType {
     position:relative; overflow:hidden;
     border:12px solid var(--frame-outer); border-radius:14px;
@@ -44,25 +42,29 @@
     display:flex; justify-content:space-between; align-items:center;
     background:#000; padding:6px 10px; font-size:.9rem; font-weight:800;
     border-bottom:2px solid var(--frame-color); border-top-left-radius:8px; border-top-right-radius:8px;
-    overflow:hidden; /* keep name inside */
+    overflow:hidden;
   }
   .card-id{ background:#fff; color:#000; padding:2px 6px; border-radius:4px; font-size:.75rem; white-space:nowrap; }
-  
-  /* 🔥 name scroll styling */
+
+  /* 🔥 vertical scroll name fix */
   .card-name {
-    flex:1; min-width:0; text-align:center; overflow:hidden; position:relative;
+    flex:1; min-width:0; text-align:center;
+    overflow:hidden; position:relative;
+    height: 1.5em; /* lock height */
   }
   .card-name span {
     display:inline-block;
     white-space:nowrap;
     padding:0 10px;
   }
-  .card-name span.scroll {
-    animation: scrollName 6s linear infinite;
+  .card-name span.scroll-vertical {
+    display:block;
+    animation: scrollNameVertical 12s linear infinite;
   }
-  @keyframes scrollName {
-    0%   { transform: translateX(100%); }
-    100% { transform: translateX(-100%); }
+  @keyframes scrollNameVertical {
+    0%, 10%   { transform: translateY(0%); }      /* stay visible */
+    90%       { transform: translateY(-100%); }   /* scroll upward */
+    100%      { transform: translateY(0%); }      /* reset instantly */
   }
 
   .card-icon{ font-size:1.1rem; }
@@ -95,7 +97,7 @@
     background:#0f0f0f;
     border-radius:8px;
     padding:8px 10px;
-    max-height: 100px;   /* scroll per box */
+    max-height: 100px;
     overflow-y: auto;
   }
   .effect-bar{ display:flex; justify-content:space-between; font-size:.9rem; margin-bottom:4px; }
@@ -155,7 +157,6 @@ function getCardFromLink(){
 }
 const card = getCardFromLink() || {};
 
-/* ===== Render JSON ===== */
 const $ = id => document.getElementById(id);
 $("card-id").textContent   = card.id || "";
 $("card-name").textContent = card.name || "";
@@ -185,7 +186,7 @@ $("tags-line").textContent = (card.tags||[]).join(" ");
 $("footer").textContent    = card.footer || "";
 $("rarity").textContent    = card.rarity || "";
 
-/* ===== Parallax Tilt for Whole Card ===== */
+/* Tilt effect for whole card */
 const summonCard = document.getElementById("summon-card");
 summonCard.addEventListener("mousemove", (e) => {
   const rect = summonCard.getBoundingClientRect();
@@ -201,15 +202,15 @@ summonCard.addEventListener("mouseleave", () => {
   summonCard.style.boxShadow = "0 0 20px rgba(0,0,0,0.7)";
 });
 
-/* ===== Enable scroll marquee if name too long ===== */
+/* ===== Enable vertical scroll for long name ===== */
 const nameSpan = document.getElementById("card-name");
-function enableScrollIfNeeded(el) {
+function enableVerticalScrollIfNeeded(el) {
   const parent = el.parentElement;
   if (el.scrollWidth > parent.clientWidth) {
-    el.classList.add("scroll");
+    el.classList.add("scroll-vertical");
   }
 }
-enableScrollIfNeeded(nameSpan);
+enableVerticalScrollIfNeeded(nameSpan);
 </script>
 </body>
 </html>
