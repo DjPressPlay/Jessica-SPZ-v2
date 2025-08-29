@@ -71,10 +71,6 @@
   display:flex;
   flex-direction:column;
   gap:8px;
-
-  /* 🔥 one scrollbar for whole section */
-  max-height: 120px;
-  overflow-y: auto;
 }
 
 .effect-entry {
@@ -82,7 +78,10 @@
   background:#0f0f0f;
   border-radius:8px;
   padding:8px 10px;
-  flex-shrink: 0; /* entries don’t compress */
+
+  /* 🔥 scroll per box */
+  max-height: 100px;       /* or whatever fits your card */
+  overflow-y: auto;
 }
 
 
