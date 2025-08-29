@@ -136,6 +136,8 @@ function normalizeCategory(cat = "", keywords = []) {
     if (k.includes("crypto") || k.includes("bitcoin") || k.includes("eth") || k.includes("defi")) return "Crypto";
     if (k.includes("meme")) return "Meme";
 if (k.includes("people") || k.includes("human") || k.includes("social media")) return "People";
+    if (k.includes("zetsumetsu") || k.includes("zetsu") || k.includes("zetsu metsu") || k.includes("artworqq") || k.includes("nios") || k.includes("zetsumetsu corporation")) return "Zetsumetsu";
+
   }
 
   // 2. If no keyword match → force pick from existing group
@@ -165,18 +167,18 @@ function categoryMap(category) {
     case "Politics":          return { icon:"🏛️🗳️", rarity:"SR", frameType:"politics",      color:"maroon",     max_tribute:9 };
     case "National News":     return { icon:"📰🧭", rarity:"R",   frameType:"national_news",      color:"dark-blue",         max_tribute:8 };
     case "International News":return { icon:"🌍📰", rarity:"UR",  frameType:"international_news", color:"blue",              max_tribute:8 };
-    case "Local News":        return { icon:"🏘️🗞️", rarity:"R",   frameType:"local_news",         color:"sky-blue",          max_tribute:7 };
-    case "Economy":           return { icon:"💹📈", rarity:"SR",  frameType:"economy",            color:"teal",              max_tribute:8 };
+    case "Local News":        return { icon:"🏘️🗞️", rarity:"R",   frameType:"local_news",         color:"sky-blue",          max_tribute:4 };
+    case "Economy":           return { icon:"💹📈", rarity:"SR",  frameType:"economy",            color:"teal",              max_tribute:3 };
     case "Business":          return { icon:"💼📊", rarity:"SR",  frameType:"business",           color:"gold",              max_tribute:7 };
     case "Sales":             return { icon:"🛒🏷️", rarity:"R",   frameType:"sales",              color:"cyan",              max_tribute:7 };
     case "Merch":             return { icon:"👕🛍️", rarity:"R",   frameType:"merch",              color:"magenta",           max_tribute:7 };
     case "Technology":        return { icon:"🔧🚀", rarity:"SR",  frameType:"technology",         color:"silver",            max_tribute:8 };
     case "Science":           return { icon:"🔬🧪", rarity:"UR",  frameType:"science",            color:"blue",              max_tribute:8 };
-    case "Health":            return { icon:"🩺🧬", rarity:"SR",  frameType:"health",             color:"red-orange",        max_tribute:7 };
-    case "Education":         return { icon:"🎓📚", rarity:"R",   frameType:"education",          color:"sky-blue-light",    max_tribute:7 };
-    case "Environment":       return { icon:"🌱🌎", rarity:"SR",  frameType:"environment",        color:"forest-green",      max_tribute:7 };
-    case "Sports":            return { icon:"🏅🏟️", rarity:"R",   frameType:"sports",             color:"green",             max_tribute:8 };
-    case "Entertainment":     return { icon:"🎭🎬", rarity:"SR",  frameType:"entertainment",      color:"orange",            max_tribute:6 };
+    case "Health":            return { icon:"🩺🧬", rarity:"SR",  frameType:"health",             color:"red-orange",        max_tribute:4 };
+    case "Education":         return { icon:"🎓📚", rarity:"R",   frameType:"education",          color:"sky-blue-light",    max_tribute:3 };
+    case "Environment":       return { icon:"🌱🌎", rarity:"SR",  frameType:"environment",        color:"forest-green",      max_tribute:2 };
+    case "Sports":            return { icon:"🏅🏟️", rarity:"R",   frameType:"sports",             color:"green",             max_tribute:5 };
+    case "Entertainment":     return { icon:"🎭🎬", rarity:"SR",  frameType:"entertainment",      color:"orange",            max_tribute:3 };
     case "Lifestyle":         return { icon:"🌸🧘", rarity:"R",   frameType:"lifestyle",          color:"light-green",       max_tribute:6 };
     case "Travel":            return { icon:"✈️🧭", rarity:"R",   frameType:"travel",             color:"teal",              max_tribute:7 };
     case "Opinion":           return { icon:"💬🗣️", rarity:"C",   frameType:"opinion",            color:"violet",            max_tribute:5 };
@@ -195,9 +197,9 @@ function categoryMap(category) {
     case "Government":        return { icon:"⚖️🏛️", rarity:"UR",  frameType:"government",         color:"gray",              max_tribute:10 };
     case "Zetsumetsu":        return { icon:"🪬🌀", rarity:"ZEOE", frameType:"zetsu",  color:"black-red-holo",    max_tribute:10 };
     case "Social":            return { icon:"📱💬", rarity:"R",   frameType:"social",             color:"rose",              max_tribute:5 };
-    case "Crypto":            return { icon:"🪙🔗", rarity:"SR",  frameType:"crypto",             color:"purple",            max_tribute:8 };
-    case "Meme":              return { icon:"😂🔥", rarity:"R",   frameType:"meme",               color:"neon-multicolor",   max_tribute:5 };
-    case "People":            return { icon:"🙇‍♂️", rarity:"C",   frameType:"people",             color:"light-gray",        max_tribute:5 }; 
+    case "Crypto":            return { icon:"🪙🔗", rarity:"SR",  frameType:"crypto",             color:"purple",            max_tribute:9 };
+    case "Meme":              return { icon:"😂🔥", rarity:"R",   frameType:"meme",               color:"neon-multicolor",   max_tribute:2 };
+    case "People":            return { icon:"🙇‍♂️", rarity:"C",   frameType:"people",             color:"light-gray",        max_tribute:2 }; 
    
   }
 }
