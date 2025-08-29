@@ -90,6 +90,16 @@ function generateTagsFromContent(title = "", description = "") {
 
   return Array.from(chosen).slice(0, 10); // cap at 10 tags
 }
+.frameType.zetsu {
+  border: 6px solid;
+  border-image: linear-gradient(45deg, #000, #e60000, #660000) 1;
+  box-shadow: 0 0 20px rgba(230,0,0,0.9);
+}
+.rarity.ZEOE {
+  color: #ff0033;
+  font-weight: 900;
+  text-shadow: 0 0 8px #ff0000;
+}
 
 /* ---------------- category + emoji mapping ---------------- */
 function normalizeCategory(cat = "", keywords = [], title = "", desc1 = "", desc2 = "", brand = "") {
