@@ -1,7 +1,6 @@
 // netlify/functions/crawl.js
-// Safer scraping -> order-agnostic meta parsing + solid fallbacks.
-// Accepts: { links: [...], session? }  (also tolerates { url: "..." } )
-// Returns: { session, results:[{ url,title,description,image,siteName,profile,keywords,rawHTMLLength,enrich }] }
+// Accepts: { links: [...], session? }  (also tolerates { url:"..." })
+// Returns: { session, results:[{ url,cardName,about,image,video,siteName,keywords,rawHTMLLength }] }
 
 exports.handler = async (event) => {
   try {
@@ -35,33 +34,23 @@ exports.handler = async (event) => {
         if (!r.ok) throw new Error(`Fetch ${r.status}`);
         const html = await r.text();
 
-        // --- robust extraction ---
-        const title = extractTitle(html) || firstHeadingText(html) || hostFromUrl(safeUrl);
-        const description = extractDescription(html) || firstMeaningfulText(html);
+        // --- extraction ---
+        const about = extractDescription(html) || firstMeaningfulText(html);
         const image = extractHeroImage(html, safeUrl) || "";
+        const video = extractVideo(html) || "";
         const siteName = extractSiteName(html) || hostFromUrl(safeUrl);
         const keywords = extractKeywords(html);
-        const profile = extractAuthor(html) || ""; // 🧩 NEW: profile/author name
-
-        // 🧩 crypto aware
-        const cryptoDesc = extractCryptoDescription(html);
-        const cryptoName = extractCryptoName(html);
+        const cardName = extractAuthor(html) || extractFromOgTitle(html) || siteName;
 
         results.push({
           url: safeUrl,
-          title,
-          description,
+          cardName,
+          about,
           image,
+          video,
           siteName,
-          profile,
           keywords,
-          rawHTMLLength: html.length,
-          enrich: cryptoDesc || cryptoName ? {
-            name: cryptoName || "", // card.name
-            effects: cryptoDesc
-              ? [{ icons: "💹📊", emoji: "💰", text: cryptoDesc }]
-              : []
-          } : {}
+          rawHTMLLength: html.length
         });
       } catch (err) {
         results.push({ url: safeUrl, error: String(err && err.message || err) });
@@ -83,7 +72,7 @@ function resJSON(statusCode, obj) {
 function safeJSON(s) { try { return JSON.parse(s || "{}"); } catch { return null; } }
 function hostFromUrl(u=""){ try{ return new URL(u).hostname.replace(/^www\./i,""); }catch{ return ""; } }
 
-/* ----- attribute-order agnostic meta parsing ----- */
+/* ----- meta parsing ----- */
 function getAttrCI(tag, name) {
   const re = new RegExp(`\\b${name}\\s*=\\s*["']([^"']+)["']`, "i");
   const m = tag.match(re);
@@ -125,10 +114,6 @@ function firstMeaningfulText(html="") {
   t = matchText(html, /<h2[^>]*>(.*?)<\/h2>/gi, 40);
   return t || "";
 }
-function firstHeadingText(html="") {
-  const t = matchText(html, /<h1[^>]*>(.*?)<\/h1>/gi, 10);
-  return t || "";
-}
 function matchText(html, re, minLen){
   let m;
   while ((m = re.exec(html))) {
@@ -140,12 +125,6 @@ function matchText(html, re, minLen){
 function looksLikeCookieBanner(t=""){ return /cookies|consent|privacy|subscribe|newsletter|sign up|advert/i.test(t); }
 
 /* ----- field extractors ----- */
-function extractTitle(html="") {
-  return (
-    findMetaContent(html, ["og:title","twitter:title"]) ||
-    ""
-  );
-}
 function extractDescription(html="") {
   return (
     findMetaContent(html, ["description","og:description","twitter:description"]) ||
@@ -153,25 +132,25 @@ function extractDescription(html="") {
   );
 }
 function extractAuthor(html="") {
-  // 🧩 NEW: Profile/author detection across share sites
   return (
     findMetaContent(html, [
-      "author",                // generic
-      "og:profile:username",   // Facebook/TikTok/IG
-      "twitter:creator",       // Twitter/X
-      "twitter:site"           // backup
-    ]) ||
-    ""
+      "author", "og:profile:username", "twitter:creator", "twitter:site"
+    ]) || ""
   );
 }
-function extractCryptoDescription(html="") {
-  return findMetaContent(html, ["description"]) || "";
+function extractFromOgTitle(html="") {
+  const t = findMetaContent(html, ["og:title"]) || "";
+  if (/^@/.test(t)) return t.split(" ")[0]; // handles IG/TikTok style
+  if (t.includes("on Instagram:")) return t.split(" on Instagram:")[0];
+  if (t.includes("on TikTok:")) return t.split(" on TikTok:")[0];
+  if (t.includes("shared a post")) return t.replace("shared a post","").trim();
+  return "";
 }
-function extractCryptoName(html="") {
-  const raw = findMetaContent(html, ["og:title"]) || "";
-  if (raw) return raw.split("|")[0].trim();
-  const match = html.match(/<title[^>]*>(.*?)<\/title>/i);
-  return match ? stripTags(match[1]).split("|")[0].trim() : "";
+function extractVideo(html="") {
+  return (
+    findMetaContent(html, ["og:video","og:video:url","twitter:player"]) ||
+    ""
+  );
 }
 function extractSiteName(html="") {
   return findMetaContent(html, ["og:site_name"]) || "";
@@ -190,24 +169,6 @@ function extractHeroImage(html="", baseUrl="") {
     const u = absolutize(baseUrl, metaImg);
     if (isValidImage(u) && !isTrackerDomain(u)) return u;
   }
-  const imgs = [];
-  const reImg = /<img\b[^>]*>/gi;
-  let m;
-  while ((m = reImg.exec(html))) {
-    const tag = m[0];
-    const src = getAttrCI(tag, "src") || getAttrCI(tag, "data-src") || "";
-    if (!src) continue;
-    const w = parseInt(getAttrCI(tag, "width") || "0", 10);
-    const h = parseInt(getAttrCI(tag, "height") || "0", 10);
-    const url = absolutize(baseUrl, src.trim());
-    imgs.push({ url, w, h, tag });
-  }
-  for (const im of imgs) {
-    if (!isValidImage(im.url)) continue;
-    if (looksLikePixel(im)) continue;
-    if (isTrackerDomain(im.url)) continue;
-    return im.url;
-  }
   return "";
 }
 
@@ -224,15 +185,9 @@ function isValidImage(u = "") {
     return false;
   }
 }
-function looksLikePixel(im) {
-  const u = String(im.url || "").toLowerCase();
-  if (/1x1|pixel|spacer|transparent/.test(u)) return true;
-  if (im.w && im.h && im.w <= 2 && im.h <= 2) return true;
-  if (/[?&](width|height)=1\b/.test(u)) return true;
-  return false;
-}
+function looksLikeCookieBanner(t=""){ return /cookies|consent|privacy/i.test(t); }
 function isTrackerDomain(u = "") {
-  return /(fls-na\.amazon|amazon-adsystem|doubleclick\.net|googletagmanager|google-analytics|stats\.|segment\.io|mixpanel|adservice\.)/i.test(u);
+  return /(doubleclick\.net|googletagmanager|google-analytics|stats\.|segment\.io|mixpanel|adservice\.)/i.test(u);
 }
 function absolutize(base, src) {
   if (!src) return src;
