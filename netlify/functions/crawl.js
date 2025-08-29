@@ -24,6 +24,14 @@ exports.handler = async (event) => {
       if (!/^https?:\/\//i.test(safeUrl)) safeUrl = "https://" + safeUrl;
 
       try {
+        // --- try oEmbed first ---
+        const oembedData = await tryOEmbed(safeUrl);
+        if (oembedData) {
+          results.push(oembedData);
+          continue;
+        }
+
+        // --- fetch HTML ---
         const r = await fetch(safeUrl, {
           redirect: "follow",
           headers: {
@@ -37,13 +45,15 @@ exports.handler = async (event) => {
 
         // --- robust extraction ---
         const title = extractTitle(html) || firstHeadingText(html) || hostFromUrl(safeUrl);
-        const description = extractDescription(html) || firstMeaningfulText(html);
-        const image = extractHeroImage(html, safeUrl) || "";
+        const description = extractDescription(html) || "No description available";
+        const image =
+          extractHeroImage(html, safeUrl) ||
+          "https://placehold.co/400x200/EEE/31343C?text=No+Preview";
         const siteName = extractSiteName(html) || hostFromUrl(safeUrl);
         const keywords = extractKeywords(html);
-        const profile = extractAuthor(html) || ""; // 🧩 NEW: profile/author name
+        const profile = extractAuthor(html) || "";
 
-        // 🧩 crypto aware
+        // crypto enrichment
         const cryptoDesc = extractCryptoDescription(html);
         const cryptoName = extractCryptoName(html);
 
@@ -57,7 +67,7 @@ exports.handler = async (event) => {
           keywords,
           rawHTMLLength: html.length,
           enrich: cryptoDesc || cryptoName ? {
-            name: cryptoName || "", // card.name
+            name: cryptoName || "",
             effects: cryptoDesc
               ? [{ icons: "💹📊", emoji: "💰", text: cryptoDesc }]
               : []
@@ -82,6 +92,39 @@ function resJSON(statusCode, obj) {
 }
 function safeJSON(s) { try { return JSON.parse(s || "{}"); } catch { return null; } }
 function hostFromUrl(u=""){ try{ return new URL(u).hostname.replace(/^www\./i,""); }catch{ return ""; } }
+
+/* ----- oEmbed support for socials ----- */
+async function tryOEmbed(url) {
+  const endpoints = [
+    { match:/twitter\.com|x\.com/i, api:"https://publish.twitter.com/oembed?url=" },
+    { match:/reddit\.com/i, api:"https://www.reddit.com/oembed?url=" },
+    { match:/youtube\.com|youtu\.be/i, api:"https://www.youtube.com/oembed?url=" },
+    { match:/tiktok\.com/i, api:"https://www.tiktok.com/oembed?url=" }
+  ];
+  for (const ep of endpoints) {
+    if (ep.match.test(url)) {
+      try {
+        const r = await fetch(ep.api + encodeURIComponent(url));
+        if (!r.ok) throw new Error("oEmbed fail");
+        const data = await r.json();
+        return {
+          url,
+          title: data.title || hostFromUrl(url),
+          description: data.author_name ? `By ${data.author_name}` : "No description available",
+          image: data.thumbnail_url || "https://placehold.co/400x200/EEE/31343C?text=No+Preview",
+          siteName: data.provider_name || hostFromUrl(url),
+          profile: data.author_name || "",
+          keywords: [],
+          rawHTMLLength: 0,
+          enrich: {}
+        };
+      } catch {
+        return null;
+      }
+    }
+  }
+  return null;
+}
 
 /* ----- attribute-order agnostic meta parsing ----- */
 function getAttrCI(tag, name) {
@@ -143,25 +186,23 @@ function looksLikeCookieBanner(t=""){ return /cookies|consent|privacy|subscribe|
 function extractTitle(html="") {
   return (
     findMetaContent(html, ["og:title","twitter:title"]) ||
-    ""
+    (html.match(/<title[^>]*>(.*?)<\/title>/i)?.[1] || "").trim()
   );
 }
 function extractDescription(html="") {
   return (
     findMetaContent(html, ["description","og:description","twitter:description"]) ||
-    ""
+    firstMeaningfulText(html)
   );
 }
 function extractAuthor(html="") {
-  // 🧩 NEW: Profile/author detection across share sites
   return (
     findMetaContent(html, [
-      "author",                // generic
-      "og:profile:username",   // Facebook/TikTok/IG
-      "twitter:creator",       // Twitter/X
-      "twitter:site"           // backup
-    ]) ||
-    ""
+      "author",
+      "og:profile:username",
+      "twitter:creator",
+      "twitter:site"
+    ]) || ""
   );
 }
 function extractCryptoDescription(html="") {
