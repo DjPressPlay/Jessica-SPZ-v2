@@ -1,7 +1,9 @@
 // netlify/functions/crawl.js
 // Safer scraping -> order-agnostic meta parsing + solid fallbacks.
-// Accepts: { links: [...], session? }  (also tolerates { url: "..." } )
+// Accepts: { links: [...], session? }  (also tolerates { url:"..." } )
 // Returns: { session, results:[{ url,title,description,image,siteName,profile,keywords,rawHTMLLength,enrich }] }
+
+const PLACEHOLDER_IMG = "https://miro.medium.com/v2/resize:fit:786/format:webp/1*l0k-78eTSOaUPijHdWIhkQ.png";
 
 exports.handler = async (event) => {
   try {
@@ -46,9 +48,7 @@ exports.handler = async (event) => {
         // --- robust extraction ---
         const title = extractTitle(html) || firstHeadingText(html) || hostFromUrl(safeUrl);
         const description = extractDescription(html) || "No description available";
-        const image =
-          extractHeroImage(html, safeUrl) ||
-          "https://placehold.co/400x200/EEE/31343C?text=No+Preview";
+        const image = extractHeroImage(html, safeUrl) || PLACEHOLDER_IMG;
         const siteName = extractSiteName(html) || hostFromUrl(safeUrl);
         const keywords = extractKeywords(html);
         const profile = extractAuthor(html) || "";
@@ -111,7 +111,7 @@ async function tryOEmbed(url) {
           url,
           title: data.title || hostFromUrl(url),
           description: data.author_name ? `By ${data.author_name}` : "No description available",
-          image: data.thumbnail_url || "https://placehold.co/400x200/EEE/31343C?text=No+Preview",
+          image: data.thumbnail_url || PLACEHOLDER_IMG,
           siteName: data.provider_name || hostFromUrl(url),
           profile: data.author_name || "",
           keywords: [],
