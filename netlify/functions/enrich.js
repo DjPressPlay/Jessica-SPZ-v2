@@ -90,16 +90,6 @@ function generateTagsFromContent(title = "", description = "") {
 
   return Array.from(chosen).slice(0, 10); // cap at 10 tags
 }
-.frameType.zetsu {
-  border: 6px solid;
-  border-image: linear-gradient(45deg, #000, #e60000, #660000) 1;
-  box-shadow: 0 0 20px rgba(230,0,0,0.9);
-}
-.rarity.ZEOE {
-  color: #ff0033;
-  font-weight: 900;
-  text-shadow: 0 0 8px #ff0000;
-}
 
 /* ---------------- category + emoji mapping ---------------- */
 function normalizeCategory(cat = "", keywords = [], title = "", desc1 = "", desc2 = "", brand = "") {
@@ -248,17 +238,24 @@ function toCard(it = {}) {
   const desc2 = (it.desc2 || "").trim();
   const image = (it.image || it.img || "").trim();
   const brand = (it.brand || it.siteName || hostFromUrl(url)).trim();
-// 🔑 tags: merge crawl + generated
-const tags = [
-  ...(Array.isArray(it.keywords) ? it.keywords : []),
-  ...generateTagsFromContent(title, desc1)
-].map(t => String(t).trim());
-  
+
+  // 🔑 tags: merge crawl + generated
+  const tags = [
+    ...(Array.isArray(it.keywords) ? it.keywords : []),
+    ...generateTagsFromContent(title, desc1)
+  ].map(t => String(t).trim());
 
   const rank = String((desc1 + desc2).length).padStart(6,"0");
 
-  // 🔑 Category → mapped fields
-  const category = normalizeCategory(it.category || brand, it.keywords || []);
+  // 🔑 Category → mapped fields (now passes full context)
+  const category = normalizeCategory(
+    it.category || brand,
+    it.keywords || [],
+    title,
+    desc1,
+    desc2,
+    brand
+  );
   const { icon, rarity, frameType, max_tribute } = categoryMap(category);
 
   // 🔑 Use max_tribute as tributes + level
