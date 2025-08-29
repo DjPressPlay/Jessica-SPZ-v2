@@ -97,7 +97,7 @@ function normalizeCategory(cat = "", keywords = []) {
   const s = String(cat || "").toLowerCase().trim();
 
   // 1. Check keywords against the known group
-  for (const kw of keywords) {
+  for (const kw of keywords.concat(s)) {
     const k = String(kw || "").toLowerCase().trim();
 
     if (k.includes("breaking")) return "Breaking News";
@@ -132,20 +132,29 @@ function normalizeCategory(cat = "", keywords = []) {
     if (k.includes("hard news")) return "Hard News";
     if (k.includes("investigat")) return "Investigative";
     if (k.includes("gov")) return "Government";
-    if (k.includes("zetsu")) return "Zetsumetsu";
-    if (k.includes("social")) return "Social";
     if (k.includes("crypto") || k.includes("bitcoin") || k.includes("eth") || k.includes("defi")) return "Crypto";
     if (k.includes("meme")) return "Meme";
     if (k.includes("people") || k.includes("human") || k.includes("social media")) return "People";
-    if (k.includes("zetsumetsu") || k.includes("zetsu") || k.includes("zetsu metsu") || k.includes("artworqq") || k.includes("nios") || k.includes("zetsumetsu corporation"))
+
+    // 🔑 Zetsumetsu-related always force Zetsumetsu frame
+    if (
+      k.includes("zetsumetsu") ||
+      k.includes("zetsu") ||
+      k.includes("zetsu metsu") ||
+      k.includes("artworqq") ||
+      k.includes("nios") ||
+      k.includes("zetsumetsu corporation")
+    ) {
       return "Zetsumetsu";
+    }
   }
 
-  // 2. If no keyword match → force pick from existing group
+  // 2. If no keyword match → fallback
   const allCategories = Object.keys(emojiMap);
   const idx = Math.floor(Math.random() * allCategories.length);
   return allCategories[idx];
 }
+
 
 const emojiMap = {
  "Breaking News": "🚨", "Politics": "🏛️", "National News": "📰",
