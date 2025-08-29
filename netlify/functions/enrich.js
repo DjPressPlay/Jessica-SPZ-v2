@@ -209,7 +209,7 @@ function categoryMap(category) {
     case "Hard News":         return { icon:"🗞️📢", rarity:"R",   frameType:"hard_news",          color:"dark-red",          max_tribute:8 };
     case "Investigative":     return { icon:"🔎🗃️", rarity:"UR",  frameType:"investigative",      color:"dark-blue",         max_tribute:9 };
     case "Government":        return { icon:"⚖️🏛️", rarity:"UR",  frameType:"government",         color:"gray",              max_tribute:10 };
-    case "Zetsumetsu":        return { icon:"🪬🌀", rarity:"ZEOE", frameType:"zetsu",  color:"black-red-holo",    max_tribute:10 };
+    case "Zetsumetsu":        return { icon:"🪬🌀", rarity:"ZEOE", frameType:"zetsu",  color:"iridescent",    max_tribute:10 };
     case "Social":            return { icon:"📱💬", rarity:"R",   frameType:"social",             color:"rose",              max_tribute:5 };
     case "Crypto":            return { icon:"🪙🔗", rarity:"SR",  frameType:"crypto",             color:"purple",            max_tribute:9 };
     case "Meme":              return { icon:"😂🔥", rarity:"R",   frameType:"meme",               color:"neon-multicolor",   max_tribute:2 };
