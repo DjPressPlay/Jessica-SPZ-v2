@@ -256,7 +256,7 @@ function toCard(it = {}) {
     desc2,
     brand
   );
-  const { icon, rarity, frameType, max_tribute } = categoryMap(category);
+const { icon, rarity, frameType, max_tribute, color } = categoryMap(category);
 
   // 🔑 Use max_tribute as tributes + level
   const tributes = max_tribute;
