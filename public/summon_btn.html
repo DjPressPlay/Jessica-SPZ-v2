@@ -46,31 +46,7 @@
     border-bottom:2px solid var(--frame-color); border-top-left-radius:8px; border-top-right-radius:8px;
   }
   .card-id{ background:#fff; color:#000; padding:2px 6px; border-radius:4px; font-size:.75rem; white-space:nowrap; }
-.card-name {
-  flex:1;
-  min-width:0;
-  text-align:center;
-  overflow:hidden;          /* hide overflow text */
-  position:relative;
-}
-
-.card-name span {
-  display:inline-block;
-  white-space:nowrap;
-  padding:0 10px;
-  animation: scrollName 6s linear infinite;
-}
-
-/* pause animation by default (only run if too long) */
-.card-name span.no-scroll {
-  animation:none;
-}
-
-/* marquee keyframes */
-@keyframes scrollName {
-  0%   { transform: translateX(100%); }
-  100% { transform: translateX(-100%); }
-}
+  .card-name{ flex:1; min-width:0; text-align:center; }
   .card-icon{ font-size:1.1rem; }
   .card-art{ margin:10px; background:#222; aspect-ratio:4/3;
     border:3px solid var(--frame-color); border-radius:8px; overflow:hidden; position:relative;
@@ -87,7 +63,7 @@
     border-top:2px solid var(--frame-color); border-bottom:2px solid var(--frame-color);
     display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:8px;
   }
-.effect-box {
+  .effect-box {
   background:#000;
   border-top:2px solid var(--frame-color);
   border-bottom:2px solid var(--frame-color);
@@ -107,7 +83,6 @@
   max-height: 100px;       /* or whatever fits your card */
   overflow-y: auto;
 }
-
 
   }
   .effect-entry{ border:1px solid #2a2a2a; background:#0f0f0f; border-radius:8px; padding:8px 10px; }
@@ -159,21 +134,7 @@
   </div>
 </div>
 
-  
 <script>
-  const nameEl = document.getElementById("card-name").querySelector("span");
-
-function enableScrollIfNeeded(el) {
-  const parent = el.parentElement;
-  if (el.scrollWidth > parent.clientWidth) {
-    el.classList.remove("no-scroll"); // run marquee
-  } else {
-    el.classList.add("no-scroll"); // stay still
-  }
-}
-
-enableScrollIfNeeded(nameEl);
-
 function safeParse(s){ try{ return JSON.parse(s) } catch { return null } }
 function getCardFromLink(){
   const p = new URLSearchParams(location.search);
