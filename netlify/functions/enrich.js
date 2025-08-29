@@ -93,22 +93,13 @@ function generateTagsFromContent(title = "", description = "") {
 
 
 /* ---------------- category + emoji mapping ---------------- */
-const category = normalizeCategory(
-  it.category || brand,
-  []
-    .concat(it.keywords || [])
-    .concat(it.title || "")
-    .concat(it.description || "")
-    .concat(it.desc1 || "")
-    .concat(it.desc2 || "")
-    .concat(brand || "")
-);
-
-
+function normalizeCategory(cat = "", keywords = []) {
+  const s = String(cat || "").toLowerCase().trim();
 
   // 1. Check keywords against the known group
   for (const kw of keywords) {
     const k = String(kw || "").toLowerCase().trim();
+
     if (k.includes("breaking")) return "Breaking News";
     if (k.includes("politic")) return "Politics";
     if (k.includes("national")) return "National News";
@@ -145,17 +136,16 @@ const category = normalizeCategory(
     if (k.includes("social")) return "Social";
     if (k.includes("crypto") || k.includes("bitcoin") || k.includes("eth") || k.includes("defi")) return "Crypto";
     if (k.includes("meme")) return "Meme";
-if (k.includes("people") || k.includes("human") || k.includes("social media")) return "People";
-    if (k.includes("zetsumetsu") || k.includes("zetsu") || k.includes("zetsu metsu") || k.includes("artworqq") || k.includes("nios") || k.includes("zetsumetsu corporation")) return "Zetsumetsu";
-
+    if (k.includes("people") || k.includes("human") || k.includes("social media")) return "People";
+    if (k.includes("zetsumetsu") || k.includes("zetsu") || k.includes("zetsu metsu") || k.includes("artworqq") || k.includes("nios") || k.includes("zetsumetsu corporation"))
+      return "Zetsumetsu";
   }
 
   // 2. If no keyword match → force pick from existing group
-  const allCategories = Object.keys(emojiMap); // the group you defined
+  const allCategories = Object.keys(emojiMap);
   const idx = Math.floor(Math.random() * allCategories.length);
-  return allCategories[idx]; // always returns a valid one from your set
+  return allCategories[idx];
 }
-
 
 const emojiMap = {
  "Breaking News": "🚨", "Politics": "🏛️", "National News": "📰",
