@@ -64,14 +64,16 @@ exports.handler = async (event) => {
         if (!r.ok) throw new Error(`Fetch ${r.status}`);
         const html = await r.text();
 
+        // --- normalized host ---
+        const host = normalizeHost(safeUrl);
+
         // --- core extractions ---
-        const title = extractTitle(html) || firstHeadingText(html) || hostFromUrl(safeUrl);
+        const title = extractTitle(html) || firstHeadingText(html) || host;
         let description = extractDescription(html) || "";
-        const siteName = extractSiteName(html) || hostFromUrl(safeUrl);
+        const siteName = extractSiteName(html) || host;
         const keywords = extractKeywords(html, title);
         const author = extractAuthor(html);
         const profile = extractProfile(html);
-        const host = hostFromUrl(safeUrl);
 
         // --- description fallback if missing ---
         if (!description && PLATFORM_DESCRIPTIONS[host]) {
@@ -82,7 +84,7 @@ exports.handler = async (event) => {
         }
 
         // --- media ---
-        const { video, image } = pickMedia({ html, baseUrl: safeUrl });
+        const { video, image } = pickMedia({ html, baseUrl: safeUrl, host });
 
         // --- crypto enrichment (only if ticker/coin detected) ---
         const cryptoName = detectCryptoName(title, description);
@@ -122,10 +124,22 @@ function resJSON(statusCode, obj) {
   return { statusCode, headers: { "Content-Type": "application/json" }, body: JSON.stringify(obj) };
 }
 function safeJSON(s) { try { return JSON.parse(s || "{}"); } catch { return null; } }
-function hostFromUrl(u = "") { try { return new URL(u).hostname.replace(/^www\./i, ""); } catch { return ""; } }
+
+// Normalize hosts so www., m., business. all resolve to the root domain
+function normalizeHost(u = "") {
+  try {
+    const h = new URL(u).hostname.toLowerCase();
+    return h.replace(/^www\./, "")
+            .replace(/^m\./, "")
+            .replace(/^business\./, "")
+            .replace(/^reels\./, "");
+  } catch {
+    return u;
+  }
+}
 
 /* ----- media pipeline ----- */
-function pickMedia({ html, baseUrl }) {
+function pickMedia({ html, baseUrl, host }) {
   const video = (
     findMetaContent(html, ["og:video", "twitter:player"]) ||
     (html.match(/<video[^>]+src=["']([^"']+\.(mp4|webm|ogg))["']/i)?.[1] || "")
@@ -136,8 +150,7 @@ function pickMedia({ html, baseUrl }) {
   const img = extractHeroImage(html, baseUrl);
   if (img) return { video: vidUrl, image: img };
 
-  // Hard domain fallbacks
-  const host = (new URL(baseUrl).hostname || "").toLowerCase();
+  // Hard domain fallbacks (normalized host)
   if (/facebook\.com/.test(host)) return { video: vidUrl, image: BRAND_IMAGES.facebook };
   if (/instagram\.com/.test(host)) return { video: vidUrl, image: BRAND_IMAGES.instagram };
   if (/tiktok\.com/.test(host)) return { video: vidUrl, image: BRAND_IMAGES.tiktok };
