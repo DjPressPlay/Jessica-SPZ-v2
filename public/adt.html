@@ -4,9 +4,11 @@
 <meta charset="UTF-8">
 <title>Battle Board</title>
 <style>
-  body {
+  html, body {
     margin: 0;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;     /* lock viewport, no scroll */
     background: #111;
     font-family: sans-serif;
   }
@@ -30,10 +32,10 @@
     align-items: center;
     justify-content: center;
     gap: 12px;
-    border-top: 3px solid #000; /* divider between sections */
+    border-top: 3px solid #000;
   }
   .map-section:first-child {
-    border-top: none; /* no divider on top */
+    border-top: none;
   }
 
   /* Backgrounds for each section */
@@ -62,30 +64,31 @@
     border-radius: 6px;
     background: #222;
   }
+
+  /* Fan effect for CPU and Player hands */
   .cpu-hand .slot:nth-child(1){ transform: rotate(-8deg); }
-.cpu-hand .slot:nth-child(2){ transform: rotate(-4deg); }
-.cpu-hand .slot:nth-child(3){ transform: rotate(0deg); }
-.cpu-hand .slot:nth-child(4){ transform: rotate(4deg); }
-.cpu-hand .slot:nth-child(5){ transform: rotate(8deg); }
+  .cpu-hand .slot:nth-child(2){ transform: rotate(-4deg); }
+  .cpu-hand .slot:nth-child(3){ transform: rotate(0deg); }
+  .cpu-hand .slot:nth-child(4){ transform: rotate(4deg); }
+  .cpu-hand .slot:nth-child(5){ transform: rotate(8deg); }
 
-.player-hand .slot:nth-child(1){ transform: rotate(-8deg); }
-.player-hand .slot:nth-child(2){ transform: rotate(-4deg); }
-.player-hand .slot:nth-child(3){ transform: rotate(0deg); }
-.player-hand .slot:nth-child(4){ transform: rotate(4deg); }
-.player-hand .slot:nth-child(5){ transform: rotate(8deg); }
+  .player-hand .slot:nth-child(1){ transform: rotate(-8deg); }
+  .player-hand .slot:nth-child(2){ transform: rotate(-4deg); }
+  .player-hand .slot:nth-child(3){ transform: rotate(0deg); }
+  .player-hand .slot:nth-child(4){ transform: rotate(4deg); }
+  .player-hand .slot:nth-child(5){ transform: rotate(8deg); }
 
-.cpu-hand .slot,
-.player-hand .slot {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-.cpu-hand .slot:hover,
-.player-hand .slot:hover {
-  transform: scale(1.1) rotate(0deg);
-  box-shadow: 0 0 25px rgba(0,255,255,0.7), 0 0 40px rgba(255,0,255,0.6);
-  z-index: 10;
-}
-
-  
+  .cpu-hand .slot,
+  .player-hand .slot {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .cpu-hand .slot:hover,
+  .player-hand .slot:hover {
+    transform: scale(1.1) rotate(0deg);
+    box-shadow: 0 0 25px rgba(0,255,255,0.7),
+                0 0 40px rgba(255,0,255,0.6);
+    z-index: 10;
+  }
 </style>
 </head>
 <body>
@@ -93,11 +96,9 @@
 
     <!-- CPU Section -->
     <div class="map-section cpu-section">
-      <!-- CPU Hand (5) -->
       <div class="zone cpu-hand">
         <div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div>
       </div>
-      <!-- CPU Traps (3) -->
       <div class="zone cpu-traps">
         <div class="slot"></div><div class="slot"></div><div class="slot"></div>
       </div>
@@ -105,11 +106,9 @@
 
     <!-- Shared Section -->
     <div class="map-section shared-section">
-      <!-- CPU Battle Row (1) -->
       <div class="zone cpu-battle">
         <div class="slot"></div>
       </div>
-      <!-- Player Battle Row (1) -->
       <div class="zone player-battle">
         <div class="slot"></div>
       </div>
@@ -117,11 +116,9 @@
 
     <!-- Player Section -->
     <div class="map-section player-section">
-      <!-- Player Traps (3) -->
       <div class="zone player-traps">
         <div class="slot"></div><div class="slot"></div><div class="slot"></div>
       </div>
-      <!-- Player Hand (5) -->
       <div class="zone player-hand">
         <div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div>
       </div>
