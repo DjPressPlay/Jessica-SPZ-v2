@@ -15,7 +15,7 @@
     position: relative;
     width: 100vw;
     height: 100vh;
-    border: 8px solid #222;       /* outer edge */
+    border: 8px solid #222;
     border-radius: 18px;
     padding: 16px;
     box-sizing: border-box;
@@ -23,14 +23,19 @@
     /* Inner frame */
     box-shadow: inset 0 0 0 6px #0ff;
 
-    /* Background image */
+    /* Background */
     background: url("https://i.ibb.co/yQmVhHk/card-bg.jpg") center/cover no-repeat;
 
-    /* Layout for zones */
     display: flex;
     flex-direction: column;
-    justify-content: space-between;  /* spread zones top to bottom */
+    justify-content: space-between;
+  }
+
+  .section {
+    display: flex;
+    flex-direction: column;
     align-items: center;
+    gap: 12px;
   }
 
   .zone {
@@ -51,50 +56,34 @@
 <body>
   <div class="board-container">
 
-    <!-- CPU Hand -->
-    <div class="zone cpu-hand">
-      <div class="slot"></div>
-      <div class="slot"></div>
-      <div class="slot"></div>
-      <div class="slot"></div>
-      <div class="slot"></div>
+    <!-- CPU Section (Top) -->
+    <div class="section cpu-section">
+      <div class="zone cpu-hand">
+        <div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div>
+      </div>
+      <div class="zone cpu-traps">
+        <div class="slot"></div><div class="slot"></div><div class="slot"></div>
+      </div>
     </div>
 
-    <!-- CPU Traps -->
-    <div class="zone cpu-traps">
-      <div class="slot"></div>
-      <div class="slot"></div>
-      <div class="slot"></div>
+    <!-- Shared Section (Middle) -->
+    <div class="section shared-section">
+      <div class="zone cpu-battle">
+        <div class="slot"></div><div class="slot"></div><div class="slot"></div>
+      </div>
+      <div class="zone player-battle">
+        <div class="slot"></div><div class="slot"></div><div class="slot"></div>
+      </div>
     </div>
 
-    <!-- CPU Battle Row -->
-    <div class="zone cpu-battle">
-      <div class="slot"></div>
-      <div class="slot"></div>
-      <div class="slot"></div>
-    </div>
-
-    <!-- Player Battle Row -->
-    <div class="zone player-battle">
-      <div class="slot"></div>
-      <div class="slot"></div>
-      <div class="slot"></div>
-    </div>
-
-    <!-- Player Traps -->
-    <div class="zone player-traps">
-      <div class="slot"></div>
-      <div class="slot"></div>
-      <div class="slot"></div>
-    </div>
-
-    <!-- Player Hand -->
-    <div class="zone player-hand">
-      <div class="slot"></div>
-      <div class="slot"></div>
-      <div class="slot"></div>
-      <div class="slot"></div>
-      <div class="slot"></div>
+    <!-- Player Section (Bottom) -->
+    <div class="section player-section">
+      <div class="zone player-traps">
+        <div class="slot"></div><div class="slot"></div><div class="slot"></div>
+      </div>
+      <div class="zone player-hand">
+        <div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div>
+      </div>
     </div>
 
   </div>
