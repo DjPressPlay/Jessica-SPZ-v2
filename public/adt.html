@@ -5,45 +5,56 @@
 <title>Battle Board</title>
 <style>
   body {
-    background:#111;
-    margin:0;
-    height:100vh;
-    font-family:sans-serif;
+    margin: 0;
+    height: 100vh;
+    background: #111;
+    font-family: sans-serif;
   }
 
+  /* Full mat container */
   .board-container {
-    position: relative;
     width: 100vw;
     height: 100vh;
     border: 8px solid #222;
     border-radius: 18px;
-    padding: 16px;
-    box-sizing: border-box;
-
-    /* Inner frame */
     box-shadow: inset 0 0 0 6px #0ff;
-
-    /* Background */
-    background: url("https://miro.medium.com/v2/resize:fit:1100/format:webp/1*rd76wCu4QjZcQWV9wraB_g.png") center/cover no-repeat;
-
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
   }
 
-  .section {
+  /* Each section (CPU / Shared / Player) */
+  .map-section {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: 12px;
+    border-top: 3px solid #000; /* divider between sections */
+  }
+  .map-section:first-child {
+    border-top: none; /* no divider on top */
   }
 
+  /* Backgrounds for each section */
+  .cpu-section {
+    background: url("cpu-bg.jpg") center/cover no-repeat;
+  }
+  .shared-section {
+    background: url("shared-bg.jpg") center/cover no-repeat;
+  }
+  .player-section {
+    background: url("player-bg.jpg") center/cover no-repeat;
+  }
+
+  /* Zones inside sections */
   .zone {
     display: flex;
     justify-content: center;
     gap: 12px;
   }
 
+  /* Card slots */
   .slot {
     width: 80px;
     height: 120px;
@@ -56,37 +67,41 @@
 <body>
   <div class="board-container">
 
-    <!-- CPU Section (Top) -->
-    <div class="section cpu-section">
-      <!-- CPU Hand (5 slots) -->
+    <!-- CPU Section -->
+    <div class="map-section cpu-section">
+      <!-- CPU Hand (5) -->
       <div class="zone cpu-hand">
         <div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div>
       </div>
-      <!-- CPU Traps (3 slots) -->
+      <!-- CPU Traps (3) -->
       <div class="zone cpu-traps">
         <div class="slot"></div><div class="slot"></div><div class="slot"></div>
       </div>
-    </div>
-
-    <!-- Shared Section (Middle) -->
-    <div class="section shared-section">
-      <!-- CPU Battle (1 slot) -->
+      <!-- CPU Battle (1) -->
       <div class="zone cpu-battle">
         <div class="slot"></div>
       </div>
-      <!-- Player Battle (1 slot) -->
+    </div>
+
+    <!-- Shared Section -->
+    <div class="map-section shared-section">
+      <!-- CPU Battle Row (1) -->
+      <div class="zone cpu-battle">
+        <div class="slot"></div>
+      </div>
+      <!-- Player Battle Row (1) -->
       <div class="zone player-battle">
         <div class="slot"></div>
       </div>
     </div>
 
-    <!-- Player Section (Bottom) -->
-    <div class="section player-section">
-      <!-- Player Traps (3 slots) -->
+    <!-- Player Section -->
+    <div class="map-section player-section">
+      <!-- Player Traps (3) -->
       <div class="zone player-traps">
         <div class="slot"></div><div class="slot"></div><div class="slot"></div>
       </div>
-      <!-- Player Hand (5 slots) -->
+      <!-- Player Hand (5) -->
       <div class="zone player-hand">
         <div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div>
       </div>
