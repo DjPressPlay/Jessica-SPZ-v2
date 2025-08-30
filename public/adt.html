@@ -8,11 +8,12 @@
     margin: 0;
     width: 100%;
     height: 100%;
-    overflow: hidden;
+    overflow: hidden;     /* lock viewport, no scroll */
     background: #111;
     font-family: sans-serif;
   }
 
+  /* Full mat container */
   .board-container {
     width: 100vw;
     height: 100vh;
@@ -23,6 +24,7 @@
     flex-direction: column;
   }
 
+  /* Each section (CPU / Shared / Player) */
   .map-section {
     flex: 1;
     display: flex;
@@ -32,121 +34,6 @@
     gap: 12px;
     border-top: 3px solid #000;
   }
-  .map-section:first-child { border-top: none; }
-
-  .cpu-section {
-    background: url("https://miro.medium.com/v2/resize:fit:1100/format:webp/1*rd76wCu4QjZcQWV9wraB_g.png") center/cover no-repeat;
-  }
-  .shared-section {
-    background: url("https://tools.toywiz.com/_images/_webp/_products/lg/legacyvaliantplaymat.webp") center/cover no-repeat;
-  }
-  .player-section {
-    background: url("https://miro.medium.com/v2/resize:fit:1100/format:webp/0*gtZUOQrS_bCJXFtO") center/cover no-repeat;
-  }
-
-  .zone {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-  }
-
-  .slot {
-    width: 80px;
-    height: 120px;
-    border: 2px solid #666;
-    border-radius: 6px;
-    background: #222;
-  }
-
-  /* PLAYER HAND: floating at bottom */
-  .player-hand {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    z-index: 100;
-  }
-
-  .player-hand .slot {
-    width: 140px;   /* larger cards */
-    height: 200px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    cursor: pointer;
-  }
-
-  .player-hand .slot:hover {
-    transform: translateY(-20px) scale(1.1);
-    box-shadow: 0 0 25px rgba(0,255,255,0.7),
-                0 0 40px rgba(255,0,255,0.6);
-    z-index: 101;
-  }
-
-  /* Expanded full-view card */
-  .slot.expanded {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    width: 70vw;
-    height: 90vh;
-    transform: translate(-50%, -50%) scale(1);
-    z-index: 1000;
-    box-shadow: 0 0 50px rgba(0,255,255,0.9),
-                0 0 80px rgba(255,0,255,0.8);
-  }
-</style>
-</head>
-<body>
-  <div class="board-container">
-
-    <!-- CPU Section -->
-    <div class="map-section cpu-section">
-      <div class="zone cpu-hand">
-        <div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div>
-      </div>
-      <div class="zone cpu-traps">
-        <div class="slot"></div><div class="slot"></div><div class="slot"></div>
-      </div>
-    </div>
-
-    <!-- Shared Section -->
-    <div class="map-section shared-section">
-      <div class="zone cpu-battle"><div class="slot"></div></div>
-      <div class="zone player-battle"><div class="slot"></div></div>
-    </div>
-
-    <!-- Player Section -->
-    <div class="map-section player-section">
-      <div class="zone player-traps">
-        <div class="slot"></div><div class="slot"></div><div class="slot"></div>
-      </div>
-    </div>
-
-    <!-- Player Hand Floating -->
-    <div class="player-hand">
-      <div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div>
-    </div>
-
-  </div>
-
-<script>
-  // Click to expand/collapse player hand cards
-  document.querySelectorAll(".player-hand .slot").forEach(card => {
-    card.addEventListener("click", () => {
-      if (card.classList.contains("expanded")) {
-        card.classList.remove("expanded");
-      } else {
-        document.querySelectorAll(".player-hand .slot.expanded")
-          .forEach(c => c.classList.remove("expanded"));
-        card.classList.add("expanded");
-      }
-    });
-  });
-</script>
-</body>
-</html>
   .map-section:first-child {
     border-top: none;
   }
