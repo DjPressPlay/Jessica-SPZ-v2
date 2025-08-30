@@ -1,7 +1,7 @@
 // netlify/functions/crawl.js
 // Jessica Crawl v2 — cleaner metadata, smarter enrichment, robust fallbacks
 // Accepts: { links: [...], session? } or { url:"..." }
-// Returns: { session, results:[{ url,title,description,video,image,siteName,author,profile,keywords,rawHTMLLength,enrich }] }
+// Returns: { session, results:[{ url,title,description,video,image,siteName,author,profile,keywords,rawHTMLLength,enrich,frameType? }] }
 
 const PLACEHOLDER_IMG = "https://miro.medium.com/v2/resize:fit:786/format:webp/1*l0k-78eTSOaUPijHdWIhkQ.png";
 
@@ -85,43 +85,54 @@ exports.handler = async (event) => {
 
         // --- media ---
         const { video, image } = pickMedia({ html, baseUrl: safeUrl, host });
-// --- crypto enrichment ---
-const cryptoName = detectCryptoName(title, description);
-const cryptoDesc = cryptoName ? description : "";
 
-// build base card
-const card = {
-  url: safeUrl,
-  title,
-  description,
-  video: video || "",
-  image: image || PLACEHOLDER_IMG,
-  siteName,
-  author,
-  profile,
-  keywords,
-  rawHTMLLength: html.length,
-  enrich: cryptoName ? {
-    name: cryptoName,
-    effects: [{ icons: "💹📊", emoji: "💰", text: cryptoDesc }]
-  } : {}
+        // --- crypto enrichment ---
+        const cryptoName = detectCryptoName(title, description);
+        const cryptoDesc = cryptoName ? description : "";
+
+        // --- base card ---
+        const card = {
+          url: safeUrl,
+          title,
+          description,
+          video: video || "",
+          image: image || PLACEHOLDER_IMG,
+          siteName,
+          author,
+          profile,
+          keywords,
+          rawHTMLLength: html.length,
+          enrich: cryptoName ? {
+            name: cryptoName,
+            effects: [{ icons: "💹📊", emoji: "💰", text: cryptoDesc }]
+          } : {}
+        };
+
+        // --- void detection ---
+        let isVoid = !card.title || card.title === host;
+        if (!card.image || card.image === PLACEHOLDER_IMG) isVoid = true;
+        if (!card.description || card.description === "No description available") isVoid = true;
+
+        if (isVoid) {
+          results.push({
+            ...card,
+            frameType: "void",
+            note: "Jessica could not enrich this card"
+          });
+        } else {
+          results.push(card);
+        }
+
+      } catch (err) {
+        results.push({ url: safeUrl, error: String(err && err.message || err) });
+      }
+    }
+
+    return resJSON(200, { session, results });
+  } catch (err) {
+    return resJSON(500, { error: String(err && err.message || err) });
+  }
 };
-
-// --- void detection ---
-let isVoid = !title || title === host;
-if (!card.image || card.image === PLACEHOLDER_IMG) isVoid = true;
-if (!card.description || card.description === "No description available") isVoid = true;
-
-if (isVoid) {
-  results.push({
-    ...card,
-    frameType: "void",
-    note: "Jessica could not enrich this card"
-  });
-} else {
-  results.push(card);
-}
-
 
 /* ---------------- helpers ---------------- */
 
@@ -156,7 +167,7 @@ function pickMedia({ html, baseUrl, host }) {
   const img = extractHeroImage(html, baseUrl);
   if (img) return { video: vidUrl, image: img };
 
-  // Hard domain fallbacks (normalized host)
+  // Hard domain fallbacks
   if (/facebook\.com/.test(host)) return { video: vidUrl, image: BRAND_IMAGES.facebook };
   if (/instagram\.com/.test(host)) return { video: vidUrl, image: BRAND_IMAGES.instagram };
   if (/tiktok\.com/.test(host)) return { video: vidUrl, image: BRAND_IMAGES.tiktok };
@@ -174,7 +185,6 @@ function pickMedia({ html, baseUrl, host }) {
   return { video: vidUrl, image: PLACEHOLDER_IMG };
 }
 
-
 /* ----- oEmbed support ----- */
 async function tryOEmbed(url) {
   const endpoints = [
@@ -191,10 +201,10 @@ async function tryOEmbed(url) {
         const data = await r.json();
         return {
           url,
-          title: data.title || hostFromUrl(url),
+          title: data.title || normalizeHost(url),
           description: data.author_name ? `By ${data.author_name}` : "No description available",
           image: data.thumbnail_url || PLACEHOLDER_IMG,
-          siteName: data.provider_name || hostFromUrl(url),
+          siteName: data.provider_name || normalizeHost(url),
           author: data.author_name || "",
           profile: "",
           keywords: [],
