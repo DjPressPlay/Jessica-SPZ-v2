@@ -7,40 +7,37 @@
 </head>
 <body>
 
-  <div class="battle-map">
+  <div class="battlefield">
 
-    <!-- CPU HAND -->
-    <div class="row cpu-hand">
+    <!-- CPU SIDE -->
+    <div class="side cpu-side">
       <div class="hand concealed">CPU HAND</div>
-      <div class="traps">
-        <div class="trap-slot">T</div>
-        <div class="trap-slot">T</div>
-        <div class="trap-slot">T</div>
-        <div class="trap-label">TRAP BOOST</div>
+      <div class="zone">
+        <div class="battle-slot">CPU CARD</div>
+        <div class="traps">
+          <div class="trap-slot">T</div>
+          <div class="trap-slot">T</div>
+          <div class="trap-slot">T</div>
+        </div>
+        <div class="counter">CPU 💠 <span id="cpu-counter">0</span></div>
       </div>
     </div>
 
-    <!-- CPU Player Zone -->
-    <div class="row cpu-zone">
-      <div class="battle-slot">CPU CARD</div>
-      <div class="counter">COUNTER: <span id="cpu-counter">0</span></div>
-    </div>
+    <!-- CENTER LINE -->
+    <div class="divider">⚔️ BATTLEFIELD ⚔️</div>
 
-    <!-- Human Player Zone -->
-    <div class="row player-zone">
-      <div class="battle-slot">PLAYER CARD</div>
-      <div class="counter">COUNTER: <span id="player-counter">0</span></div>
-    </div>
-
-    <!-- PLAYER HAND -->
-    <div class="row player-hand">
+    <!-- PLAYER SIDE -->
+    <div class="side player-side">
+      <div class="zone">
+        <div class="battle-slot">PLAYER CARD</div>
+        <div class="traps">
+          <div class="trap-slot">T</div>
+          <div class="trap-slot">T</div>
+          <div class="trap-slot">T</div>
+        </div>
+        <div class="counter">PLAYER 💠 <span id="player-counter">0</span></div>
+      </div>
       <div class="hand revealed">PLAYER HAND</div>
-      <div class="traps">
-        <div class="trap-slot">T</div>
-        <div class="trap-slot">T</div>
-        <div class="trap-slot">T</div>
-        <div class="trap-label">TRAP BOOST</div>
-      </div>
     </div>
 
   </div>
