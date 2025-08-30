@@ -2,104 +2,78 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Zetsu TCG Battle Board</title>
+<title>Battle Board</title>
 <style>
   body {
-    background: #111;
-    color: #eee;
-    font-family: "Orbitron", sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    background:#111;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    font-family:sans-serif;
   }
   .board {
-    display: grid;
-    grid-template-rows: auto auto auto auto auto;
-    gap: 12px;
-    width: 100%;
-    max-width: 900px;
-    text-align: center;
+    display:grid;
+    grid-template-rows: auto auto auto auto auto auto;
+    gap:12px;
   }
-
   .row {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
+    display:flex;
+    justify-content:center;
+    gap:8px;
   }
-
-  .card-slot {
-    width: 80px;
-    height: 120px;
-    border: 2px solid #666;
-    border-radius: 8px;
-    background: #222;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .trap-row {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    margin: 8px 0;
-  }
-
-  .counter {
-    font-size: 1.2rem;
-    margin-top: 6px;
-    color: #0ff;
-  }
-
-  h3 {
-    margin: 6px 0;
+  .slot {
+    width:80px;
+    height:120px;
+    border:2px solid #666;
+    border-radius:6px;
+    background:#222;
   }
 </style>
 </head>
 <body>
   <div class="board">
 
-    <!-- Concealed/Backcard Hands -->
+    <!-- Concealed / CPU Hand -->
     <div class="row">
-      <h3>---| CONCEALED / BACKCARD HAND |---</h3>
-    </div>
-    <div class="row">
-      <div class="card-slot">CPU Hand</div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
     </div>
 
-    <!-- CPU Trap Row -->
-    <div class="trap-row">
-      <div class="card-slot">T</div>
-      <div class="card-slot">T</div>
-      <div class="card-slot">T</div>
+    <!-- CPU Trap Zone -->
+    <div class="row">
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
     </div>
 
-    <!-- CPU + Player Labels -->
+    <!-- CPU + Player Battle Area -->
     <div class="row">
-      <div style="flex:1;text-align:right;">
-        <div>| cpu |</div>
-        <div class="counter">0</div>
-      </div>
-      <div style="flex:1;text-align:left;">
-        <div>| human |</div>
-        <div class="counter">1</div>
-      </div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+    </div>
+    <div class="row">
+      <div class="slot"></div>
+      <div class="slot"></div>
     </div>
 
-    <!-- Player Trap Row -->
-    <div class="trap-row">
-      <div class="card-slot">T</div>
-      <div class="card-slot">T</div>
-      <div class="card-slot">T</div>
+    <!-- Player Trap Zone -->
+    <div class="row">
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
     </div>
 
-    <!-- Revealed + Player Hand -->
+    <!-- Player Hand -->
     <div class="row">
-      <h3>---| REVEALED HAND |---</h3>
-    </div>
-    <div class="row">
-      <div class="card-slot">Player Hand</div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
     </div>
 
   </div>
