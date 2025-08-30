@@ -1,48 +1,38 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>SporeZ — ADT Battle</title>
-  <link rel="stylesheet" href="adt.css">
-</head>
-<body>
-  <div class="battlefield">
+<div class="battle-mat">
 
-    <!-- CPU HAND -->
-    <div class="hand concealed">CPU HAND (Concealed)</div>
+  <!-- CPU HAND -->
+  <div class="hand cpu-hand">CPU HAND (Concealed)</div>
 
-    <!-- CPU Traps -->
-    <div class="trap-row">
-      <div class="trap-slot">T</div>
-      <div class="trap-slot">T</div>
-      <div class="trap-slot">T</div>
-      <span class="trap-label">TRAP BOOST</span>
-    </div>
-
-    <!-- CPU Battle Card -->
-    <div class="battle-row">
-      <div class="battle-slot">CPU CARD</div>
-      <div class="counter">CPU: <span id="cpu-counter">0</span></div>
-    </div>
-
-    <!-- Player Battle Card -->
-    <div class="battle-row">
-      <div class="battle-slot">PLAYER CARD</div>
-      <div class="counter">PLAYER: <span id="player-counter">0</span></div>
-    </div>
-
-    <!-- Player Traps -->
-    <div class="trap-row">
-      <div class="trap-slot">T</div>
-      <div class="trap-slot">T</div>
-      <div class="trap-slot">T</div>
-      <span class="trap-label">TRAP BOOST</span>
-    </div>
-
-    <!-- Player HAND -->
-    <div class="hand revealed">PLAYER HAND (Revealed)</div>
-
+  <!-- CPU Traps -->
+  <div class="trap-row">
+    <div class="trap-slot">T</div>
+    <div class="trap-slot">T</div>
+    <div class="trap-slot">T</div>
+    <span class="trap-label">TRAP BOOST</span>
   </div>
-  <script src="adt.js"></script>
-</body>
-</html>
+
+  <!-- CPU + Counter column + PLAYER -->
+  <div class="center-lane">
+    <div class="side cpu-side">CPU PLAYER</div>
+
+    <div class="counter-col">
+      <div class="cpu-id">| CPU |</div>
+      <div class="counter">0</div>
+      <div class="player-id">| 1 |</div>
+    </div>
+
+    <div class="side player-side">HUMAN PLAYER</div>
+  </div>
+
+  <!-- Player Traps -->
+  <div class="trap-row">
+    <div class="trap-slot">T</div>
+    <div class="trap-slot">T</div>
+    <div class="trap-slot">T</div>
+    <span class="trap-label">TRAP BOOST</span>
+  </div>
+
+  <!-- Player Hand -->
+  <div class="hand player-hand">PLAYER HAND (Revealed)</div>
+
+</div>
