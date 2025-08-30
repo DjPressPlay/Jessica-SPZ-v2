@@ -12,16 +12,31 @@
     height:100vh;
     font-family:sans-serif;
   }
+
+  /* Main container */
+  .board-container {
+    border:4px solid #555;
+    border-radius:10px;
+    padding:20px;
+    background:#000;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+  }
+
+  /* Board grid */
   .board {
     display:grid;
-    grid-template-rows: auto auto auto auto auto auto;
+    grid-template-rows: repeat(6, auto);
     gap:12px;
   }
-  .row {
+
+  .zone {
     display:flex;
     justify-content:center;
     gap:8px;
   }
+
   .slot {
     width:80px;
     height:120px;
@@ -32,50 +47,52 @@
 </style>
 </head>
 <body>
-  <div class="board">
+  <div class="board-container">
+    <div class="board">
 
-    <!-- Concealed / CPU Hand -->
-    <div class="row">
-      <div class="slot"></div>
-      <div class="slot"></div>
-      <div class="slot"></div>
-      <div class="slot"></div>
-      <div class="slot"></div>
-    </div>
+      <!-- Concealed / CPU Hand -->
+      <div class="zone cpu-hand">
+        <div class="slot"></div>
+        <div class="slot"></div>
+        <div class="slot"></div>
+        <div class="slot"></div>
+        <div class="slot"></div>
+      </div>
 
-    <!-- CPU Trap Zone -->
-    <div class="row">
-      <div class="slot"></div>
-      <div class="slot"></div>
-      <div class="slot"></div>
-    </div>
+      <!-- CPU Trap Zone -->
+      <div class="zone cpu-traps">
+        <div class="slot"></div>
+        <div class="slot"></div>
+        <div class="slot"></div>
+      </div>
 
-    <!-- CPU + Player Battle Area -->
-    <div class="row">
-      <div class="slot"></div>
-     
-    </div>
-    <div class="row">
-      <div class="slot"></div>
-     
-    </div>
+      <!-- CPU Battle Row -->
+      <div class="zone cpu-battle">
+        <div class="slot"></div>
+      </div>
 
-    <!-- Player Trap Zone -->
-    <div class="row">
-      <div class="slot"></div>
-      <div class="slot"></div>
-      <div class="slot"></div>
-    </div>
+      <!-- Player Battle Row -->
+      <div class="zone player-battle">
+        <div class="slot"></div>
+      </div>
 
-    <!-- Player Hand -->
-    <div class="row">
-      <div class="slot"></div>
-      <div class="slot"></div>
-      <div class="slot"></div>
-      <div class="slot"></div>
-      <div class="slot"></div>
-    </div>
+      <!-- Player Trap Zone -->
+      <div class="zone player-traps">
+        <div class="slot"></div>
+        <div class="slot"></div>
+        <div class="slot"></div>
+      </div>
 
+      <!-- Player Hand -->
+      <div class="zone player-hand">
+        <div class="slot"></div>
+        <div class="slot"></div>
+        <div class="slot"></div>
+        <div class="slot"></div>
+        <div class="slot"></div>
+      </div>
+
+    </div>
   </div>
 </body>
 </html>
