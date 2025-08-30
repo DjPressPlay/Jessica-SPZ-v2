@@ -1,101 +1,70 @@
-body {
-  margin: 0;
-  font-family: 'Orbitron', sans-serif;
-  background: #000;
-  color: #eee;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-}
-
-.battlefield {
+.battle-mat {
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  background: #050505;
-  border: 2px solid #0ff;
-  border-radius: 12px;
-  box-shadow: 0 0 20px rgba(0,255,255,0.3);
-  padding: 1rem;
-  width: 800px;      /* fixed mat size */
-  height: 600px;     /* no scrolling, fits screen */
+  gap: 12px;
 }
 
-/* Hands */
 .hand {
-  width: 90%;
-  height: 60px;
+  width: 100%;
   text-align: center;
-  font-weight: bold;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  line-height: 60px;
-}
-.hand.concealed {
-  background: #222;
-  color: #777;
-  border: 2px solid #555;
-}
-.hand.revealed {
-  background: #111;
-  color: #0ff;
+  padding: 6px;
   border: 2px solid #0ff;
-  box-shadow: 0 0 8px rgba(0,255,255,0.4);
+  border-radius: 8px;
+  font-weight: bold;
+  background: rgba(0,0,0,0.7);
+  color: #0ff;
 }
 
-/* Trap rows */
 .trap-row {
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 0.4rem;
+  align-items: center;
+  gap: 6px;
 }
 .trap-slot {
-  width: 45px;
-  height: 60px;
+  width: 40px; height: 50px;
   border: 2px dashed #f0f;
-  border-radius: 4px;
+  display: flex; justify-content: center; align-items: center;
+  color: #f0f; font-weight: bold;
+}
+.trap-label { color: #f0f; margin-left: 6px; font-size: 0.8rem; }
+
+.center-lane {
   display: flex;
   justify-content: center;
   align-items: center;
-  color: #f0f;
-  font-weight: bold;
-  font-size: 0.8rem;
+  gap: 30px;
 }
-.trap-label {
-  margin-left: 0.5rem;
-  color: #f0f;
-  font-size: 0.8rem;
+
+.side {
+  flex: 1;
+  text-align: center;
+  color: #fff;
   font-weight: bold;
 }
 
-/* Battle slots */
-.battle-row {
+.counter-col {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
+  gap: 8px;
 }
-.battle-slot {
-  width: 160px;
-  height: 200px;
-  border: 2px solid #0ff;
-  border-radius: 10px;
-  background: #111;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 0.85rem;
+
+.cpu-id, .player-id {
+  color: #0ff;
   font-weight: bold;
-  text-align: center;
-  box-shadow: 0 0 12px rgba(0,255,255,0.4);
 }
+
 .counter {
-  font-size: 0.85rem;
-  color: #ff0;
-  font-weight: bold;
+  width: 60px; height: 40px;
+  border: 2px solid #ff0;
+  border-radius: 6px;
+  display: flex; justify-content: center; align-items: center;
+  font-weight: bold; color: #ff0;
+  background: rgba(0,0,0,0.8);
   text-shadow: 0 0 4px #ff0;
 }
