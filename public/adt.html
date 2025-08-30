@@ -2,53 +2,33 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ADT Mat</title>
+  <title>ADT Battle Mat</title>
   <link rel="stylesheet" href="adt.css">
 </head>
 <body>
-  <div class="mat">
-
-    <!-- Concealed/Backcard Hand (Player) & CPU Hand -->
-    <div class="row" id="top-hands">
-      <div id="concealed-hand">
-        <div class="slot" id="concealed-1"></div>
-        <div class="slot" id="concealed-2"></div>
-        <div class="slot" id="concealed-3"></div>
-      </div>
-      <div id="cpu-hand">
-        <div class="slot" id="cpu-1"></div>
-        <div class="slot" id="cpu-2"></div>
-        <div class="slot" id="cpu-3"></div>
-      </div>
+  <div class="battle-mat">
+    
+    <!-- Trap Row (Top) -->
+    <div class="trap-row">
+      <div class="trap-slot">T</div>
+      <div class="trap-slot">T</div>
+      <div class="trap-slot">T</div>
     </div>
 
-    <!-- CPU Traps -->
-    <div class="row" id="cpu-traps">
-      <div class="slot" id="cpu-trap-1"></div>
-      <div class="slot" id="cpu-trap-2"></div>
-      <div class="slot" id="cpu-trap-3"></div>
+    <!-- CPU + Counter + Player -->
+    <div class="card-box">| cpu |</div>
+    <div class="counter">0</div>
+    <div class="card-box">| 1 |</div>
+
+    <!-- Trap Row (Bottom) -->
+    <div class="trap-row">
+      <div class="trap-slot">T</div>
+      <div class="trap-slot">T</div>
+      <div class="trap-slot">T</div>
     </div>
 
-    <!-- CPU + Counter + Human -->
-    <div class="row" id="battle-line">
-      <div class="slot" id="cpu-slot"></div>
-      <div class="counter" id="counter">0</div>
-      <div class="slot" id="human-slot"></div>
-    </div>
-
-    <!-- Human Traps -->
-    <div class="row" id="human-traps">
-      <div class="slot" id="human-trap-1"></div>
-      <div class="slot" id="human-trap-2"></div>
-      <div class="slot" id="human-trap-3"></div>
-    </div>
-
-    <!-- Revealed Hand (Player) -->
-    <div class="row" id="revealed-hand">
-      <div class="slot" id="revealed-1"></div>
-      <div class="slot" id="revealed-2"></div>
-      <div class="slot" id="revealed-3"></div>
-    </div>
+    <!-- Player Hand -->
+    <div class="hand">---| REVEALED HAND |---</div>
 
   </div>
 </body>
