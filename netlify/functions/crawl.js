@@ -85,37 +85,43 @@ exports.handler = async (event) => {
 
         // --- media ---
         const { video, image } = pickMedia({ html, baseUrl: safeUrl, host });
+// --- crypto enrichment ---
+const cryptoName = detectCryptoName(title, description);
+const cryptoDesc = cryptoName ? description : "";
 
-        // --- crypto enrichment (only if ticker/coin detected) ---
-        const cryptoName = detectCryptoName(title, description);
-        const cryptoDesc = cryptoName ? description : "";
-
-        results.push({
-          url: safeUrl,
-          title,
-          description,
-          video: video || "",
-          image: image || PLACEHOLDER_IMG,
-          siteName,
-          author,
-          profile,
-          keywords,
-          rawHTMLLength: html.length,
-          enrich: cryptoName ? {
-            name: cryptoName,
-            effects: [{ icons: "💹📊", emoji: "💰", text: cryptoDesc }]
-          } : {}
-        });
-      } catch (err) {
-        results.push({ url: safeUrl, error: String(err && err.message || err) });
-      }
-    }
-
-    return resJSON(200, { session, results });
-  } catch (err) {
-    return resJSON(500, { error: String(err && err.message || err) });
-  }
+// build base card
+const card = {
+  url: safeUrl,
+  title,
+  description,
+  video: video || "",
+  image: image || PLACEHOLDER_IMG,
+  siteName,
+  author,
+  profile,
+  keywords,
+  rawHTMLLength: html.length,
+  enrich: cryptoName ? {
+    name: cryptoName,
+    effects: [{ icons: "💹📊", emoji: "💰", text: cryptoDesc }]
+  } : {}
 };
+
+// --- void detection ---
+let isVoid = !title || title === host;
+if (!card.image || card.image === PLACEHOLDER_IMG) isVoid = true;
+if (!card.description || card.description === "No description available") isVoid = true;
+
+if (isVoid) {
+  results.push({
+    ...card,
+    frameType: "void",
+    note: "Jessica could not enrich this card"
+  });
+} else {
+  results.push(card);
+}
+
 
 /* ---------------- helpers ---------------- */
 
