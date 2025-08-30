@@ -92,6 +92,24 @@
       box-shadow: inset 0 0 12px rgba(0,255,200,0.2);
       color: #0ff; white-space: pre-wrap;
     }
+
+    .action-buttons {
+      margin-top: 1rem; text-align:center;
+    }
+    .action-buttons button {
+      margin: 0 0.5rem;
+      padding: 0.7rem 1.2rem;
+      font-size: 1rem;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(90deg,#00f0ff,#ff00ff);
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 0 12px rgba(255,0,255,0.6);
+      transition: transform 0.2s ease;
+    }
+    .action-buttons button:hover { transform: scale(1.05); }
   </style>
 </head>
 <body>
@@ -106,8 +124,9 @@
     <button>Creation Ritual</button>
   </div>
 
-  <div style="margin-top:1rem; text-align:center;">
+  <div class="action-buttons">
     <button id="summon-btn">🔮 Summon Card</button>
+    <button id="battle-btn">⚔️ Battle Mode</button>
   </div>
 
   <div class="output" id="output">⚡ Card data stream will appear here...</div>
@@ -231,12 +250,17 @@
   document.getElementById("summon-btn").addEventListener("click", () => {
     let raw = output.textContent.trim();
     try {
-      JSON.parse(raw); // validate if it's valid JSON
+      JSON.parse(raw);
     } catch {
       raw = localStorage.getItem("jessica_card") || "{}";
     }
     const url = "summon_btn.html?card=" + encodeURIComponent(raw);
     window.open(url, "SummonCard", "width=520,height=820");
+  });
+
+  /* ===== Battle button → go to ADT game ===== */
+  document.getElementById("battle-btn").addEventListener("click", () => {
+    window.location.href = "adt.html";
   });
 </script>
 </body>
