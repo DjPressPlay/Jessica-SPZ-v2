@@ -3,80 +3,51 @@
 <head>
   <meta charset="UTF-8">
   <title>ADT Mat</title>
-  <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #111;
-      color: #eee;
-      font-family: sans-serif;
-    }
-    .mat {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1rem;
-    }
-    .row {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-    }
-    .slot {
-      width: 80px;
-      height: 120px;
-      border: 2px solid #0ff;
-      border-radius: 6px;
-      background: rgba(0,255,255,0.1);
-    }
-    .counter {
-      font-size: 2rem;
-      color: #f0f;
-      margin: 0.5rem 0;
-    }
-  </style>
+  <link rel="stylesheet" href="adt.css">
 </head>
 <body>
   <div class="mat">
 
-    <!-- Concealed + CPU hand -->
-    <div class="row">
-      <div class="slot"></div>
-      <div class="slot"></div>
-      <div class="slot"></div>
+    <!-- Concealed/Backcard Hand (Player) & CPU Hand -->
+    <div class="row" id="top-hands">
+      <div id="concealed-hand">
+        <div class="slot" id="concealed-1"></div>
+        <div class="slot" id="concealed-2"></div>
+        <div class="slot" id="concealed-3"></div>
+      </div>
+      <div id="cpu-hand">
+        <div class="slot" id="cpu-1"></div>
+        <div class="slot" id="cpu-2"></div>
+        <div class="slot" id="cpu-3"></div>
+      </div>
     </div>
 
-    <!-- CPU traps -->
-    <div class="row">
-      <div class="slot"></div>
-      <div class="slot"></div>
-      <div class="slot"></div>
+    <!-- CPU Traps -->
+    <div class="row" id="cpu-traps">
+      <div class="slot" id="cpu-trap-1"></div>
+      <div class="slot" id="cpu-trap-2"></div>
+      <div class="slot" id="cpu-trap-3"></div>
     </div>
 
-    <!-- CPU + counter + Human -->
-    <div class="row">
-      <div class="slot"></div>
-    </div>
-    <div class="counter">0</div>
-    <div class="row">
-      <div class="slot"></div>
+    <!-- CPU + Counter + Human -->
+    <div class="row" id="battle-line">
+      <div class="slot" id="cpu-slot"></div>
+      <div class="counter" id="counter">0</div>
+      <div class="slot" id="human-slot"></div>
     </div>
 
-    <!-- Human traps -->
-    <div class="row">
-      <div class="slot"></div>
-      <div class="slot"></div>
-      <div class="slot"></div>
+    <!-- Human Traps -->
+    <div class="row" id="human-traps">
+      <div class="slot" id="human-trap-1"></div>
+      <div class="slot" id="human-trap-2"></div>
+      <div class="slot" id="human-trap-3"></div>
     </div>
 
-    <!-- Revealed + Player hand -->
-    <div class="row">
-      <div class="slot"></div>
-      <div class="slot"></div>
-      <div class="slot"></div>
+    <!-- Revealed Hand (Player) -->
+    <div class="row" id="revealed-hand">
+      <div class="slot" id="revealed-1"></div>
+      <div class="slot" id="revealed-2"></div>
+      <div class="slot" id="revealed-3"></div>
     </div>
 
   </div>
