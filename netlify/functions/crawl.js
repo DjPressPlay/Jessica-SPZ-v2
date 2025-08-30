@@ -14,6 +14,16 @@ const BRAND_IMAGES = {
   tiktok: "https://www.tiktok.com/favicon.ico"
 };
 
+// Known platform description fallbacks
+const PLATFORM_DESCRIPTIONS = {
+  "instagram.com": "Instagram is a photo and video sharing social network for connecting with people and brands.",
+  "facebook.com": "Facebook is a social networking platform for connecting with friends, communities, and businesses.",
+  "twitter.com": "Twitter is a microblogging platform for real-time news, trends, and conversations.",
+  "x.com": "X (formerly Twitter) is a microblogging platform for real-time news, trends, and conversations.",
+  "tiktok.com": "TikTok is a short-form video platform for viral content, creativity, and community.",
+  "youtube.com": "YouTube is a video-sharing platform for creators, streaming, and discovery."
+};
+
 exports.handler = async (event) => {
   try {
     if (event.httpMethod !== "POST") return resText(405, "Method Not Allowed");
@@ -56,11 +66,20 @@ exports.handler = async (event) => {
 
         // --- core extractions ---
         const title = extractTitle(html) || firstHeadingText(html) || hostFromUrl(safeUrl);
-        const description = extractDescription(html) || "No description available";
+        let description = extractDescription(html) || "";
         const siteName = extractSiteName(html) || hostFromUrl(safeUrl);
         const keywords = extractKeywords(html, title);
         const author = extractAuthor(html);
         const profile = extractProfile(html);
+        const host = hostFromUrl(safeUrl);
+
+        // --- description fallback if missing ---
+        if (!description && PLATFORM_DESCRIPTIONS[host]) {
+          description = PLATFORM_DESCRIPTIONS[host];
+        }
+        if (!description) {
+          description = "No description available";
+        }
 
         // --- media ---
         const { video, image } = pickMedia({ html, baseUrl: safeUrl });
@@ -135,6 +154,7 @@ function pickMedia({ html, baseUrl }) {
   // Absolute last resort
   return { video: vidUrl, image: PLACEHOLDER_IMG };
 }
+
 
 /* ----- oEmbed support ----- */
 async function tryOEmbed(url) {
