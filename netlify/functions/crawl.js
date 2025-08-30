@@ -113,15 +113,26 @@ function pickMedia({ html, baseUrl }) {
   );
   const vidUrl = video ? absolutize(baseUrl, video) : "";
 
+  // Try images
   const img = extractHeroImage(html, baseUrl);
   if (img) return { video: vidUrl, image: img };
 
+  // Hard domain fallbacks
   const host = (new URL(baseUrl).hostname || "").toLowerCase();
-  if (/facebook/.test(host)) return { video: vidUrl, image: BRAND_IMAGES.facebook };
-  if (/instagram/.test(host)) return { video: vidUrl, image: BRAND_IMAGES.instagram };
-  if (/tiktok/.test(host)) return { video: vidUrl, image: BRAND_IMAGES.tiktok };
-  if (/twitter|x\.com/.test(host)) return { video: vidUrl, image: BRAND_IMAGES.twitter };
+  if (/facebook\.com/.test(host)) return { video: vidUrl, image: BRAND_IMAGES.facebook };
+  if (/instagram\.com/.test(host)) return { video: vidUrl, image: BRAND_IMAGES.instagram };
+  if (/tiktok\.com/.test(host)) return { video: vidUrl, image: BRAND_IMAGES.tiktok };
+  if (/twitter\.com|x\.com/.test(host)) return { video: vidUrl, image: BRAND_IMAGES.twitter };
 
+  // Google favicon fallback (catch-all)
+  if (host) {
+    return {
+      video: vidUrl,
+      image: `https://www.google.com/s2/favicons?sz=256&domain=${host}`
+    };
+  }
+
+  // Absolute last resort
   return { video: vidUrl, image: PLACEHOLDER_IMG };
 }
 
@@ -225,7 +236,7 @@ function extractProfile(html = "") {
 }
 function detectCryptoName(title = "", desc = "") {
   const combined = (title + " " + desc).toLowerCase();
-  const match = combined.match(/\b([A-Z]{2,5})\b/); // crude ticker grab
+  const match = combined.match(/\b([A-Z]{2,5})\b/);
   if (match && /btc|eth|sol|doge|matic|usdt|usdc/i.test(match[1])) {
     return match[1].toUpperCase();
   }
@@ -237,13 +248,11 @@ function extractSiteName(html = "") {
 function extractKeywords(html = "", title = "") {
   const s = findMetaContent(html, ["keywords"]);
   if (s) return s.split(",").map(x => x.trim()).filter(Boolean).slice(0, 20);
-  // fallback: break title into keywords
   return title.split(/\s+/).filter(w => w.length > 3).slice(0, 10);
 }
 
 /* ----- hero image extraction ----- */
 function extractHeroImage(html = "", baseUrl = "") {
-  // OG/Twitter/link rel=image_src
   const metaImg = (
     findMetaContent(html, ["og:image", "twitter:image", "twitter:image:src"]) ||
     findLinkHref(html, "image_src")
@@ -252,21 +261,13 @@ function extractHeroImage(html = "", baseUrl = "") {
     const u = absolutize(baseUrl, metaImg);
     if (isValidImage(u) && !isTrackerDomain(u)) return u;
   }
-
-  // Favicon fallback
+  // favicon
   const faviconMatch = html.match(/<link[^>]+rel=["'](?:shortcut icon|icon)["'][^>]*>/i);
   if (faviconMatch) {
     const href = getAttrCI(faviconMatch[0], "href");
     if (href) return absolutize(baseUrl, href);
   }
-
-  // Next.js _next/image fallback
-  const nextImgMatch = html.match(/\/_next\/image\?url=[^"'>\s]+/i);
-  if (nextImgMatch) {
-    return absolutize(baseUrl, nextImgMatch[0].replace(/&amp;/g, "&"));
-  }
-
-  // First usable <img>
+  // first <img>
   const reImg = /<img\b[^>]*>/gi;
   let m;
   while ((m = reImg.exec(html))) {
@@ -276,7 +277,6 @@ function extractHeroImage(html = "", baseUrl = "") {
     const url = absolutize(baseUrl, src.trim());
     if (isValidImage(url) && !isTrackerDomain(url) && !looksLikePixel({ url })) return url;
   }
-
   return "";
 }
 function findLinkHref(html, relValue) {
