@@ -1,1 +1,78 @@
 
+body {
+  margin: 0;
+  font-family: 'Orbitron', sans-serif;
+  background: #000;
+  color: #eee;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.battle-map {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  width: 90%;
+  max-width: 1200px;
+}
+
+/* Hands */
+.hand {
+  padding: 0.8rem 2rem;
+  border-radius: 12px;
+  background: #111;
+  box-shadow: 0 0 10px rgba(0,255,255,0.3);
+  font-weight: bold;
+  text-align: center;
+  flex: 1;
+}
+.hand.concealed { color: #888; }
+.hand.revealed { color: #0ff; }
+
+/* Traps */
+.traps {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.trap-slot {
+  width: 40px;
+  height: 40px;
+  border: 2px dashed #0ff;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0ff;
+}
+.trap-label {
+  margin-left: 0.5rem;
+  font-size: 0.8rem;
+  color: #f0f;
+}
+
+/* Zones */
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.battle-slot {
+  flex: 1;
+  padding: 1rem;
+  background: #222;
+  border: 3px solid #0ff;
+  border-radius: 10px;
+  text-align: center;
+  margin: 0 1rem;
+}
+
+.counter {
+  font-size: 0.9rem;
+  color: #ff0;
+}
