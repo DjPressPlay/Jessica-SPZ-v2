@@ -1,14 +1,4 @@
-let cpuCounter = 0;
-let playerCounter = 0;
+// Placeholder for future interactions
+// e.g., drag & drop, card placement, animations, etc.
 
-function updateCounters() {
-  document.getElementById("cpu-counter").textContent = cpuCounter;
-  document.getElementById("player-counter").textContent = playerCounter;
-}
-
-document.addEventListener("keydown", e => {
-  if (e.code === "ArrowUp") { cpuCounter++; updateCounters(); }
-  if (e.code === "ArrowDown") { playerCounter++; updateCounters(); }
-});
-
-updateCounters();
+console.log("Battle Board loaded!");
