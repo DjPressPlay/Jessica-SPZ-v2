@@ -64,6 +64,21 @@
     border-radius: 6px;
     background: #222;
   }
+.battle-counter {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #0ff 30%, #111 100%);
+  color: #fff;
+  font-size: 2rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 12px auto;
+  box-shadow: 0 0 20px rgba(0,255,255,0.6);
+  text-shadow: 0 0 10px #000;
+}
 
   /* Fan effect for CPU and Player hands */
   .cpu-hand .slot:nth-child(1){ transform: rotate(-8deg); }
@@ -104,20 +119,25 @@
     <div class="slot" id="cpu-hand-5"></div>
   </div>
   <div class="zone cpu-traps">
-    <div class="slot"></div><div class="slot"></div><div class="slot"></div>
+   <div class="slot" id="cpu-trap-1"></div>
+  <div class="slot" id="cpu-trap-2"></div>
+  <div class="slot" id="cpu-trap-3"></div>
   </div>
 </div>
 
+<!-- BATTLE ZONE -->
+<div class="map-section shared-section">
+  <div class="zone cpu-battle">
+    <div class="slot"></div>
+  </div>
 
-    <!-- BATTLE ZONE -->
-    <div class="map-section shared-section">
-      <div class="zone cpu-battle">
-        <div class="slot"></div>
-      </div>
-      <div class="zone player-battle">
-        <div class="slot"></div>
-      </div>
-    </div>
+  <!-- Counter in the middle -->
+  <div class="battle-counter" id="battle-counter">3</div>
+
+  <div class="zone player-battle">
+    <div class="slot"></div>
+  </div>
+</div>
 
     <!-- Player Section -->
     <div class="map-section player-section">
