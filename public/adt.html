@@ -6,38 +6,43 @@
   <link rel="stylesheet" href="adt.css">
 </head>
 <body>
-
   <div class="battlefield">
 
-    <!-- CPU SIDE -->
-    <div class="side cpu-side">
-      <div class="hand concealed">CPU HAND</div>
-      <div class="zone">
-        <div class="battle-slot">CPU CARD</div>
-        <div class="traps">
-          <div class="trap-slot">T</div>
-          <div class="trap-slot">T</div>
-          <div class="trap-slot">T</div>
-        </div>
-        <div class="counter">CPU 💠 <span id="cpu-counter">0</span></div>
-      </div>
+    <!-- CPU HAND (concealed/backcard) -->
+    <div class="hand concealed">
+      <span>CPU HAND (Concealed)</span>
     </div>
 
-    <!-- CENTER LINE -->
-    <div class="divider">⚔️ BATTLEFIELD ⚔️</div>
+    <!-- CPU Trap / Boost Row -->
+    <div class="trap-row">
+      <div class="trap-slot">T</div>
+      <div class="trap-slot">T</div>
+      <div class="trap-slot">T</div>
+      <span class="trap-label">TRAP BOOST</span>
+    </div>
 
-    <!-- PLAYER SIDE -->
-    <div class="side player-side">
-      <div class="zone">
-        <div class="battle-slot">PLAYER CARD</div>
-        <div class="traps">
-          <div class="trap-slot">T</div>
-          <div class="trap-slot">T</div>
-          <div class="trap-slot">T</div>
-        </div>
-        <div class="counter">PLAYER 💠 <span id="player-counter">0</span></div>
-      </div>
-      <div class="hand revealed">PLAYER HAND</div>
+    <!-- CPU + PLAYER Battle Slots -->
+    <div class="battle-row">
+      <div class="battle-slot">CPU CARD</div>
+      <div class="counter">CPU: <span id="cpu-counter">0</span></div>
+    </div>
+
+    <div class="battle-row">
+      <div class="battle-slot">PLAYER CARD</div>
+      <div class="counter">PLAYER: <span id="player-counter">0</span></div>
+    </div>
+
+    <!-- PLAYER Trap / Boost Row -->
+    <div class="trap-row">
+      <div class="trap-slot">T</div>
+      <div class="trap-slot">T</div>
+      <div class="trap-slot">T</div>
+      <span class="trap-label">TRAP BOOST</span>
+    </div>
+
+    <!-- PLAYER HAND (revealed) -->
+    <div class="hand revealed">
+      <span>PLAYER HAND (Revealed)</span>
     </div>
 
   </div>
