@@ -1,52 +1,89 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>SporeZ — ADT Battle</title>
-  <link rel="stylesheet" href="adt.css">
-</head>
-<body>
-  <div class="battlefield">
+body {
+  margin: 0;
+  font-family: 'Orbitron', sans-serif;
+  background: #000;
+  color: #eee;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
 
-    <!-- CPU HAND (concealed/backcard) -->
-    <div class="hand concealed">
-      <span>CPU HAND (Concealed)</span>
-    </div>
+.battlefield {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 95%;
+  max-width: 1200px;
+}
 
-    <!-- CPU Trap / Boost Row -->
-    <div class="trap-row">
-      <div class="trap-slot">T</div>
-      <div class="trap-slot">T</div>
-      <div class="trap-slot">T</div>
-      <span class="trap-label">TRAP BOOST</span>
-    </div>
+/* Hands */
+.hand {
+  width: 90%;
+  padding: 1rem;
+  text-align: center;
+  font-weight: bold;
+  border-radius: 8px;
+}
+.hand.concealed {
+  background: #222;
+  color: #777;
+  border: 2px solid #555;
+}
+.hand.revealed {
+  background: #111;
+  color: #0ff;
+  border: 2px solid #0ff;
+  box-shadow: 0 0 12px rgba(0,255,255,0.4);
+}
 
-    <!-- CPU + PLAYER Battle Slots -->
-    <div class="battle-row">
-      <div class="battle-slot">CPU CARD</div>
-      <div class="counter">CPU: <span id="cpu-counter">0</span></div>
-    </div>
+/* Trap rows */
+.trap-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.trap-slot {
+  width: 60px;
+  height: 80px;
+  border: 2px dashed #f0f;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #f0f;
+  font-weight: bold;
+}
+.trap-label {
+  margin-left: 1rem;
+  color: #f0f;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
 
-    <div class="battle-row">
-      <div class="battle-slot">PLAYER CARD</div>
-      <div class="counter">PLAYER: <span id="player-counter">0</span></div>
-    </div>
-
-    <!-- PLAYER Trap / Boost Row -->
-    <div class="trap-row">
-      <div class="trap-slot">T</div>
-      <div class="trap-slot">T</div>
-      <div class="trap-slot">T</div>
-      <span class="trap-label">TRAP BOOST</span>
-    </div>
-
-    <!-- PLAYER HAND (revealed) -->
-    <div class="hand revealed">
-      <span>PLAYER HAND (Revealed)</span>
-    </div>
-
-  </div>
-
-  <script src="adt.js"></script>
-</body>
-</html>
+/* Battle slots */
+.battle-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.battle-slot {
+  width: 220px;
+  height: 300px;
+  border: 3px solid #0ff;
+  border-radius: 12px;
+  background: #111;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(0,255,255,0.4);
+}
+.counter {
+  font-size: 1rem;
+  color: #ff0;
+  font-weight: bold;
+  text-shadow: 0 0 6px #ff0;
+}
