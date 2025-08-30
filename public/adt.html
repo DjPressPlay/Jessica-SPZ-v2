@@ -2,33 +2,82 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ADT Battle Mat</title>
-  <link rel="stylesheet" href="adt.css">
+  <title>ADT Mat</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #111;
+      color: #eee;
+      font-family: sans-serif;
+    }
+    .mat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+    .row {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+    }
+    .slot {
+      width: 80px;
+      height: 120px;
+      border: 2px solid #0ff;
+      border-radius: 6px;
+      background: rgba(0,255,255,0.1);
+    }
+    .counter {
+      font-size: 2rem;
+      color: #f0f;
+      margin: 0.5rem 0;
+    }
+  </style>
 </head>
 <body>
-  <div class="battle-mat">
-    
-    <!-- Trap Row (Top) -->
-    <div class="trap-row">
-      <div class="trap-slot">T</div>
-      <div class="trap-slot">T</div>
-      <div class="trap-slot">T</div>
+  <div class="mat">
+
+    <!-- Concealed + CPU hand -->
+    <div class="row">
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
     </div>
 
-    <!-- CPU + Counter + Player -->
-    <div class="card-box">| cpu |</div>
+    <!-- CPU traps -->
+    <div class="row">
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+    </div>
+
+    <!-- CPU + counter + Human -->
+    <div class="row">
+      <div class="slot"></div>
+    </div>
     <div class="counter">0</div>
-    <div class="card-box">| 1 |</div>
-
-    <!-- Trap Row (Bottom) -->
-    <div class="trap-row">
-      <div class="trap-slot">T</div>
-      <div class="trap-slot">T</div>
-      <div class="trap-slot">T</div>
+    <div class="row">
+      <div class="slot"></div>
     </div>
 
-    <!-- Player Hand -->
-    <div class="hand">---| REVEALED HAND |---</div>
+    <!-- Human traps -->
+    <div class="row">
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+    </div>
+
+    <!-- Revealed + Player hand -->
+    <div class="row">
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+    </div>
 
   </div>
 </body>
