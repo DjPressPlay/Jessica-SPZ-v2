@@ -243,6 +243,7 @@ function extractKeywords(html = "", title = "") {
 
 /* ----- hero image extraction ----- */
 function extractHeroImage(html = "", baseUrl = "") {
+  // OG/Twitter/link rel=image_src
   const metaImg = (
     findMetaContent(html, ["og:image", "twitter:image", "twitter:image:src"]) ||
     findLinkHref(html, "image_src")
@@ -251,24 +252,31 @@ function extractHeroImage(html = "", baseUrl = "") {
     const u = absolutize(baseUrl, metaImg);
     if (isValidImage(u) && !isTrackerDomain(u)) return u;
   }
-  const imgs = [];
+
+  // Favicon fallback
+  const faviconMatch = html.match(/<link[^>]+rel=["'](?:shortcut icon|icon)["'][^>]*>/i);
+  if (faviconMatch) {
+    const href = getAttrCI(faviconMatch[0], "href");
+    if (href) return absolutize(baseUrl, href);
+  }
+
+  // Next.js _next/image fallback
+  const nextImgMatch = html.match(/\/_next\/image\?url=[^"'>\s]+/i);
+  if (nextImgMatch) {
+    return absolutize(baseUrl, nextImgMatch[0].replace(/&amp;/g, "&"));
+  }
+
+  // First usable <img>
   const reImg = /<img\b[^>]*>/gi;
   let m;
   while ((m = reImg.exec(html))) {
     const tag = m[0];
     const src = getAttrCI(tag, "src") || getAttrCI(tag, "data-src") || "";
     if (!src) continue;
-    const w = parseInt(getAttrCI(tag, "width") || "0", 10);
-    const h = parseInt(getAttrCI(tag, "height") || "0", 10);
     const url = absolutize(baseUrl, src.trim());
-    imgs.push({ url, w, h });
+    if (isValidImage(url) && !isTrackerDomain(url) && !looksLikePixel({ url })) return url;
   }
-  for (const im of imgs) {
-    if (!isValidImage(im.url)) continue;
-    if (looksLikePixel(im)) continue;
-    if (isTrackerDomain(im.url)) continue;
-    return im.url;
-  }
+
   return "";
 }
 function findLinkHref(html, relValue) {
@@ -292,7 +300,7 @@ function isValidImage(u = "") {
     if (!/^https?:$/i.test(x.protocol)) return false;
     if (!/\.[a-z]{2,}$/i.test(x.hostname)) return false;
     if (/^data:image\//i.test(u)) return true;
-    if (/\.(png|jpe?g|webp|gif|avif)(\?|#|$)/i.test(u)) return true;
+    if (/\.(png|jpe?g|webp|gif|avif|ico)(\?|#|$)/i.test(u)) return true;
     return true;
   } catch {
     return false;
@@ -301,8 +309,6 @@ function isValidImage(u = "") {
 function looksLikePixel(im) {
   const u = String(im.url || "").toLowerCase();
   if (/1x1|pixel|spacer|transparent/.test(u)) return true;
-  if (im.w && im.h && im.w <= 2 && im.h <= 2) return true;
-  if (/[?&](width|height)=1\b/.test(u)) return true;
   return false;
 }
 function isTrackerDomain(u = "") {
