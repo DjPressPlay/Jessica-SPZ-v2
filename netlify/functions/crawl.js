@@ -1,7 +1,7 @@
 // netlify/functions/crawl.js
-// Safer scraping -> order-agnostic meta parsing + solid fallbacks.
-// Accepts: { links: [...], session? }  (also tolerates { url:"..." } )
-// Returns: { session, results:[{ url,title,description,video,image,siteName,profile,keywords,rawHTMLLength,enrich }] }
+// Jessica Crawl v2 — cleaner metadata, smarter enrichment, robust fallbacks
+// Accepts: { links: [...], session? } or { url:"..." }
+// Returns: { session, results:[{ url,title,description,video,image,siteName,author,profile,keywords,rawHTMLLength,enrich }] }
 
 const PLACEHOLDER_IMG = "https://miro.medium.com/v2/resize:fit:786/format:webp/1*l0k-78eTSOaUPijHdWIhkQ.png";
 
@@ -35,7 +35,7 @@ exports.handler = async (event) => {
       if (!/^https?:\/\//i.test(safeUrl)) safeUrl = "https://" + safeUrl;
 
       try {
-        // --- try oEmbed first ---
+        // --- oEmbed pass ---
         const oembedData = await tryOEmbed(safeUrl);
         if (oembedData) {
           results.push(oembedData);
@@ -46,7 +46,7 @@ exports.handler = async (event) => {
         const r = await fetch(safeUrl, {
           redirect: "follow",
           headers: {
-            "User-Agent": "Mozilla/5.0 (compatible; Jessica-SPZ/1.0; +https://sporez.netlify.app)",
+            "User-Agent": "Mozilla/5.0 (compatible; Jessica-SPZ/2.0; +https://sporez.netlify.app)",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             "Accept-Language": "en-US,en;q=0.9"
           }
@@ -54,19 +54,20 @@ exports.handler = async (event) => {
         if (!r.ok) throw new Error(`Fetch ${r.status}`);
         const html = await r.text();
 
-        // --- robust extraction ---
+        // --- core extractions ---
         const title = extractTitle(html) || firstHeadingText(html) || hostFromUrl(safeUrl);
         const description = extractDescription(html) || "No description available";
         const siteName = extractSiteName(html) || hostFromUrl(safeUrl);
-        const keywords = extractKeywords(html);
-        const profile = extractAuthor(html) || "";
+        const keywords = extractKeywords(html, title);
+        const author = extractAuthor(html);
+        const profile = extractProfile(html);
 
-        // --- media pipeline ---
+        // --- media ---
         const { video, image } = pickMedia({ html, baseUrl: safeUrl });
 
-        // crypto enrichment
-        const cryptoDesc = extractCryptoDescription(html);
-        const cryptoName = extractCryptoName(html);
+        // --- crypto enrichment (only if ticker/coin detected) ---
+        const cryptoName = detectCryptoName(title, description);
+        const cryptoDesc = cryptoName ? description : "";
 
         results.push({
           url: safeUrl,
@@ -75,14 +76,13 @@ exports.handler = async (event) => {
           video: video || "",
           image: image || PLACEHOLDER_IMG,
           siteName,
+          author,
           profile,
           keywords,
           rawHTMLLength: html.length,
-          enrich: cryptoDesc || cryptoName ? {
-            name: cryptoName || "",
-            effects: cryptoDesc
-              ? [{ icons: "💹📊", emoji: "💰", text: cryptoDesc }]
-              : []
+          enrich: cryptoName ? {
+            name: cryptoName,
+            effects: [{ icons: "💹📊", emoji: "💰", text: cryptoDesc }]
           } : {}
         });
       } catch (err) {
@@ -107,29 +107,25 @@ function hostFromUrl(u = "") { try { return new URL(u).hostname.replace(/^www\./
 
 /* ----- media pipeline ----- */
 function pickMedia({ html, baseUrl }) {
-  // 1. Prefer video (og:video or <video>)
   const video = (
     findMetaContent(html, ["og:video", "twitter:player"]) ||
     (html.match(/<video[^>]+src=["']([^"']+\.(mp4|webm|ogg))["']/i)?.[1] || "")
   );
-  if (video) return { video: absolutize(baseUrl, video) };
+  const vidUrl = video ? absolutize(baseUrl, video) : "";
 
-  // 2. Hero image
   const img = extractHeroImage(html, baseUrl);
-  if (img) return { image: img };
+  if (img) return { video: vidUrl, image: img };
 
-  // 3. Brand fallback
   const host = (new URL(baseUrl).hostname || "").toLowerCase();
-  if (/facebook/.test(host)) return { image: BRAND_IMAGES.facebook };
-  if (/instagram/.test(host)) return { image: BRAND_IMAGES.instagram };
-  if (/tiktok/.test(host)) return { image: BRAND_IMAGES.tiktok };
-  if (/twitter|x\.com/.test(host)) return { image: BRAND_IMAGES.twitter };
+  if (/facebook/.test(host)) return { video: vidUrl, image: BRAND_IMAGES.facebook };
+  if (/instagram/.test(host)) return { video: vidUrl, image: BRAND_IMAGES.instagram };
+  if (/tiktok/.test(host)) return { video: vidUrl, image: BRAND_IMAGES.tiktok };
+  if (/twitter|x\.com/.test(host)) return { video: vidUrl, image: BRAND_IMAGES.twitter };
 
-  // 4. Placeholder
-  return { image: PLACEHOLDER_IMG };
+  return { video: vidUrl, image: PLACEHOLDER_IMG };
 }
 
-/* ----- oEmbed support for socials ----- */
+/* ----- oEmbed support ----- */
 async function tryOEmbed(url) {
   const endpoints = [
     { match: /twitter\.com|x\.com/i, api: "https://publish.twitter.com/oembed?url=" },
@@ -149,7 +145,8 @@ async function tryOEmbed(url) {
           description: data.author_name ? `By ${data.author_name}` : "No description available",
           image: data.thumbnail_url || PLACEHOLDER_IMG,
           siteName: data.provider_name || hostFromUrl(url),
-          profile: data.author_name || "",
+          author: data.author_name || "",
+          profile: "",
           keywords: [],
           rawHTMLLength: 0,
           enrich: {}
@@ -162,7 +159,7 @@ async function tryOEmbed(url) {
   return null;
 }
 
-/* ----- attribute-order agnostic meta parsing ----- */
+/* ----- attribute-order agnostic parsing ----- */
 function getAttrCI(tag, name) {
   const re = new RegExp(`\\b${name}\\s*=\\s*["']([^"']+)["']`, "i");
   const m = tag.match(re);
@@ -178,19 +175,6 @@ function findMetaContent(html, keys) {
     if (keys.includes(prop) || keys.includes(name)) {
       const content = getAttrCI(tag, "content");
       if (content) return content.trim();
-    }
-  }
-  return "";
-}
-function findLinkHref(html, relValue) {
-  const re = /<link\b[^>]*>/gi;
-  let m;
-  while ((m = re.exec(html))) {
-    const tag = m[0];
-    const rel = (getAttrCI(tag, "rel") || "").toLowerCase();
-    if (rel.split(/\s+/).includes(relValue.toLowerCase())) {
-      const href = getAttrCI(tag, "href");
-      if (href) return href.trim();
     }
   }
   return "";
@@ -216,7 +200,9 @@ function matchText(html, re, minLen) {
   }
   return "";
 }
-function looksLikeCookieBanner(t = "") { return /cookies|consent|privacy|subscribe|newsletter|sign up|advert/i.test(t); }
+function looksLikeCookieBanner(t = "") {
+  return /cookies|consent|privacy|subscribe|newsletter|sign up|advert|gdpr|tracking/i.test(t);
+}
 
 /* ----- field extractors ----- */
 function extractTitle(html = "") {
@@ -232,32 +218,30 @@ function extractDescription(html = "") {
   );
 }
 function extractAuthor(html = "") {
-  return (
-    findMetaContent(html, [
-      "author",
-      "og:profile:username",
-      "twitter:creator",
-      "twitter:site"
-    ]) || ""
-  );
+  return findMetaContent(html, ["author"]) || "";
 }
-function extractCryptoDescription(html = "") {
-  return findMetaContent(html, ["description"]) || "";
+function extractProfile(html = "") {
+  return findMetaContent(html, ["og:profile:username", "twitter:creator", "twitter:site"]) || "";
 }
-function extractCryptoName(html = "") {
-  const raw = findMetaContent(html, ["og:title"]) || "";
-  if (raw) return raw.split("|")[0].trim();
-  const match = html.match(/<title[^>]*>(.*?)<\/title>/i);
-  return match ? stripTags(match[1]).split("|")[0].trim() : "";
+function detectCryptoName(title = "", desc = "") {
+  const combined = (title + " " + desc).toLowerCase();
+  const match = combined.match(/\b([A-Z]{2,5})\b/); // crude ticker grab
+  if (match && /btc|eth|sol|doge|matic|usdt|usdc/i.test(match[1])) {
+    return match[1].toUpperCase();
+  }
+  return "";
 }
 function extractSiteName(html = "") {
   return findMetaContent(html, ["og:site_name"]) || "";
 }
-function extractKeywords(html = "") {
+function extractKeywords(html = "", title = "") {
   const s = findMetaContent(html, ["keywords"]);
-  if (!s) return [];
-  return s.split(",").map(x => x.trim()).filter(Boolean).slice(0, 20);
+  if (s) return s.split(",").map(x => x.trim()).filter(Boolean).slice(0, 20);
+  // fallback: break title into keywords
+  return title.split(/\s+/).filter(w => w.length > 3).slice(0, 10);
 }
+
+/* ----- hero image extraction ----- */
 function extractHeroImage(html = "", baseUrl = "") {
   const metaImg = (
     findMetaContent(html, ["og:image", "twitter:image", "twitter:image:src"]) ||
@@ -277,13 +261,26 @@ function extractHeroImage(html = "", baseUrl = "") {
     const w = parseInt(getAttrCI(tag, "width") || "0", 10);
     const h = parseInt(getAttrCI(tag, "height") || "0", 10);
     const url = absolutize(baseUrl, src.trim());
-    imgs.push({ url, w, h, tag });
+    imgs.push({ url, w, h });
   }
   for (const im of imgs) {
     if (!isValidImage(im.url)) continue;
     if (looksLikePixel(im)) continue;
     if (isTrackerDomain(im.url)) continue;
     return im.url;
+  }
+  return "";
+}
+function findLinkHref(html, relValue) {
+  const re = /<link\b[^>]*>/gi;
+  let m;
+  while ((m = re.exec(html))) {
+    const tag = m[0];
+    const rel = (getAttrCI(tag, "rel") || "").toLowerCase();
+    if (rel.split(/\s+/).includes(relValue.toLowerCase())) {
+      const href = getAttrCI(tag, "href");
+      if (href) return href.trim();
+    }
   }
   return "";
 }
