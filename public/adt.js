@@ -1,5 +1,3 @@
-
-// Placeholder for battle logic
 let cpuCounter = 0;
 let playerCounter = 0;
 
@@ -8,13 +6,10 @@ function updateCounters() {
   document.getElementById("player-counter").textContent = playerCounter;
 }
 
-// Example demo: CPU + Player start with 0 → press space to increment
+// Temporary demo
 document.addEventListener("keydown", e => {
-  if (e.code === "Space") {
-    playerCounter++;
-    cpuCounter++;
-    updateCounters();
-  }
+  if (e.code === "ArrowUp") { cpuCounter++; updateCounters(); }
+  if (e.code === "ArrowDown") { playerCounter++; updateCounters(); }
 });
 
 updateCounters();
