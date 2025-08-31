@@ -1,10 +1,8 @@
-import { Dealer } from './Dealer.js';
-import { CardLibrary } from './cards.js'; // your local card store
+// start_game.js
+import { Dealer } from "./Dealer.js";
+import { initCardInfoHover } from "./initCardInfoHover.js";
 
 window.addEventListener("DOMContentLoaded", () => {
-  // Inject a sample card to ANY SLOT
-  Dealer.injectCard("player-battle-3", CardLibrary.sampleCard);
-
-  // Later, you can remove it:
-  // Dealer.removeCard("player-battle-3");
+  initCardInfoHover();
+  Dealer.start();
 });
