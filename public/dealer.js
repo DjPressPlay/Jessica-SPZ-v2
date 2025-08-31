@@ -1,7 +1,7 @@
 // DealerController.js
 // One script to rule them all — manages deck, slots, injects, start, draw.
 
-import { CardLibrary } from './cardData.js';
+import { CardLibrary } from './card_library.js';
 
 const Dealer = {
   deck: [],
