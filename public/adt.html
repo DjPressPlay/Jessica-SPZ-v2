@@ -1,46 +1,292 @@
+READ THIS SHIT  
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Battle Board</title>
   <script src="adt.js"></script>
-  <script>
-    window.addEventListener("DOMContentLoaded", () => {
-      initCardInfoHover();
-    });
-  </script>
+<script>
+  window.addEventListener("DOMContentLoaded", () => {
+    initCardInfoHover();
+  });
+</script>
+
   <style>
-    /* core layout styles omitted for brevity */
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #111;
+    }
+
+    .board-container {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      border: 8px solid #222;
+      border-radius: 18px;
+      box-shadow: inset 0 0 0 6px #0ff;
+    }
+
+    .map-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      border-top: 3px solid #000;
+    }
+
+    .map-section:first-child {
+      border-top: none;
+    }
+
+    .cpu-section {
+      background: url("https://miro.medium.com/v2/resize:fit:1100/format:webp/1*rd76wCu4QjZcQWV9wraB_g.png") center/cover no-repeat;
+    }
+
+    .shared-section {
+      background: url("https://tools.toywiz.com/_images/_webp/_products/lg/legacyvaliantplaymat.webp") center/cover no-repeat;
+    }
+
+    .player-section {
+      background: url("https://miro.medium.com/v2/resize:fit:1100/format:webp/0*gtZUOQrS_bCJXFtO") center/cover no-repeat;
+    }
+
+    .zone {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .slot {
+      width: 80px;
+      height: 120px;
+      border: 2px solid #666;
+      border-radius: 6px;
+      background: #222;
+    }
+
+    .battle-counter {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #0ff 30%, #111 100%);
+      color: #fff;
+      font-size: 2rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 12px auto;
+      box-shadow: 0 0 20px rgba(0,255,255,0.6);
+      text-shadow: 0 0 10px #000;
+    }
+
+    .cpu-hand .slot:nth-child(1) { transform: rotate(-8deg); }
+    .cpu-hand .slot:nth-child(2) { transform: rotate(-4deg); }
+    .cpu-hand .slot:nth-child(3) { transform: rotate(0deg); }
+    .cpu-hand .slot:nth-child(4) { transform: rotate(4deg); }
+    .cpu-hand .slot:nth-child(5) { transform: rotate(8deg); }
+
+    .player-hand .slot:nth-child(1) { transform: rotate(-8deg); }
+    .player-hand .slot:nth-child(2) { transform: rotate(-4deg); }
+    .player-hand .slot:nth-child(3) { transform: rotate(0deg); }
+    .player-hand .slot:nth-child(4) { transform: rotate(4deg); }
+    .player-hand .slot:nth-child(5) { transform: rotate(8deg); }
+
+    .cpu-hand .slot,
+    .player-hand .slot {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .cpu-hand .slot:hover,
+    .player-hand .slot:hover {
+      transform: scale(1.1) rotate(0deg);
+      box-shadow: 0 0 25px rgba(0,255,255,0.7),
+                  0 0 40px rgba(255,0,255,0.6);
+      z-index: 10;
+    }
+
+    @media (max-width: 768px) {
+      .slot {
+        width: 60px;
+        height: 90px;
+      }
+    }
+
+    .hud {
+      position: fixed;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .cpu-hud { top: 20px; right: 20px; }
+    .player-hud { bottom: 20px; left: 20px; }
+
+    .hud-pic img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid #0ff;
+      object-fit: cover;
+      background: #000;
+    }
+
+    .hud-name {
+      margin-top: 6px;
+      color: #0ff;
+      font-weight: bold;
+      font-size: 1.1rem;
+      text-shadow: 0 0 4px #000;
+    }
+
+    .hud-health {
+      width: 100px;
+      height: 12px;
+      background: #111;
+      border: 2px solid #444;
+      border-radius: 6px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+
+    .hud-health-fill {
+      height: 100%;
+      background: linear-gradient(to right, #0f0, #090);
+      transition: width 0.3s ease;
+    }
+
+    .deck {
+      position: fixed;
+      width: 80px;
+      height: 110px;
+      background: #222;
+      border: 3px solid #888;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,255,255,0.3);
+      z-index: 9999;
+    }
+
+    .cpu-deck { top: 20px; left: 20px; }
+    .player-deck { bottom: 20px; right: 20px; }
+
+    .grave {
+      position: fixed;
+      width: 80px;
+      height: 110px;
+      background: #333;
+      border: 3px solid #990000;
+      border-radius: 8px;
+      box-shadow: 0 0 12px rgba(255,0,0,0.5);
+      z-index: 9999;
+    }
+
+    .grave-cpu {
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .grave-player {
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .message-box {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      min-width: 300px;
+      max-width: 80vw;
+      padding: 20px 30px;
+      background: rgba(0, 0, 0, 0.85);
+      color: #fff;
+      font-size: 2.2rem;
+      font-style: italic;
+      font-weight: bold;
+      text-align: center;
+      border: 2px solid #0ff;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,255,255,0.4);
+      z-index: 99999;
+      display: none;
+      text-shadow: 0 0 5px #0ff, 0 0 10px #0ff;
+    }
+
+.card-info {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 160px;
+  min-height: 60px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  font-size: 0.9rem;
+  font-style: italic;
+  font-weight: bold;
+  border: 2px solid #0ff;
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgba(0,255,255,0.3);
+  text-align: center;
+  z-index: 9999;
+}
+
+.info-left {
+  right: 130px;
+}
+
+.info-right {
+  left: 130px;
+}
+
+
+    
   </style>
 </head>
 <body>
 
-  <!-- Deck & Grave -->
+  <!-- Floating -->
   <div id="cpu-deck" class="deck cpu-deck"></div>
-  <div id="player-deck" class="deck player-deck" onclick="startGame()"></div>
+  <div id="player-deck" class="deck player-deck"></div>
+
+ <div class="hud cpu-hud">
+  <div id="cpu-card-info" class="card-info info-left">Card Info...</div>
+  <div class="hud-pic"><img src="https://miro.medium.com/v2/resize:fit:786/format:webp/1*rYMkBL3JcdN_oYqWG4opHw.png" alt="CPU Avatar"></div>
+  <div class="hud-name">CPU</div>
+  <div class="hud-health"><div class="hud-health-fill" style="width: 100%;"></div></div>
+</div>
+
+<div class="hud player-hud">
+  <div class="hud-pic"><img src="https://miro.medium.com/v2/resize:fit:786/format:webp/1*rYMkBL3JcdN_oYqWG4opHw.png" alt="Player Avatar"></div>
+  <div class="hud-name">PLAYER</div>
+  <div class="hud-health"><div class="hud-health-fill" style="width: 100%;"></div></div>
+  <div id="player-card-info" class="card-info info-right">Card Info...</div>
+</div>
+
+
+  
+
   <div id="cpu-grave" class="grave grave-cpu"></div>
   <div id="player-grave" class="grave grave-player"></div>
-
-  <!-- HUDs -->
-  <div class="hud cpu-hud">
-    <div id="cpu-card-info" class="card-info info-left">Card Info...</div>
-    <div class="hud-pic"><img src="https://miro.medium.com/v2/resize:fit:786/format:webp/1*rYMkBL3JcdN_oYqWG4opHw.png" alt="CPU Avatar"></div>
-    <div class="hud-name">CPU</div>
-    <div class="hud-health"><div class="hud-health-fill" style="width: 100%;"></div></div>
-  </div>
-
-  <div class="hud player-hud">
-    <div class="hud-pic"><img src="https://miro.medium.com/v2/resize:fit:786/format:webp/1*rYMkBL3JcdN_oYqWG4opHw.png" alt="Player Avatar"></div>
-    <div class="hud-name">PLAYER</div>
-    <div class="hud-health"><div class="hud-health-fill" style="width: 100%;"></div></div>
-    <div id="player-card-info" class="card-info info-right">Card Info...</div>
-  </div>
-
-  <!-- Message -->
   <div id="game-message" class="message-box">Waiting...</div>
 
-  <!-- BOARD ZONES -->
+  <!-- BOARD WRAPPER ✅ -->
   <div class="board-container">
+
     <div class="map-section cpu-section">
       <div class="zone cpu-hand">
         <div class="slot" id="cpu-hand-1"></div>
@@ -80,22 +326,7 @@
         <div class="slot" id="player-hand-5"></div>
       </div>
     </div>
+
   </div>
-
-  <script>
-    function startGame() {
-      const card = document.createElement("img");
-      card.src = "starter-card.png"; // temp local card path
-      card.alt = "Card";
-      card.style.width = "100%";
-      card.style.height = "100%";
-      card.style.borderRadius = "6px";
-
-      const slot = document.getElementById("player-hand-3");
-      slot.innerHTML = "";
-      slot.appendChild(card);
-    }
-  </script>
-
 </body>
 </html>
