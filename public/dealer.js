@@ -1,42 +1,34 @@
 // Dealer.js
+import { CardLibrary } from './card_library.js';
 
 export const Dealer = {
-  injectCard(slotId, cardData) {
-    const slot = document.getElementById(slotId);
-    if (!slot || !cardData) return;
-
-    // Clean out previous card (1 per slot)
-    Dealer.removeCard(slotId);
+  inject(card, targetSlotId) {
+    const slot = document.getElementById(targetSlotId);
+    if (!slot) return;
 
     const el = document.createElement("div");
     el.className = "stcg-card";
-    el.dataset.id = cardData.id;
-    el.dataset.name = cardData.name;
-    el.dataset.emojis = cardData.emojis?.join("") || "";
-    el.dataset.effects = JSON.stringify(cardData.effects || {});
+    el.dataset.name = card.name;
+    el.dataset.emojis = card.effects.map(e => e.emoji).join("");
+    el.dataset.effects = JSON.stringify(
+      Object.fromEntries(card.effects.map(e => [e.emoji, e.text]))
+    );
 
     el.style.width = "80px";
     el.style.height = "120px";
-    el.style.backgroundImage = `url('${cardData.img}')`;
+    el.style.backgroundImage = `url('${card.card_images?.[0]?.image_url}')`;
     el.style.backgroundSize = "cover";
-    el.style.border = "2px solid #0ff";
+    el.style.border = "2px solid #ff0066";
     el.style.borderRadius = "8px";
-
-    el.title = `${cardData.name}\nATK: ${cardData.atk} | DEF: ${cardData.def}`;
+    el.title = `${card.name}\nATK: ${card.atk} | DEF: ${card.def}`;
 
     slot.appendChild(el);
   },
 
-  removeCard(slotId) {
-    const slot = document.getElementById(slotId);
-    if (!slot) return;
-    const card = slot.querySelector(".stcg-card");
-    if (card) slot.removeChild(card);
+  start() {
+    const card = CardLibrary.sampleCard;
+    this.inject(card, "player-hand-3");
   },
 
-  getCard(slotId) {
-    const slot = document.getElementById(slotId);
-    if (!slot) return null;
-    return slot.querySelector(".stcg-card");
-  }
+  // add draw(), shuffle(), clear() etc next
 };
