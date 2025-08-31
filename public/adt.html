@@ -4,50 +4,56 @@
 <meta charset="UTF-8">
 <title>Battle Board</title>
 <style>
-  html, body {
-    margin: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;     /* lock viewport, no scroll */
-    background: #111;
-    font-family: sans-serif;
-  }
+ html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #111;
+  font-family: sans-serif;
+  overflow: hidden;
+}
 
-  /* Full mat container */
-  .board-container {
-    width: 100vw;
-    height: 100vh;
-    border: 8px solid #222;
-    border-radius: 18px;
-    box-shadow: inset 0 0 0 6px #0ff;
-    display: flex;
-    flex-direction: column;
-  }
+/* Board fits within viewport */
+.board-container {
+  width: 95vw;
+  height: auto;
+  aspect-ratio: 16/9;         /* keeps playmat rectangular */
+  max-height: 95vh;
+  border: 8px solid #222;
+  border-radius: 18px;
+  box-shadow: inset 0 0 0 6px #0ff;
+  display: flex;
+  flex-direction: column;
+}
 
-  /* Each section (CPU / Shared / Player) */
-  .map-section {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    border-top: 3px solid #000;
-  }
-  .map-section:first-child {
-    border-top: none;
-  }
+/* Each section */
+.map-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border-top: 3px solid #000;
+}
+.map-section:first-child {
+  border-top: none;
+}
 
-  /* Backgrounds for each section */
-  .cpu-section {
-    background: url("https://miro.medium.com/v2/resize:fit:1100/format:webp/1*rd76wCu4QjZcQWV9wraB_g.png") center/cover no-repeat;
-  }
-  .shared-section {
-    background: url("https://tools.toywiz.com/_images/_webp/_products/lg/legacyvaliantplaymat.webp") center/cover no-repeat;
-  }
-  .player-section {
-    background: url("https://miro.medium.com/v2/resize:fit:1100/format:webp/0*gtZUOQrS_bCJXFtO") center/cover no-repeat;
-  }
+/* Backgrounds scaled properly */
+.cpu-section {
+  background: url("https://miro.medium.com/v2/resize:fit:1100/format:webp/1*rd76wCu4QjZcQWV9wraB_g.png") center/contain no-repeat;
+}
+.shared-section {
+  background: url("https://tools.toywiz.com/_images/_webp/_products/lg/legacyvaliantplaymat.webp") center/contain no-repeat;
+}
+.player-section {
+  background: url("https://miro.medium.com/v2/resize:fit:1100/format:webp/0*gtZUOQrS_bCJXFtO") center/contain no-repeat;
+}
+
 
   /* Zones inside sections */
   .zone {
