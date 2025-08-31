@@ -9,29 +9,31 @@
     width: 100%;
     height: 100%;
     background: #111;
-    overflow: hidden; /* lock viewport */
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
-  /* Wrapper that keeps scaling correct */
+  /* Wrapper centers mat */
   .mat-wrapper {
     width: 100%;
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 1rem;
+    box-sizing: border-box;
   }
 
-  /* Scales board into wrapper */
+  /* Board behaves like a fixed window */
   .board-container {
-    aspect-ratio: 16/9;       /* keep TCG mat shape */
-    max-width: 100%;
-    max-height: 100%;
+    aspect-ratio: 16/9;
+    width: 100%;
+    max-width: 1200px;   /* window size on PC */
+    max-height: 700px;
     border: 8px solid #222;
     border-radius: 18px;
-    box-shadow: inset 0 0 0 6px #0ff;
+    box-shadow: inset 0 0 0 6px #0ff, 0 0 40px rgba(0,255,255,0.4);
     display: flex;
     flex-direction: column;
     background: #111;
@@ -112,6 +114,18 @@
     box-shadow: 0 0 25px rgba(0,255,255,0.7),
                 0 0 40px rgba(255,0,255,0.6);
     z-index: 10;
+  }
+
+  /* Responsive for phones */
+  @media (max-width: 768px) {
+    .board-container {
+      max-width: 100%;
+      max-height: 100%;
+    }
+    .slot {
+      width: 60px;
+      height: 90px;
+    }
   }
 </style>
 </head>
