@@ -111,49 +111,57 @@
       }
     }
 
-    .player-ui {
+  .hud {
   position: fixed;
-  width: 100px;
   display: flex;
   flex-direction: column;
   align-items: center;
   z-index: 9999;
 }
 
-.cpu-ui {
+.cpu-hud {
   top: 20px;
   right: 20px;
 }
 
-.player-ui-bottom {
+.player-hud {
   bottom: 20px;
   left: 20px;
 }
 
-.player-ui img {
+.hud-pic img {
   width: 100px;
   height: 100px;
   border-radius: 50%;
   border: 3px solid #0ff;
   object-fit: cover;
-  background: #333;
+  background: #000;
 }
 
-.health-bar {
+.hud-name {
+  margin-top: 6px;
+  color: #0ff;
+  font-weight: bold;
+  font-size: 1.1rem;
+  text-shadow: 0 0 4px #000;
+}
+
+.hud-health {
   width: 100px;
   height: 12px;
-  border: 2px solid #555;
   background: #111;
-  margin-top: 6px;
+  border: 2px solid #444;
   border-radius: 6px;
+  margin-top: 6px;
   overflow: hidden;
 }
 
-.health-fill {
+.hud-health-fill {
   height: 100%;
-  background: linear-gradient(to right, #0f0, #0c0);
+  background: linear-gradient(to right, #0f0, #090);
   transition: width 0.3s ease;
 }
+
 
   </style>
 </head>
