@@ -213,6 +213,25 @@
       display: none;
       text-shadow: 0 0 5px #0ff, 0 0 10px #0ff;
     }
+
+.card-info {
+  margin-top: 10px;
+  width: 140px;
+  min-height: 60px;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  font-size: 0.9rem;
+  font-style: italic;
+  font-weight: bold;
+  border: 2px solid #0ff;
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgba(0,255,255,0.3);
+  text-align: center;
+}
+
+
+    
   </style>
 </head>
 <body>
@@ -225,13 +244,20 @@
     <div class="hud-pic"><img src="https://miro.medium.com/v2/resize:fit:786/format:webp/1*rYMkBL3JcdN_oYqWG4opHw.png" alt="CPU Avatar"></div>
     <div class="hud-name">CPU</div>
     <div class="hud-health"><div class="hud-health-fill" style="width: 100%;"></div></div>
+      <div id="cpu-card-info" class="card-info">Card Info...</div>
+
   </div>
 
   <div class="hud player-hud">
     <div class="hud-pic"><img src="https://miro.medium.com/v2/resize:fit:786/format:webp/1*rYMkBL3JcdN_oYqWG4opHw.png" alt="Player Avatar"></div>
     <div class="hud-name">PLAYER</div>
     <div class="hud-health"><div class="hud-health-fill" style="width: 100%;"></div></div>
+      <div id="player-card-info" class="card-info">Card Info...</div>
+
   </div>
+
+
+  
 
   <div id="cpu-grave" class="grave grave-cpu"></div>
   <div id="player-grave" class="grave grave-player"></div>
