@@ -1,16 +1,10 @@
-// js/startGame.js
+import { Dealer } from './Dealer.js';
+import { CardLibrary } from './cards.js'; // your local card store
 
-async function startGame() {
-  try {
-    const res = await fetch("/data/cards.json");
-    const cards = await res.json();
+window.addEventListener("DOMContentLoaded", () => {
+  // Inject a sample card to ANY SLOT
+  Dealer.injectCard("player-battle-3", CardLibrary.sampleCard);
 
-    if (!cards.length) return console.warn("No cards found");
-
-    const card = cards[0];
-    const html = renderCard(card); // use your real renderer
-    document.getElementById("hand-slot-2").innerHTML = html;
-  } catch (err) {
-    console.error("Start game failed:", err);
-  }
-}
+  // Later, you can remove it:
+  // Dealer.removeCard("player-battle-3");
+});
