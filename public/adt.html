@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Battle Board</title>
   <style>
     html, body {
@@ -111,162 +111,135 @@
       }
     }
 
-  .hud {
-  position: fixed;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  z-index: 9999;
-}
+    .hud {
+      position: fixed;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 9999;
+    }
 
-.cpu-hud {
-  top: 20px;
-  right: 20px;
-}
+    .cpu-hud { top: 20px; right: 20px; }
+    .player-hud { bottom: 20px; left: 20px; }
 
-.player-hud {
-  bottom: 20px;
-  left: 20px;
-}
+    .hud-pic img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid #0ff;
+      object-fit: cover;
+      background: #000;
+    }
 
-.hud-pic img {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  border: 3px solid #0ff;
-  object-fit: cover;
-  background: #000;
-}
+    .hud-name {
+      margin-top: 6px;
+      color: #0ff;
+      font-weight: bold;
+      font-size: 1.1rem;
+      text-shadow: 0 0 4px #000;
+    }
 
-.hud-name {
-  margin-top: 6px;
-  color: #0ff;
-  font-weight: bold;
-  font-size: 1.1rem;
-  text-shadow: 0 0 4px #000;
-}
+    .hud-health {
+      width: 100px;
+      height: 12px;
+      background: #111;
+      border: 2px solid #444;
+      border-radius: 6px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
 
-.hud-health {
-  width: 100px;
-  height: 12px;
-  background: #111;
-  border: 2px solid #444;
-  border-radius: 6px;
-  margin-top: 6px;
-  overflow: hidden;
-}
+    .hud-health-fill {
+      height: 100%;
+      background: linear-gradient(to right, #0f0, #090);
+      transition: width 0.3s ease;
+    }
 
-.hud-health-fill {
-  height: 100%;
-  background: linear-gradient(to right, #0f0, #090);
-  transition: width 0.3s ease;
-}
+    .deck {
+      position: fixed;
+      width: 80px;
+      height: 110px;
+      background: #222;
+      border: 3px solid #888;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,255,255,0.3);
+      z-index: 9999;
+    }
 
-.deck {
-  position: fixed;
-  width: 80px;
-  height: 110px;
-  background: #222;
-  border: 3px solid #888;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0,255,255,0.3);
-  z-index: 9999;
-}
+    .cpu-deck { top: 20px; left: 20px; }
+    .player-deck { bottom: 20px; right: 20px; }
 
-.cpu-deck {
-  top: 20px;
-  left: 20px;
-}
+    .grave {
+      position: fixed;
+      width: 80px;
+      height: 110px;
+      background: #333;
+      border: 3px solid #990000;
+      border-radius: 8px;
+      box-shadow: 0 0 12px rgba(255,0,0,0.5);
+      z-index: 9999;
+    }
 
-.player-deck {
-  bottom: 20px;
-  right: 20px;
-}
+    .grave-cpu {
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
 
-.grave {
-  position: fixed;
-  width: 80px;
-  height: 110px;
-  background: #333;
-  border: 3px solid #990000;
-  border-radius: 8px;
-  box-shadow: 0 0 12px rgba(255,0,0,0.5);
-  z-index: 9999;
-}
+    .grave-player {
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
 
-.grave-cpu {
-  left: 20px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.grave-player {
-  right: 20px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-.message-box {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  min-width: 300px;
-  max-width: 80vw;
-  padding: 20px 30px;
-  background: rgba(0, 0, 0, 0.85);
-  color: #0ff;
-  font-size: 1.5rem;
-  font-weight: bold;
-  text-align: center;
-  border: 2px solid #0ff;
-  border-radius: 10px;
-  box-shadow: 0 0 20px rgba(0,255,255,0.4);
-  z-index: 99999;
-  display: none; /* 🔥 hidden by default */
-}
-
-
-    
-    
-    
+    .message-box {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      min-width: 300px;
+      max-width: 80vw;
+      padding: 20px 30px;
+      background: rgba(0, 0, 0, 0.85);
+      color: #fff;
+      font-size: 2.2rem;
+      font-style: italic;
+      font-weight: bold;
+      text-align: center;
+      border: 2px solid #0ff;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,255,255,0.4);
+      z-index: 99999;
+      display: none;
+      text-shadow: 0 0 5px #0ff, 0 0 10px #0ff;
+    }
   </style>
 </head>
 <body>
 
+  <!-- Floating -->
+  <div id="cpu-deck" class="deck cpu-deck"></div>
+  <div id="player-deck" class="deck player-deck"></div>
 
-  
-<!-- CPU Deck (Top Left) -->
-<div id="cpu-deck" class="deck cpu-deck"></div>
-
-<!-- Player Deck (Bottom Right) -->
-<div id="player-deck" class="deck player-deck"></div>
-
-
-  
-<!-- CPU HUD (Top Right) -->
-<div class="hud cpu-hud">
-  <div class="hud-pic">
-    <img src="https://placehold.co/100x100/png" alt="CPU Avatar">
+  <div class="hud cpu-hud">
+    <div class="hud-pic"><img src="https://placehold.co/100x100/png" alt="CPU Avatar"></div>
+    <div class="hud-name">CPU</div>
+    <div class="hud-health"><div class="hud-health-fill" style="width: 100%;"></div></div>
   </div>
-  <div class="hud-name">CPU</div>
-  <div class="hud-health">
-    <div class="hud-health-fill" style="width: 100%;"></div>
-  </div>
-</div>
 
-<!-- Player HUD (Bottom Left) -->
-<div class="hud player-hud">
-  <div class="hud-pic">
-    <img src="https://placehold.co/100x100/png" alt="Player Avatar">
+  <div class="hud player-hud">
+    <div class="hud-pic"><img src="https://placehold.co/100x100/png" alt="Player Avatar"></div>
+    <div class="hud-name">PLAYER</div>
+    <div class="hud-health"><div class="hud-health-fill" style="width: 100%;"></div></div>
   </div>
-  <div class="hud-name">PLAYER</div>
-  <div class="hud-health">
-    <div class="hud-health-fill" style="width: 100%;"></div>
-  </div>
-</div>
 
+  <div id="cpu-grave" class="grave grave-cpu"></div>
+  <div id="player-grave" class="grave grave-player"></div>
+  <div id="game-message" class="message-box">Waiting...</div>
 
-    <!-- CPU Section -->
+  <!-- BOARD WRAPPER ✅ -->
+  <div class="board-container">
+
     <div class="map-section cpu-section">
       <div class="zone cpu-hand">
         <div class="slot" id="cpu-hand-1"></div>
@@ -281,29 +254,17 @@
         <div class="slot" id="cpu-trap-3"></div>
       </div>
     </div>
-<!-- CPU Grave (left center) -->
-<div id="cpu-grave" class="grave grave-cpu"></div>
 
-
-
-    <!-- Shared Battle Zone -->
     <div class="map-section shared-section">
       <div class="zone cpu-battle">
         <div class="slot" id="cpu-battle-1"></div>
       </div>
-      <div id="game-message" class="message-box">Waiting...</div>
-
       <div class="battle-counter" id="battle-counter">3</div>
       <div class="zone player-battle">
         <div class="slot" id="player-battle-1"></div>
       </div>
     </div>
 
-  
-  
-<!-- Player Grave (right center) -->
-<div id="player-grave" class="grave grave-player"></div>
-      <!-- Player Section -->
     <div class="map-section player-section">
       <div class="zone player-traps">
         <div class="slot" id="player-trap-1"></div>
