@@ -1,6 +1,6 @@
 // card_library.js
-export const CardLibrary = {
-  sampleCard: {
+export const CardLibrary = [
+  {
     id: "000057",
     name: "Shorties Bootleg Broadcast | Adult Swim Bumps | #1",
     icon: "🌍📰",
@@ -22,4 +22,4 @@ export const CardLibrary = {
       }
     ]
   }
-};
+];
