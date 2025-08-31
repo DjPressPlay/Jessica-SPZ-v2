@@ -183,6 +183,31 @@
   right: 20px;
 }
 
+.grave {
+  position: fixed;
+  width: 80px;
+  height: 110px;
+  background: #333;
+  border: 3px solid #990000;
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(255,0,0,0.5);
+  z-index: 9999;
+}
+
+.grave-cpu {
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.grave-player {
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+
+    
     
   </style>
 </head>
@@ -234,6 +259,10 @@
         <div class="slot" id="cpu-trap-3"></div>
       </div>
     </div>
+<!-- CPU Grave (left center) -->
+<div id="cpu-grave" class="grave grave-cpu"></div>
+
+
 
     <!-- Shared Battle Zone -->
     <div class="map-section shared-section">
@@ -246,7 +275,11 @@
       </div>
     </div>
 
-    <!-- Player Section -->
+  
+  
+<!-- Player Grave (right center) -->
+<div id="player-grave" class="grave grave-player"></div>
+      <!-- Player Section -->
     <div class="map-section player-section">
       <div class="zone player-traps">
         <div class="slot" id="player-trap-1"></div>
