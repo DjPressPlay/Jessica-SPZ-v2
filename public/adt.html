@@ -162,10 +162,40 @@
   transition: width 0.3s ease;
 }
 
+.deck {
+  position: fixed;
+  width: 80px;
+  height: 110px;
+  background: #222;
+  border: 3px solid #888;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,255,255,0.3);
+  z-index: 9999;
+}
 
+.cpu-deck {
+  top: 20px;
+  left: 20px;
+}
+
+.player-deck {
+  bottom: 20px;
+  right: 20px;
+}
+
+    
   </style>
 </head>
 <body>
+  
+<!-- CPU Deck (Top Left) -->
+<div id="cpu-deck" class="deck cpu-deck"></div>
+
+<!-- Player Deck (Bottom Right) -->
+<div id="player-deck" class="deck player-deck"></div>
+
+
+  
 <!-- CPU HUD (Top Right) -->
 <div class="hud cpu-hud">
   <div class="hud-pic">
