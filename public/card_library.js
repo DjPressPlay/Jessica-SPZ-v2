@@ -3,7 +3,7 @@ export const CardLibrary = [
   {
     id: "000057",
     name: "Shorties Bootleg Broadcast | Adult Swim Bumps | #1",
-    icon: "🌍📰",
+    emojis: ["🌍", "📰"], // ✅ FIXED
     about: "YouTube",
     tribute: "🙇‍♂️🙇‍♂️🙇‍♂️🙇‍♂️🙇‍♂️",
     effects: [
