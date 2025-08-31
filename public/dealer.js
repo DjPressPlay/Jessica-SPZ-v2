@@ -1,40 +1,42 @@
-// dealer.js
-const Dealer = {
-  playerDeck: [],
-  cpuDeck: [],
+// Dealer.js
 
-  initGame(playerDeckData, cpuDeckData) {
-    this.playerDeck = [...playerDeckData];
-    this.cpuDeck = [...cpuDeckData];
-    this.shuffleDeck(this.playerDeck);
-    this.shuffleDeck(this.cpuDeck);
+export const Dealer = {
+  injectCard(slotId, cardData) {
+    const slot = document.getElementById(slotId);
+    if (!slot || !cardData) return;
+
+    // Clean out previous card (1 per slot)
+    Dealer.removeCard(slotId);
+
+    const el = document.createElement("div");
+    el.className = "stcg-card";
+    el.dataset.id = cardData.id;
+    el.dataset.name = cardData.name;
+    el.dataset.emojis = cardData.emojis?.join("") || "";
+    el.dataset.effects = JSON.stringify(cardData.effects || {});
+
+    el.style.width = "80px";
+    el.style.height = "120px";
+    el.style.backgroundImage = `url('${cardData.img}')`;
+    el.style.backgroundSize = "cover";
+    el.style.border = "2px solid #0ff";
+    el.style.borderRadius = "8px";
+
+    el.title = `${cardData.name}\nATK: ${cardData.atk} | DEF: ${cardData.def}`;
+
+    slot.appendChild(el);
   },
 
-  shuffleDeck(deck) {
-    for (let i = deck.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [deck[i], deck[j]] = [deck[j], deck[i]];
-    }
+  removeCard(slotId) {
+    const slot = document.getElementById(slotId);
+    if (!slot) return;
+    const card = slot.querySelector(".stcg-card");
+    if (card) slot.removeChild(card);
   },
 
-  drawCard(isPlayer = true) {
-    const deck = isPlayer ? this.playerDeck : this.cpuDeck;
-    if (deck.length === 0) return null;
-    const card = deck.pop();
-    const slotId = this.findOpenHandSlot(isPlayer);
-    if (slotId) {
-      const el = createCardElement(card);
-      placeCardInSlot(el, slotId);
-    }
-    return card;
-  },
-
-  findOpenHandSlot(isPlayer) {
-    const prefix = isPlayer ? "player-hand-" : "cpu-hand-";
-    for (let i = 1; i <= 5; i++) {
-      const el = document.getElementById(prefix + i);
-      if (el && el.children.length === 0) return prefix + i;
-    }
-    return null;
+  getCard(slotId) {
+    const slot = document.getElementById(slotId);
+    if (!slot) return null;
+    return slot.querySelector(".stcg-card");
   }
 };
