@@ -9,36 +9,34 @@
     width: 100%;
     height: 100%;
     background: #111;
-    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
-  /* Outer wrapper to handle scaling */
+  /* Wrapper centers mat */
   .mat-wrapper {
     width: 100%;
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 1rem;
+    box-sizing: border-box;
   }
 
-  /* Inner container with fixed design size */
+  /* Board behaves like a fixed window */
   .board-container {
-    width: 1200px;    /* "true" design size */
-    height: 700px;
+    aspect-ratio: 16/9;
+    width: 100%;
+    max-width: 1200px;   /* window size on PC */
+    max-height: 700px;
     border: 8px solid #222;
     border-radius: 18px;
-    box-shadow: inset 0 0 0 6px #0ff;
+    box-shadow: inset 0 0 0 6px #0ff, 0 0 40px rgba(0,255,255,0.4);
     display: flex;
     flex-direction: column;
-    transform-origin: top left;
-  }
-
-  /* Force scaling to fit window */
-  .scaled {
-    transform: scale(var(--scale));
+    background: #111;
   }
 
   .map-section {
@@ -52,6 +50,7 @@
   }
   .map-section:first-child { border-top: none; }
 
+  /* Backgrounds */
   .cpu-section {
     background: url("https://miro.medium.com/v2/resize:fit:1100/format:webp/1*rd76wCu4QjZcQWV9wraB_g.png") center/cover no-repeat;
   }
@@ -68,7 +67,6 @@
     gap: 12px;
   }
 
-  /* Slots keep real card size */
   .slot {
     width: 80px;
     height: 120px;
@@ -92,11 +90,49 @@
     box-shadow: 0 0 20px rgba(0,255,255,0.6);
     text-shadow: 0 0 10px #000;
   }
+
+  /* Fan effect */
+  .cpu-hand .slot:nth-child(1){ transform: rotate(-8deg); }
+  .cpu-hand .slot:nth-child(2){ transform: rotate(-4deg); }
+  .cpu-hand .slot:nth-child(3){ transform: rotate(0deg); }
+  .cpu-hand .slot:nth-child(4){ transform: rotate(4deg); }
+  .cpu-hand .slot:nth-child(5){ transform: rotate(8deg); }
+
+  .player-hand .slot:nth-child(1){ transform: rotate(-8deg); }
+  .player-hand .slot:nth-child(2){ transform: rotate(-4deg); }
+  .player-hand .slot:nth-child(3){ transform: rotate(0deg); }
+  .player-hand .slot:nth-child(4){ transform: rotate(4deg); }
+  .player-hand .slot:nth-child(5){ transform: rotate(8deg); }
+
+  .cpu-hand .slot,
+  .player-hand .slot {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .cpu-hand .slot:hover,
+  .player-hand .slot:hover {
+    transform: scale(1.1) rotate(0deg);
+    box-shadow: 0 0 25px rgba(0,255,255,0.7),
+                0 0 40px rgba(255,0,255,0.6);
+    z-index: 10;
+  }
+
+  /* Responsive for phones */
+  @media (max-width: 768px) {
+    .board-container {
+      max-width: 100%;
+      max-height: 100%;
+    }
+    .slot {
+      width: 60px;
+      height: 90px;
+    }
+  }
 </style>
 </head>
 <body>
   <div class="mat-wrapper">
-    <div class="board-container scaled" id="board">
+    <div class="board-container">
+
       <!-- CPU Section -->
       <div class="map-section cpu-section">
         <div class="zone cpu-hand">
@@ -107,7 +143,7 @@
         </div>
       </div>
 
-      <!-- Shared Zone -->
+      <!-- Shared Battle Zone -->
       <div class="map-section shared-section">
         <div class="zone cpu-battle"><div class="slot"></div></div>
         <div class="battle-counter">3</div>
@@ -123,20 +159,8 @@
           <div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div>
         </div>
       </div>
+
     </div>
   </div>
-
-<script>
-  function resizeBoard() {
-    const board = document.getElementById("board");
-    const wrapper = document.querySelector(".mat-wrapper");
-    const scaleX = wrapper.clientWidth / 1200;
-    const scaleY = wrapper.clientHeight / 700;
-    const scale = Math.min(scaleX, scaleY);
-    board.style.setProperty("--scale", scale);
-  }
-  window.addEventListener("resize", resizeBoard);
-  resizeBoard();
-</script>
 </body>
 </html>
