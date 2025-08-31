@@ -206,7 +206,28 @@
   transform: translateY(-50%);
 }
 
+.message-box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 300px;
+  max-width: 80vw;
+  padding: 20px 30px;
+  background: rgba(0, 0, 0, 0.85);
+  color: #0ff;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+  border: 2px solid #0ff;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0,255,255,0.4);
+  z-index: 99999;
+  display: none; /* 🔥 hidden by default */
+}
 
+
+    
     
     
   </style>
