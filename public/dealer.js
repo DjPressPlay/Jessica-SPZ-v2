@@ -1,7 +1,8 @@
 // DealerController.js
-// One script to rule them all — manages deck, slots, injects, start, draw.
+// Manages deck, slot injection, game start — now using CardSlotController
 
 import { CardLibrary } from './card_library.js';
+import { CardSlotController } from './card_slot_controller.js';
 
 const Dealer = {
   deck: [],
@@ -16,7 +17,6 @@ const Dealer = {
 
   loadDeck() {
     this.deck = [...CardLibrary];
-    // Optional shuffle
     for (let i = this.deck.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [this.deck[i], this.deck[j]] = [this.deck[j], this.deck[i]];
@@ -31,30 +31,14 @@ const Dealer = {
 
   drawCard() {
     if (this.deck.length === 0) return null;
-    return this.deck.shift();
+    const card = this.deck.shift();
+    this.hand.push(card);
+    return card;
   },
 
-  injectCardToSlot(slotId, card) {
+  injectCardToSlot(slotId, card, flipped = false) {
     if (!card) return;
-    const slot = document.getElementById(slotId);
-    if (!slot) return;
-
-    const el = document.createElement("div");
-    el.className = "stcg-card";
-    el.dataset.id = card.id;
-    el.dataset.name = card.name;
-    el.dataset.emojis = card.emojis.join("");
-    el.dataset.effects = JSON.stringify(card.effects);
-    el.style.width = "80px";
-    el.style.height = "120px";
-    el.style.backgroundImage = `url('${card.img}')`;
-    el.style.backgroundSize = "cover";
-    el.style.border = "2px solid #ff0066";
-    el.style.borderRadius = "8px";
-    el.title = `${card.name}\nATK: ${card.atk} | DEF: ${card.def}`;
-
-    slot.innerHTML = "";
-    slot.appendChild(el);
+    CardSlotController.injectToSlot(slotId, card, flipped);
   }
 };
 
