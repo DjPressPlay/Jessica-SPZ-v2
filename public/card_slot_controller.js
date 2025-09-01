@@ -1,4 +1,6 @@
-// CardSlotController.js — uses enrich.js schema + summon_btn template styling
+// CardSlotController.js — uses enrich.js schema + render_stcg_card layout
+
+import { renderSTCGCard } from './render_stcg_card.js';
 
 const CardSlotController = {
   // ---- 1) Normalize an "enrich" card object into UI-ready fields
@@ -21,59 +23,25 @@ const CardSlotController = {
       def:       String(enriched.def ?? ""),
       tribute:   enriched.tribute || enriched.tributes || "",
       effects:   Array.isArray(enriched.effects) ? enriched.effects : [],
-      // emojis/icons
       emojis:    enriched.emojis || [],
-      // image list (summon_btn expects first url)
       imageUrl:  img
     };
   },
 
-  // ---- 2) Build DOM using the SAME structure & data-* hooks as summon_btn.html
+  // ---- 2) Render card using the new render engine (flipped handled internally)
   createEl(card, flipped = false) {
-    const el = document.createElement("div");
-    el.className = "stcg-card" + (flipped ? " flipped" : "");
-    el.dataset.id       = card.id;
-    el.dataset.rarity   = card.rarity;
-    el.dataset.frame    = (card.frameType || "general").toLowerCase();
-    el.dataset.color    = (card.color || "silver").toLowerCase();
+    const el = renderSTCGCard(card, { flipped });
+    el.dataset.id     = card.id;
+    el.dataset.rarity = card.rarity;
+    el.dataset.frame  = (card.frameType || "general").toLowerCase();
+    el.dataset.color  = (card.color || "silver").toLowerCase();
+    el.classList.add("stcg-card-wrapper");
 
-    el.innerHTML = `
-      <div class="stcg-card__inner">
-        <div class="stcg-card__front">
-          <div class="stcg-card__border">
-            <div class="stcg-card__name">${card.name}</div>
-            <div class="stcg-card__image" style="background-image:url('${card.imageUrl}')"></div>
-
-            <div class="stcg-card__stats">
-              <span class="atk">ATK: ${card.atk || "-"}</span>
-              <span class="def">DEF: ${card.def || "-"}</span>
-            </div>
-
-            <div class="stcg-card__effects">
-              ${
-                (card.effects || [])
-                  .map(e => `<div class="effect"><span class="icons">${e.icons || ""}</span><span class="txt">${e.text || ""}</span></div>`)
-                  .join("")
-              }
-            </div>
-
-            <div class="stcg-card__footer">
-              <span class="about">${card.about || ""}</span>
-              <span class="tribute">${card.tribute || ""}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="stcg-card__back"></div>
-      </div>
-    `;
-
-    // optional: click to flip
     el.addEventListener("click", () => this.toggleFlip(el));
     return el;
   },
 
-  // ---- 3) Public inject — slotId = any board slot (e.g. "player-hand-3")
+  // ---- 3) Inject into slot by ID
   injectToSlot(slotId, enrichedCard, flipped = false) {
     const slot = document.getElementById(slotId);
     if (!slot) return;
@@ -84,7 +52,7 @@ const CardSlotController = {
     slot.appendChild(node);
   },
 
-  // ---- 4) Helpers
+  // ---- 4) Flip logic
   toggleFlip(el) {
     if (!el) return;
     el.classList.toggle("flipped");
