@@ -2,7 +2,7 @@
 export const CardLibrary = [
   {
     id: "000057",
-    name: "Shorties Bootleg Broadcast | Adult Swim Bumps | #1",
+    name: "KEVIN SUBER IS ME IM AM  #1",
     emojis: ["🌍", "📰"], // ✅ FIXED
     about: "YouTube",
     tribute: "🙇‍♂️🙇‍♂️🙇‍♂️🙇‍♂️🙇‍♂️",
