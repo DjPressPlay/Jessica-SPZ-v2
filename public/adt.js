@@ -48,8 +48,10 @@ function initCardInfoHover() {
 
 ---------------------------------------------------------
   
-  const applyHandBehavior = (el) => {
+const applyHandBehavior = (el) => {
   el.card = null;
+
+  // === CORE METHODS ===
 
   el.place = function(card) {
     this.card = card;
@@ -72,6 +74,52 @@ function initCardInfoHover() {
     if (!this.card || !targetSlot) return;
     targetSlot.place(this.card);
     this.destroy();
+  };
+
+  // === NEW METHODS ===
+
+  // Removes card from play
+  el.burn = function(burnZone) {
+    if (!this.card || !burnZone || typeof burnZone.add !== 'function') return;
+    burnZone.add(this.card);
+    this.destroy();
+  };
+
+  // Temporarily flips to show then flips back
+  el.show = function(duration = 1000) {
+    if (!this.card) return;
+    const wasFlipped = !!this.card.isFlipped;
+    this.card.isFlipped = true;
+    this.card.render();
+
+    setTimeout(() => {
+      this.card.isFlipped = wasFlipped;
+      this.card.render();
+    }, duration);
+  };
+
+  // Return this card to a specified hand slot
+  el.return = function(targetSlot) {
+    if (!this.card || !targetSlot || targetSlot.card) return;
+    targetSlot.place(this.card);
+    this.destroy();
+  };
+
+  // Give card to opponent hand (finds open slot)
+  el.give = function(opponentHand) {
+    if (!this.card || !Array.isArray(opponentHand)) return;
+    const openSlot = opponentHand.find(s => !s.card);
+    if (openSlot) {
+      openSlot.place(this.card);
+      this.destroy();
+    }
+  };
+
+  // Activate card effect (if it exists)
+  el.activateEffect = function() {
+    if (this.card && typeof this.card.effect === 'function') {
+      this.card.effect();
+    }
   };
 
   return el;
