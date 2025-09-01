@@ -1,3 +1,5 @@
+//EFFECTS AND INFORMATION CONTAINERS //
+
 function initCardInfoHover() {
   const allSlots = document.querySelectorAll('.slot, .deck, .grave');
 
