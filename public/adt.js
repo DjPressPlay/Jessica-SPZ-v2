@@ -45,3 +45,100 @@ function initCardInfoHover() {
     });
   });
 }
+
+---------------------------------------------------------
+  
+  const applyHandBehavior = (el) => {
+  el.card = null;
+
+  el.place = function(card) {
+    this.card = card;
+    this.innerHTML = '';
+    this.appendChild(card.render());
+  };
+
+  el.destroy = function() {
+    this.card = null;
+    this.innerHTML = '';
+  };
+
+  el.flip = function() {
+    if (this.card && typeof this.card.flip === 'function') {
+      this.card.flip();
+    }
+  };
+
+  el.moveTo = function(targetSlot) {
+    if (!this.card || !targetSlot) return;
+    targetSlot.place(this.card);
+    this.destroy();
+  };
+
+  return el;
+};
+
+-------------------------------------------------------
+function applyCardSlotBehavior(el) {
+  el.card = null;
+
+  el.place = function(card) {
+    this.card = card;
+    this.innerHTML = '';
+    this.appendChild(card.render());
+  };
+
+  el.destroy = function() {
+    this.card = null;
+    this.innerHTML = '';
+  };
+
+  el.flip = function() {
+    if (this.card && typeof this.card.flip === 'function') {
+      this.card.flip();
+    }
+  };
+
+  el.moveTo = function(targetSlot) {
+    if (!this.card || !targetSlot) return;
+    targetSlot.place(this.card);
+    this.destroy();
+  };
+
+  el.isEmpty = function() {
+    return this.card === null;
+  };
+
+  return el;
+}
+
+-------------------------------------------------------
+function applyZoneBehavior(el) {
+  el.stack = [];
+
+  el.add = function(card) {
+    this.stack.push(card);
+    this.render();
+  };
+
+  el.pop = function() {
+    const card = this.stack.pop();
+    this.render();
+    return card;
+  };
+
+  el.render = function() {
+    this.innerHTML = '';
+    if (this.stack.length > 0) {
+      const topCard = this.stack[this.stack.length - 1];
+      this.appendChild(topCard.render());
+    }
+  };
+
+  el.clear = function() {
+    this.stack = [];
+    this.innerHTML = '';
+  };
+
+  return el;
+}
+
