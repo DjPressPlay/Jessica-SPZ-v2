@@ -16,7 +16,7 @@ const Dealer = {
   },
 
   loadDeck() {
-    this.deck = [...CardLibrary];
+    this.deck = [...Object.values(CardLibrary)]; // 🔄 convert CardLibrary object to array
     for (let i = this.deck.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [this.deck[i], this.deck[j]] = [this.deck[j], this.deck[i]];
@@ -41,8 +41,8 @@ const Dealer = {
     return card;
   },
 
-  injectCardToSlot(slotId, card, flipped = false) {
-    if (!card) return;
+  injectCardToSlot(slotId, rawCard, flipped = false) {
+    if (!rawCard) return;
 
     const slot = document.getElementById(slotId);
     if (!slot) {
@@ -50,9 +50,10 @@ const Dealer = {
       return;
     }
 
-    const el = CardSlotController.createEl(card, flipped); // ✅ get full styled card
-    slot.innerHTML = ""; // clear slot
-    slot.appendChild(el); // ✅ render full card visually
+    const enriched = CardSlotController.normalize(rawCard); // ✅ normalize first
+    const el = CardSlotController.createEl(enriched, flipped); // ✅ render full styled card
+    slot.innerHTML = "";
+    slot.appendChild(el);
   }
 };
 
