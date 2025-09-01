@@ -14,6 +14,93 @@
     });
   </script>
 
+  <style>
+html, body {
+}
+
+
+.cpu-deck { top: 20px; left: 20px; }
+.player-deck { bottom: 20px; right: 20px; }
+
+
+.grave {
+position: fixed;
+width: 80px;
+height: 110px;
+background: #333;
+border: 3px solid #990000;
+border-radius: 8px;
+box-shadow: 0 0 12px rgba(255,0,0,0.5);
+z-index: 9999;
+}
+
+
+.grave-cpu {
+left: 20px;
+top: 50%;
+transform: translateY(-50%);
+}
+
+
+.grave-player {
+right: 20px;
+top: 50%;
+transform: translateY(-50%);
+}
+
+
+.message-box {
+position: fixed;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+min-width: 300px;
+max-width: 80vw;
+padding: 20px 30px;
+background: rgba(0, 0, 0, 0.85);
+color: #fff;
+font-size: 2.2rem;
+font-style: italic;
+font-weight: bold;
+text-align: center;
+border: 2px solid #0ff;
+border-radius: 10px;
+box-shadow: 0 0 20px rgba(0,255,255,0.4);
+z-index: 99999;
+display: none;
+text-shadow: 0 0 5px #0ff, 0 0 10px #0ff;
+}
+
+
+.card-info {
+position: absolute;
+top: 50%;
+transform: translateY(-50%);
+width: 160px;
+min-height: 60px;
+padding: 10px;
+background: rgba(0, 0, 0, 0.85);
+color: #fff;
+font-size: 0.9rem;
+font-style: italic;
+font-weight: bold;
+border: 2px solid #0ff;
+border-radius: 6px;
+box-shadow: 0 0 10px rgba(0,255,255,0.3);
+text-align: center;
+z-index: 9999;
+}
+
+
+.info-left {
+right: 130px;
+}
+
+
+.info-right {
+left: 130px;
+}
+</style>
 </head>
 <body>
   <!-- Floating -->
