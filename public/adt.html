@@ -1,91 +1,94 @@
-<!-- >public/adt.html//✅ -->
+
+
+ <!-- >public/adt.html//✅ -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Battle Board</title>
   <script src="adt.js"></script>
-  <script type="module" src="./card_library.js"></script>
-  <script type="module" src="./card_slot_controller.js"></script>
-  <script type="module" src="./dealer.js"></script>
-  <link rel="stylesheet" href="adt.css">
+<script type="module" src="./card_library.js"></script>
+<script type="module" src="./card_slot_controller.js"></script>
+<script type="module" src="./dealer.js"></script>
 
-  <script>
-    window.addEventListener("DOMContentLoaded", () => {
-      initCardInfoHover();
-    });
-  </script>
-
+<script>
+  window.addEventListener("DOMContentLoaded", () => {
+    initCardInfoHover();
+  });
+</script>
 
 </head>
 <body>
+
   <!-- Floating -->
-  <div id="slot-deck-cpu" class="deck cpu-deck" data-type="DECK"></div>
-  <div id="slot-deck-player" class="deck player-deck" data-type="DECK"></div>
+  <div id="cpu-deck" class="deck cpu-deck"></div>
+  <div id="player-deck" class="deck player-deck"></div>
 
-  <div class="hud cpu-hud">
-    <div id="cpu-card-info" class="card-info info-left">Card Info...</div>
-    <div class="hud-pic"><img src="https://miro.medium.com/v2/resize:fit:786/format:webp/1*rYMkBL3JcdN_oYqWG4opHw.png" alt="CPU Avatar"></div>
-    <div class="hud-name">CPU</div>
-    <div class="hud-health"><div class="hud-health-fill" style="width: 100%;"></div></div>
-  </div>
+ <div class="hud cpu-hud">
+  <div id="cpu-card-info" class="card-info info-left">Card Info...</div>
+  <div class="hud-pic"><img src="https://miro.medium.com/v2/resize:fit:786/format:webp/1*rYMkBL3JcdN_oYqWG4opHw.png" alt="CPU Avatar"></div>
+  <div class="hud-name">CPU</div>
+  <div class="hud-health"><div class="hud-health-fill" style="width: 100%;"></div></div>
+</div>
 
-  <div class="hud player-hud">
-    <div class="hud-pic"><img src="https://miro.medium.com/v2/resize:fit:786/format:webp/1*rYMkBL3JcdN_oYqWG4opHw.png" alt="Player Avatar"></div>
-    <div class="hud-name">PLAYER</div>
-    <div class="hud-health"><div class="hud-health-fill" style="width: 100%;"></div></div>
-    <div id="player-card-info" class="card-info info-right">Card Info...</div>
-  </div>
+<div class="hud player-hud">
+  <div class="hud-pic"><img src="https://miro.medium.com/v2/resize:fit:786/format:webp/1*rYMkBL3JcdN_oYqWG4opHw.png" alt="Player Avatar"></div>
+  <div class="hud-name">PLAYER</div>
+  <div class="hud-health"><div class="hud-health-fill" style="width: 100%;"></div></div>
+  <div id="player-card-info" class="card-info info-right">Card Info...</div>
+</div>
 
-  <div id="slot-grave-cpu" class="grave grave-cpu" data-type="GRAVE"></div>
-  <div id="slot-grave-player" class="grave grave-player" data-type="GRAVE"></div>
+
+  
+
+  <div id="cpu-grave" class="grave grave-cpu"></div>
+  <div id="player-grave" class="grave grave-player"></div>
   <div id="game-message" class="message-box">Waiting...</div>
 
   <!-- BOARD WRAPPER ✅ -->
   <div class="board-container">
+
     <div class="map-section cpu-section">
       <div class="zone cpu-hand">
-        <div class="slot" id="slot-hand-cpu-1" data-type="HAND"></div>
-        <div class="slot" id="slot-hand-cpu-2" data-type="HAND"></div>
-        <div class="slot" id="slot-hand-cpu-3" data-type="HAND"></div>
-        <div class="slot" id="slot-hand-cpu-4" data-type="HAND"></div>
-        <div class="slot" id="slot-hand-cpu-5" data-type="HAND"></div>
-        <div class="slot" id="slot-hand-cpu-6" data-type="HAND" style="display:none;"></div>
-        <div class="slot" id="slot-hand-cpu-7" data-type="HAND" style="display:none;"></div>
+        <div class="slot" id="cpu-hand-1"></div>
+        <div class="slot" id="cpu-hand-2"></div>
+        <div class="slot" id="cpu-hand-3"></div>
+        <div class="slot" id="cpu-hand-4"></div>
+        <div class="slot" id="cpu-hand-5"></div>
       </div>
       <div class="zone cpu-traps">
-        <div class="slot" id="slot-trap-cpu-1" data-type="TRAP"></div>
-        <div class="slot" id="slot-trap-cpu-2" data-type="TRAP"></div>
-        <div class="slot" id="slot-trap-cpu-3" data-type="TRAP"></div>
+        <div class="slot" id="cpu-trap-1"></div>
+        <div class="slot" id="cpu-trap-2"></div>
+        <div class="slot" id="cpu-trap-3"></div>
       </div>
     </div>
 
     <div class="map-section shared-section">
       <div class="zone cpu-battle">
-        <div class="slot" id="slot-battle-cpu-1" data-type="BATTLE ZONE"></div>
+        <div class="slot" id="cpu-battle-1"></div>
       </div>
       <div class="battle-counter" id="battle-counter">3</div>
       <div class="zone player-battle">
-        <div class="slot" id="slot-battle-player-1" data-type="BATTLE ZONE"></div>
+        <div class="slot" id="player-battle-1"></div>
       </div>
     </div>
 
     <div class="map-section player-section">
       <div class="zone player-traps">
-        <div class="slot" id="slot-trap-player-1" data-type="TRAP"></div>
-        <div class="slot" id="slot-trap-player-2" data-type="TRAP"></div>
-        <div class="slot" id="slot-trap-player-3" data-type="TRAP"></div>
+        <div class="slot" id="player-trap-1"></div>
+        <div class="slot" id="player-trap-2"></div>
+        <div class="slot" id="player-trap-3"></div>
       </div>
       <div class="zone player-hand">
-        <div class="slot" id="slot-hand-player-1" data-type="HAND"></div>
-        <div class="slot" id="slot-hand-player-2" data-type="HAND"></div>
-        <div class="slot" id="slot-hand-player-3" data-type="HAND"></div>
-        <div class="slot" id="slot-hand-player-4" data-type="HAND"></div>
-        <div class="slot" id="slot-hand-player-5" data-type="HAND"></div>
-        <div class="slot" id="slot-hand-player-6" data-type="HAND" style="display:none;"></div>
-        <div class="slot" id="slot-hand-player-7" data-type="HAND" style="display:none;"></div>
+        <div class="slot" id="player-hand-1"></div>
+        <div class="slot" id="player-hand-2"></div>
+        <div class="slot" id="player-hand-3"></div>
+        <div class="slot" id="player-hand-4"></div>
+        <div class="slot" id="player-hand-5"></div>
       </div>
     </div>
+
   </div>
 </body>
 </html>
