@@ -1,5 +1,5 @@
 // DealerController.js
-// Manages deck, slot injection, game start — now using CardSlotController
+// One script to rule them all — uses CardSlotController to visually render full cards
 
 import { CardLibrary } from './card_library.js';
 import { CardSlotController } from './card_slot_controller.js';
@@ -25,8 +25,13 @@ const Dealer = {
 
   startGame() {
     console.log('🎮 Game Started');
-    const startingCard = this.drawCard();
-    this.injectCardToSlot('player-hand-3', startingCard);
+
+    // 🟣 Inject a full visible hand using real DOM cards
+    for (let i = 1; i <= 5; i++) {
+      const card = this.drawCard();
+      const slotId = `player-hand-${i}`;
+      this.injectCardToSlot(slotId, card);
+    }
   },
 
   drawCard() {
@@ -38,11 +43,20 @@ const Dealer = {
 
   injectCardToSlot(slotId, card, flipped = false) {
     if (!card) return;
-    CardSlotController.injectToSlot(slotId, card, flipped);
+
+    const slot = document.getElementById(slotId);
+    if (!slot) {
+      console.warn(`Slot not found: ${slotId}`);
+      return;
+    }
+
+    const el = CardSlotController.createEl(card, flipped); // ✅ get full styled card
+    slot.innerHTML = ""; // clear slot
+    slot.appendChild(el); // ✅ render full card visually
   }
 };
 
-// Initialize Dealer on DOM ready
+// 🔁 Auto-run on DOM ready
 document.addEventListener("DOMContentLoaded", () => Dealer.init());
 
 export default Dealer;
