@@ -20,37 +20,16 @@
 </head>
 <body>
 
-  <!-- Floating Decks -->
-  <div id="cpu-deck" class="deck cpu-deck"></div>
-  <div id="player-deck" class="deck player-deck"></div>
-
-  <!-- HUD Panels -->
-  <div class="hud cpu-hud">
-    <div id="cpu-card-info" class="card-info info-left">Card Info...</div>
-    <div class="hud-pic"><img src="https://miro.medium.com/v2/resize:fit:786/format:webp/1*rYMkBL3JcdN_oYqWG4opHw.png" alt="CPU Avatar"></div>
-    <div class="hud-name">CPU</div>
-    <div class="hud-health"><div class="hud-health-fill" style="width: 100%;"></div></div>
-  </div>
-
-  <div class="hud player-hud">
-    <div class="hud-pic"><img src="https://miro.medium.com/v2/resize:fit:786/format:webp/1*rYMkBL3JcdN_oYqWG4opHw.png" alt="Player Avatar"></div>
-    <div class="hud-name">PLAYER</div>
-    <div class="hud-health"><div class="hud-health-fill" style="width: 100%;"></div></div>
-    <div id="player-card-info" class="card-info info-right">Card Info...</div>
-  </div>
-
-  <!-- Fixed Zones -->
-  <div id="cpu-grave" class="grave grave-cpu"></div>
-  <div id="cpu-burn" class="burn burn-cpu"></div>
-  <div id="player-grave" class="grave grave-player"></div>
-  <div id="player-burn" class="burn burn-player"></div>
-  <div id="game-message" class="message-box">Waiting...</div>
-
   <!-- BOARD WRAPPER ✅ -->
   <div class="board-container">
 
     <!-- ✅ CPU MAT -->
     <div class="map-section cpu-section">
+
+      <!-- Floating (owned by CPU) -->
+      <div id="cpu-deck" class="deck cpu-deck"></div>
+      <div id="cpu-grave" class="grave grave-cpu"></div>
+      <div id="cpu-burn" class="burn burn-cpu"></div>
 
       <!-- HAND -->
       <div class="zone cpu-hand">
@@ -59,8 +38,8 @@
         <div class="slot" id="cpu-hand-3"></div>
         <div class="slot" id="cpu-hand-4"></div>
         <div class="slot" id="cpu-hand-5"></div>
-        <div class="slot" id="cpu-hand-6" style="display: none;"></div>
-        <div class="slot" id="cpu-hand-7" style="display: none;"></div>
+        <div class="slot" id="cpu-hand-6" style="display:none;"></div>
+        <div class="slot" id="cpu-hand-7" style="display:none;"></div>
       </div>
 
       <!-- TRAPS -->
@@ -69,6 +48,16 @@
         <div class="slot" id="cpu-trap-2"></div>
         <div class="slot" id="cpu-trap-3"></div>
       </div>
+    </div>
+
+    <!-- HUD Panels -->
+    <div class="hud cpu-hud">
+      <div id="cpu-card-info" class="card-info info-left">Card Info...</div>
+      <div class="hud-pic">
+        <img src="https://miro.medium.com/v2/resize:fit:786/format:webp/1*rYMkBL3JcdN_oYqWG4opHw.png" alt="CPU Avatar">
+      </div>
+      <div class="hud-name">CPU</div>
+      <div class="hud-health"><div class="hud-health-fill" style="width:100%;"></div></div>
     </div>
 
     <!-- ✅ SHARED BATTLE ZONE -->
@@ -80,10 +69,26 @@
       <div class="zone player-battle">
         <div class="slot" id="player-battle-1"></div>
       </div>
+      <div id="game-message" class="message-box">Waiting...</div>
+    </div>
+
+    <!-- HUD Panels -->
+    <div class="hud player-hud">
+      <div class="hud-pic">
+        <img src="https://miro.medium.com/v2/resize:fit:786/format:webp/1*rYMkBL3JcdN_oYqWG4opHw.png" alt="Player Avatar">
+      </div>
+      <div class="hud-name">PLAYER</div>
+      <div class="hud-health"><div class="hud-health-fill" style="width:100%;"></div></div>
+      <div id="player-card-info" class="card-info info-right">Card Info...</div>
     </div>
 
     <!-- ✅ PLAYER MAT -->
     <div class="map-section player-section">
+
+      <!-- Floating (owned by Player) -->
+      <div id="player-deck" class="deck player-deck"></div>
+      <div id="player-grave" class="grave grave-player"></div>
+      <div id="player-burn" class="burn burn-player"></div>
 
       <!-- TRAPS -->
       <div class="zone player-traps">
@@ -99,8 +104,8 @@
         <div class="slot" id="player-hand-3"></div>
         <div class="slot" id="player-hand-4"></div>
         <div class="slot" id="player-hand-5"></div>
-        <div class="slot" id="player-hand-6" style="display: none;"></div>
-        <div class="slot" id="player-hand-7" style="display: none;"></div>
+        <div class="slot" id="player-hand-6" style="display:none;"></div>
+        <div class="slot" id="player-hand-7" style="display:none;"></div>
       </div>
     </div>
 
