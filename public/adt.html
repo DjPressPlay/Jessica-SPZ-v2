@@ -1,5 +1,4 @@
 <!-- >public/adt.html//✅ -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,10 +20,11 @@
 </head>
 <body>
 
-  <!-- Floating -->
+  <!-- Floating Decks -->
   <div id="cpu-deck" class="deck cpu-deck"></div>
   <div id="player-deck" class="deck player-deck"></div>
 
+  <!-- HUD Panels -->
   <div class="hud cpu-hud">
     <div id="cpu-card-info" class="card-info info-left">Card Info...</div>
     <div class="hud-pic"><img src="https://miro.medium.com/v2/resize:fit:786/format:webp/1*rYMkBL3JcdN_oYqWG4opHw.png" alt="CPU Avatar"></div>
@@ -43,6 +43,7 @@
   <div id="cpu-grave" class="grave grave-cpu"></div>
   <div id="cpu-burn" class="burn burn-cpu"></div>
   <div id="player-grave" class="grave grave-player"></div>
+  <div id="player-burn" class="burn burn-player"></div>
   <div id="game-message" class="message-box">Waiting...</div>
 
   <!-- BOARD WRAPPER ✅ -->
@@ -82,27 +83,26 @@
     </div>
 
     <!-- ✅ PLAYER MAT -->
-<div class="map-section player-section">
+    <div class="map-section player-section">
 
-  <!-- TRAPS -->
-  <div class="zone player-traps">
-    <div class="slot" id="player-trap-1"></div>
-    <div class="slot" id="player-trap-2"></div>
-    <div class="slot" id="player-trap-3"></div>
-  </div>
+      <!-- TRAPS -->
+      <div class="zone player-traps">
+        <div class="slot" id="player-trap-1"></div>
+        <div class="slot" id="player-trap-2"></div>
+        <div class="slot" id="player-trap-3"></div>
+      </div>
 
-  <!-- HAND -->
-  <div class="zone player-hand">
-    <div class="slot" id="player-hand-1"></div>
-    <div class="slot" id="player-hand-2"></div>
-    <div class="slot" id="player-hand-3"></div>
-    <div class="slot" id="player-hand-4"></div>
-    <div class="slot" id="player-hand-5"></div>
-    <div class="slot" id="player-hand-6" style="display: none;"></div>
-    <div class="slot" id="player-hand-7" style="display: none;"></div>
-  </div>
-</div>
-
+      <!-- HAND -->
+      <div class="zone player-hand">
+        <div class="slot" id="player-hand-1"></div>
+        <div class="slot" id="player-hand-2"></div>
+        <div class="slot" id="player-hand-3"></div>
+        <div class="slot" id="player-hand-4"></div>
+        <div class="slot" id="player-hand-5"></div>
+        <div class="slot" id="player-hand-6" style="display: none;"></div>
+        <div class="slot" id="player-hand-7" style="display: none;"></div>
+      </div>
+    </div>
 
   </div>
 </body>
