@@ -46,7 +46,7 @@ function initCardInfoHover() {
   });
 }
 
----------------------------------------------------------
+//---------------------------------------------------------
   
 const applyHandBehavior = (el) => {
   el.card = null;
@@ -125,7 +125,7 @@ const applyHandBehavior = (el) => {
   return el;
 };
 
--------------------------------------------------------
+//-------------------------------------------------------
 function applyCardSlotBehavior(el) {
   el.card = null;
 
@@ -156,6 +156,37 @@ function applyCardSlotBehavior(el) {
     return this.card === null;
   };
 
+  el.burn = function(burnZone) {
+    if (!this.card || !burnZone || typeof burnZone.add !== 'function') return;
+    burnZone.add(this.card);
+    this.destroy();
+  };
+
+  el.show = function() {
+    if (!this.card) return;
+    const originalFlip = this.card.isFlipped;
+    this.card.isFlipped = true;
+    this.flip();
+    setTimeout(() => {
+      this.card.isFlipped = originalFlip;
+      this.flip();
+    }, 1500); // show briefly, adjust timing as needed
+  };
+
+  el.return = function(targetSlot) {
+    this.moveTo(targetSlot);
+  };
+
+  el.switch = function(targetSlot) {
+    this.moveTo(targetSlot);
+  };
+
+  el.activateEffect = function() {
+    if (this.card && typeof this.card.activateEffect === 'function') {
+      this.card.activateEffect();
+    }
+  };
+
   return el;
 }
 
@@ -168,10 +199,19 @@ function applyZoneBehavior(el) {
     this.render();
   };
 
-  el.pop = function() {
-    const card = this.stack.pop();
-    this.render();
-    return card;
+  el.send = function(card, targetSlot) {
+    if (!card || !targetSlot) return;
+    const index = this.stack.indexOf(card);
+    if (index !== -1) {
+      this.stack.splice(index, 1);
+      this.render();
+      card.moveTo(targetSlot);
+    }
+  };
+
+  el.view = function() {
+    // This method is intentionally empty here — implement hover logic externally
+    // Can be tied to UI event to show el.stack as needed
   };
 
   el.render = function() {
@@ -182,11 +222,5 @@ function applyZoneBehavior(el) {
     }
   };
 
-  el.clear = function() {
-    this.stack = [];
-    this.innerHTML = '';
-  };
-
   return el;
 }
-
