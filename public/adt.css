@@ -235,37 +235,3 @@
 }
 
 
-
-.mini-card {
-  width: 100%;
-  height: 100%;
-  transform: scale(0.35);   /* adjust to fit slot */
-  transform-origin: top left;
-}
-
-
-
-/* Frame + flip core (keep consistent with summon_btn) */
-.stcg-card { width: 110px; height: 160px; perspective: 1000px; position: relative; }
-.stcg-card__inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform .5s; }
-.stcg-card.flipped .stcg-card__inner { transform: rotateY(180deg); }
-
-.stcg-card__front, .stcg-card__back {
-  position:absolute; inset:0; backface-visibility:hidden; border-radius:10px; overflow:hidden;
-}
-.stcg-card__back { transform: rotateY(180deg); background: #111 radial-gradient(circle at 30% 30%, #333, #000); }
-
-.stcg-card__border { position: absolute; inset: 0; border: 3px solid var(--frame-color, #888); border-radius: 10px; box-shadow: 0 0 8px var(--frame-color, #888); }
-.stcg-card__name { font-weight: 700; font-size: 12px; padding: 6px 8px; background: rgba(0,0,0,.5); }
-.stcg-card__image { height: 60%; background: #222 center/cover no-repeat; }
-.stcg-card__stats { display:flex; justify-content:space-between; padding: 4px 6px; font-size: 11px; }
-.stcg-card__effects { padding: 4px 6px; font-size: 10px; line-height: 1.25; max-height: 40px; overflow:auto; }
-.stcg-card__footer { display:flex; justify-content:space-between; padding: 4px 6px; font-size: 10px; }
-
-[data-frame="breaking_news"] { --frame-color:#ff2b2b; }
-[data-frame="technology"]    { --frame-color:#c0c0c0; }
-[data-frame="science"]       { --frame-color:#2a6cff; }
-[data-frame="environment"]   { --frame-color:#228b22; }
-[data-frame="business"]      { --frame-color:#d4af37; }
-[data-frame="general"]       { --frame-color:#888; }
-/* …extend with your existing summon_btn mappings */
