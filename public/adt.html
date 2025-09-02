@@ -5,13 +5,17 @@
   <meta charset="UTF-8" />
   <title>Battle Board</title>
 
+  <!-- 🧠 Core JS -->
   <script src="adt.js"></script>
   <script type="module" src="./card_library.js"></script>
   <script type="module" src="./card_slot_controller.js"></script>
   <script type="module" src="./dealer.js"></script>
+  <script type="module" src="./render_summon_card.js"></script> <!-- ✅ NEW -->
 
+  <!-- 🎨 Styles -->
   <link rel="stylesheet" href="adt.css" />
 
+  <!-- ℹ️ Hover Info Init -->
   <script>
     window.addEventListener("DOMContentLoaded", () => {
       initCardInfoHover();
@@ -25,13 +29,12 @@
 
     <!-- ✅ CPU MAT -->
     <div class="map-section cpu-section">
-
-      <!-- Floating (owned by CPU) -->
+      <!-- Floating Zones -->
       <div id="cpu-deck" class="deck cpu-deck"></div>
       <div id="cpu-grave" class="grave grave-cpu"></div>
       <div id="cpu-burn" class="burn burn-cpu"></div>
 
-      <!-- HAND -->
+      <!-- CPU Hand -->
       <div class="zone cpu-hand">
         <div class="slot" id="cpu-hand-1"></div>
         <div class="slot" id="cpu-hand-2"></div>
@@ -42,7 +45,7 @@
         <div class="slot" id="cpu-hand-7" style="display:none;"></div>
       </div>
 
-      <!-- TRAPS -->
+      <!-- CPU Traps -->
       <div class="zone cpu-traps">
         <div class="slot" id="cpu-trap-1"></div>
         <div class="slot" id="cpu-trap-2"></div>
@@ -50,7 +53,7 @@
       </div>
     </div>
 
-    <!-- HUD Panels -->
+    <!-- CPU HUD -->
     <div class="hud cpu-hud">
       <div id="cpu-card-info" class="card-info info-left">Card Info...</div>
       <div class="hud-pic">
@@ -72,7 +75,7 @@
       <div id="game-message" class="message-box">Waiting...</div>
     </div>
 
-    <!-- HUD Panels -->
+    <!-- PLAYER HUD -->
     <div class="hud player-hud">
       <div class="hud-pic">
         <img src="https://miro.medium.com/v2/resize:fit:786/format:webp/1*rYMkBL3JcdN_oYqWG4opHw.png" alt="Player Avatar">
@@ -84,20 +87,19 @@
 
     <!-- ✅ PLAYER MAT -->
     <div class="map-section player-section">
-
-      <!-- Floating (owned by Player) -->
+      <!-- Floating Zones -->
       <div id="player-deck" class="deck player-deck"></div>
       <div id="player-grave" class="grave grave-player"></div>
       <div id="player-burn" class="burn burn-player"></div>
 
-      <!-- TRAPS -->
+      <!-- Player Traps -->
       <div class="zone player-traps">
         <div class="slot" id="player-trap-1"></div>
         <div class="slot" id="player-trap-2"></div>
         <div class="slot" id="player-trap-3"></div>
       </div>
 
-      <!-- HAND -->
+      <!-- Player Hand -->
       <div class="zone player-hand">
         <div class="slot" id="player-hand-1"></div>
         <div class="slot" id="player-hand-2"></div>
@@ -108,7 +110,6 @@
         <div class="slot" id="player-hand-7" style="display:none;"></div>
       </div>
     </div>
-
   </div>
 </body>
 </html>
