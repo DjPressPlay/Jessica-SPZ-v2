@@ -190,7 +190,7 @@ function applyCardSlotBehavior(el) {
   return el;
 }
 
--------------------------------------------------------
+//-------------------------------------------------------
 function applyZoneBehavior(el) {
   el.stack = [];
 
