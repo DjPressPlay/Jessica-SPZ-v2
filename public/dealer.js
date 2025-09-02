@@ -1,8 +1,10 @@
 // DealerController.js
-// One script to rule them all — uses CardSlotController to visually render full cards
+// Uses CardSlotController to render full cards pulled from CardLibrary
 
 import { CardLibrary } from './card_library.js';
 import { CardSlotController } from './card_slot_controller.js';
+
+const HAND_SIZE = 5;
 
 const Dealer = {
   deck: [],
@@ -12,52 +14,85 @@ const Dealer = {
 
   init() {
     this.loadDeck();
-    this.startGame();
+    this.dealOpeningHand();
   },
 
+  // Normalize CardLibrary (object or array) → shuffle
   loadDeck() {
-    this.deck = [...Object.values(CardLibrary)]; // 🔄 convert CardLibrary object to array
-    for (let i = this.deck.length - 1; i > 0; i--) {
+    const src = Array.isArray(CardLibrary) ? CardLibrary : Object.values(CardLibrary || {});
+    this.deck = src.filter(Boolean).map(c => ({ ...c })); // shallow copy
+    this.shuffle(this.deck);
+  },
+
+  shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [this.deck[i], this.deck[j]] = [this.deck[j], this.deck[i]];
+      [arr[i], arr[j]] = [arr[j], arr[i]];
     }
   },
 
-  startGame() {
-    console.log('🎮 Game Started');
-
-    // 🟣 Inject a full visible hand using real DOM cards
-    for (let i = 1; i <= 5; i++) {
+  dealOpeningHand() {
+    for (let i = 1; i <= HAND_SIZE; i++) {
       const card = this.drawCard();
-      const slotId = `player-hand-${i}`;
-      this.injectCardToSlot(slotId, card);
+      this.injectCardToSlot(`player-hand-${i}`, card);
     }
   },
 
   drawCard() {
-    if (this.deck.length === 0) return null;
+    if (!this.deck.length) return null;
     const card = this.deck.shift();
-    this.hand.push(card);
+    if (card) this.hand.push(card);
     return card;
+  },
+
+  draw(n = 1) {
+    const pulled = [];
+    for (let i = 0; i < n; i++) {
+      const c = this.drawCard();
+      if (c) pulled.push(c);
+    }
+    return pulled;
+  },
+
+  // Move a card to graveyard (by ref)
+  sendToGrave(card) {
+    if (!card) return;
+    this.graveyard.push(card);
+    // remove first match from hand if present
+    const idx = this.hand.indexOf(card);
+    if (idx >= 0) this.hand.splice(idx, 1);
   },
 
   injectCardToSlot(slotId, rawCard, flipped = false) {
     if (!rawCard) return;
-
     const slot = document.getElementById(slotId);
-    if (!slot) {
-      console.warn(`Slot not found: ${slotId}`);
-      return;
-    }
+    if (!slot) return;
 
-    const enriched = CardSlotController.normalize(rawCard); // ✅ normalize first
-    const el = CardSlotController.createEl(enriched, flipped); // ✅ render full styled card
-    slot.innerHTML = "";
+    const enriched = CardSlotController.normalize(rawCard);
+    const el = CardSlotController.createEl(enriched, flipped);
+    slot.innerHTML = '';
     slot.appendChild(el);
+  },
+
+  // Helpers for back-card / flip behaviors
+  injectBackToSlot(slotId) {
+    const slot = document.getElementById(slotId);
+    if (!slot) return;
+    const el = CardSlotController.createBackEl();
+    slot.innerHTML = '';
+    slot.appendChild(el);
+  },
+
+  flipSlotToCard(slotId, rawCard) {
+    this.injectCardToSlot(slotId, rawCard, false);
+  },
+
+  flipSlotToBack(slotId) {
+    this.injectBackToSlot(slotId);
   }
 };
 
-// 🔁 Auto-run on DOM ready
-document.addEventListener("DOMContentLoaded", () => Dealer.init());
+// Auto-run
+document.addEventListener('DOMContentLoaded', () => Dealer.init());
 
 export default Dealer;
